@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
+import soundManager from './SoundManager';
 
 const GRAVITY = 0.6;
 const JUMP_FORCE = -13;
@@ -345,6 +346,13 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         state.player.isCasting = true;
         state.player.castTimer = isFreeze ? 25 : 15;
         
+        // Play cast sound
+        if (isFreeze) {
+          soundManager.playFreezeCast();
+        } else {
+          soundManager.playCast();
+        }
+        
         // Add casting particles
         const particleColor = isFreeze ? `hsl(${180 + Math.random() * 20}, 100%, 70%)` : 
                              isPowerShot ? `hsl(${0 + Math.random() * 30}, 100%, 60%)` :
@@ -370,6 +378,9 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         state.player.dashTimer = DASH_DURATION;
         state.player.dashDirection = state.player.facingRight ? 1 : -1;
         state.player.dashCooldown = DASH_COOLDOWN;
+        
+        // Play dash sound
+        soundManager.playDash();
         
         // Dash particles
         for (let i = 0; i < 15; i++) {
@@ -706,6 +717,9 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           player.isJumping = true;
           player.hasDoubleJumped = false;
           
+          // Play jump sound
+          soundManager.playJump();
+          
           // Jump particles
           for (let i = 0; i < 6; i++) {
             particles.push({
@@ -720,6 +734,9 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         } else if (player.canDoubleJump && !player.hasDoubleJumped) {
           player.velocityY = DOUBLE_JUMP_FORCE;
           player.hasDoubleJumped = true;
+          
+          // Play double jump sound
+          soundManager.playDoubleJump();
           
           // Double jump magic particles
           for (let i = 0; i < 10; i++) {
@@ -844,6 +861,9 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             }
             
             if (enemies[j].health <= 0) {
+              // Play enemy defeat sound
+              soundManager.playEnemyDefeat();
+              
               // Spawn particles
               for (let k = 0; k < 10; k++) {
                 particles.push({
@@ -858,6 +878,9 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
               enemies.splice(j, 1);
               state.score += 100;
               onScoreChange(state.score);
+            } else {
+              // Play enemy hit sound
+              soundManager.playEnemyHit();
             }
             projectiles.splice(i, 1);
             break;
@@ -898,6 +921,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             if (player.powerUps.shieldHealth <= 0) {
               player.powerUps.SHIELD = 0;
             }
+            // Play shield hit sound
+            soundManager.playShieldHit();
             // Shield absorbs hit but knocks back
             player.velocityY = -6;
             player.velocityX = player.x < enemy.x ? -4 : 4;
@@ -913,6 +938,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
               });
             }
           } else {
+            // Play damage sound
+            soundManager.playDamage();
             player.health -= 20;
             player.invincible = true;
             player.invincibleTimer = 60;
@@ -927,6 +954,9 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       for (const powerUp of state.powerUpItems) {
         if (!powerUp.collected && checkCollision(player, powerUp)) {
           powerUp.collected = true;
+          
+          // Play power-up sound
+          soundManager.playPowerUp();
           
           // Apply power-up effect
           const duration = POWERUP_TYPES[powerUp.type].duration;
@@ -961,6 +991,9 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           state.score += 50;
           onScoreChange(state.score);
           
+          // Play collect sound
+          soundManager.playCollect();
+          
           // Sparkle particles
           for (let i = 0; i < 8; i++) {
             particles.push({
@@ -988,12 +1021,14 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       
       // Check win condition
       if (player.x > state.goalX) {
+        soundManager.playLevelComplete();
         onLevelComplete();
         return;
       }
       
       // Check lose condition
       if (player.health <= 0) {
+        soundManager.playGameOver();
         state.gameRunning = false;
         onGameOver();
         return;

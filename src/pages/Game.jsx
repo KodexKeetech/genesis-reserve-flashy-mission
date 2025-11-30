@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import GameEngine from '@/components/game/GameEngine';
 import GameUI from '@/components/game/GameUI';
 import GameOverlay from '@/components/game/GameOverlay';
+import soundManager from '@/components/game/SoundManager';
 
 export default function Game() {
   const [gameState, setGameState] = useState('start'); // start, playing, gameOver, levelComplete
@@ -16,6 +17,7 @@ export default function Game() {
   });
 
   const handleStart = useCallback(() => {
+    soundManager.init();
     setGameState('playing');
     setScore(0);
     setHealth(100);
