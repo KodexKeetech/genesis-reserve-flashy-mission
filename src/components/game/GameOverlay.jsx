@@ -177,8 +177,8 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
             backgroundImage: `url(${victoryBackground})`,
           }}
         />
-        {/* Overlay gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-purple-900/40 to-transparent" />
+        {/* Overlay gradient - subtle darkening at bottom for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
         
         {/* Floating particles effect */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
