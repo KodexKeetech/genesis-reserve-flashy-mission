@@ -3,9 +3,7 @@ class MusicManager {
   constructor() {
     this.audio = null;
     this.tracks = [
-      'https://docs.google.com/uc?export=download&id=11H7HA7HzzHwIkdwAOpNHPV6nFKWmyBLD',
-      'https://docs.google.com/uc?export=download&id=196pmOSeoz2DbUEEZvJA6lL15z0s5h-Bw',
-      'https://docs.google.com/uc?export=download&id=1kZHnpdEv63dogPFpEnV6is1Gec6nRaK-'
+      'https://raw.githubusercontent.com/base44dev/jeffs-magical-quest-b2161062/main/src/components/Biten%20by%20Bytes%20(Happy%20simple%20game%20musik).mp3'
     ];
     this.currentTrack = 0;
     this.volume = 0.3;
