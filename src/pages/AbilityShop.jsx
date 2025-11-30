@@ -31,7 +31,14 @@ export default function AbilityShop() {
       }
       setUser(userData);
     } catch (e) {
-      console.error('Failed to load user', e);
+      // Not logged in - load from localStorage
+      const localData = localStorage.getItem('jeff_player_data');
+      const localAbilities = localStorage.getItem('jeff_unlocked_abilities');
+      const localAbilityUpgrades = localStorage.getItem('jeff_ability_upgrades');
+      const data = localData ? JSON.parse(localData) : { arcaneCrystals: 0 };
+      const abilities = localAbilities ? JSON.parse(localAbilities) : { aoeBlast: false, reflectShield: false, hover: false };
+      const abilityUpgrades = localAbilityUpgrades ? JSON.parse(localAbilityUpgrades) : { aoeBlastPower: 0, aoeBlastRadius: 0, reflectDuration: 0, hoverDuration: 0 };
+      setUser({ arcaneCrystals: data.arcaneCrystals || 0, unlockedAbilities: abilities, abilityUpgrades });
     }
     setLoading(false);
   };
