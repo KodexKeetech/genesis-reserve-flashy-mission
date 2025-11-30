@@ -6,7 +6,7 @@ import TouchControls from '@/components/game/TouchControls';
 import soundManager from '@/components/game/SoundManager';
 
 export default function Game() {
-  const [gameState, setGameState] = useState('start'); // start, playing, gameOver, levelComplete
+  const [gameState, setGameState] = useState('playing'); // start, playing, gameOver, levelComplete
   const [score, setScore] = useState(0);
   const [health, setHealth] = useState(100);
   const [level, setLevel] = useState(1);
@@ -35,6 +35,11 @@ export default function Game() {
     setScore(0);
     setHealth(100);
     setLevel(1);
+  }, []);
+
+  // Initialize sound on first load
+  React.useEffect(() => {
+    soundManager.init();
   }, []);
 
   const handleRestart = useCallback(() => {
