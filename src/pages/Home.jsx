@@ -43,38 +43,40 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex flex-col items-center justify-center p-4 overflow-hidden">
       {/* Space Background */}
       <div className="fixed inset-0 bg-black overflow-hidden pointer-events-none">
-        {/* Stars */}
-        {[...Array(100)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute rounded-full bg-white"
-            style={{
-              width: Math.random() * 2 + 1 + 'px',
-              height: Math.random() * 2 + 1 + 'px',
-              top: Math.random() * 100 + '%',
-              left: Math.random() * 100 + '%',
-              opacity: Math.random() * 0.7 + 0.3,
-              animation: `twinkle ${Math.random() * 3 + 2}s ease-in-out infinite`,
-              animationDelay: Math.random() * 2 + 's'
-            }}
-          />
-        ))}
-        {/* Larger stars */}
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={`big-${i}`}
-            className="absolute rounded-full"
-            style={{
-              width: Math.random() * 3 + 2 + 'px',
-              height: Math.random() * 3 + 2 + 'px',
-              top: Math.random() * 100 + '%',
-              left: Math.random() * 100 + '%',
-              backgroundColor: ['#fff', '#A5F3FC', '#C4B5FD', '#FDE68A'][Math.floor(Math.random() * 4)],
-              boxShadow: '0 0 6px currentColor',
-              animation: `twinkle ${Math.random() * 4 + 3}s ease-in-out infinite`
-            }}
-          />
-        ))}
+        {/* Stars - static, no parallax */}
+        <div className="absolute inset-0">
+          {[...Array(100)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute rounded-full bg-white"
+              style={{
+                width: (i % 3) + 1 + 'px',
+                height: (i % 3) + 1 + 'px',
+                top: ((i * 37) % 100) + '%',
+                left: ((i * 73) % 100) + '%',
+                opacity: 0.3 + (i % 5) * 0.15,
+                animation: `twinkle ${2 + (i % 3)}s ease-in-out infinite`,
+                animationDelay: (i % 20) * 0.1 + 's'
+              }}
+            />
+          ))}
+          {/* Larger stars */}
+          {[...Array(20)].map((_, i) => (
+            <div
+              key={`big-${i}`}
+              className="absolute rounded-full"
+              style={{
+                width: 2 + (i % 3) + 'px',
+                height: 2 + (i % 3) + 'px',
+                top: ((i * 53) % 100) + '%',
+                left: ((i * 41) % 100) + '%',
+                backgroundColor: ['#fff', '#A5F3FC', '#C4B5FD', '#FDE68A'][i % 4],
+                boxShadow: '0 0 6px currentColor',
+                animation: `twinkle ${3 + (i % 4)}s ease-in-out infinite`
+              }}
+            />
+          ))}
+        </div>
         {/* Planets - with parallax */}
         <div 
           className="absolute top-[15%] right-[10%] w-16 h-16 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-purple-600 via-purple-800 to-purple-950 opacity-60 shadow-lg shadow-purple-500/20 transition-transform duration-200 ease-out"
