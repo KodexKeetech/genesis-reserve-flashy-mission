@@ -148,6 +148,16 @@ export default function Game() {
     setGameState('playing');
   }, []);
 
+  const handleStartTutorial = useCallback(() => {
+    setGameState('playing');
+    setLevel(0);
+  }, []);
+
+  const handleSkipTutorial = useCallback(() => {
+    setGameState('playing');
+    setLevel(1);
+  }, []);
+
   const handleGameOver = useCallback(() => {
     setGameState('gameOver');
     if (sessionScraps > 0 || sessionCrystals > 0) {
