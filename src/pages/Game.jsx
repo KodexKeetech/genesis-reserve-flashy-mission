@@ -192,7 +192,7 @@ export default function Game() {
   // Show rotate prompt on portrait mobile
   if (isPortrait) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex flex-col items-center justify-center p-6 text-center">
+      <div className="h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex flex-col items-center justify-center p-6 text-center">
         <div className="text-6xl mb-6 animate-pulse">📱↻</div>
         <h2 className="text-2xl font-bold text-white mb-2">Rotate Your Device</h2>
         <p className="text-slate-400">Please rotate to landscape mode for the best experience</p>
@@ -200,21 +200,26 @@ export default function Game() {
     );
   }
 
+  // Check if on mobile
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 900;
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex flex-col items-center justify-center p-2 md:p-4 overflow-hidden">
+    <div className="h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex flex-col items-center justify-center p-1 md:p-4 overflow-hidden">
       {/* Ambient background effects */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl" />
       </div>
 
-      {/* Title */}
-      <h1 className="text-xl sm:text-2xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400 mb-2 md:mb-6 tracking-tight">
-        JEFF: The Robot Wizard
-      </h1>
+      {/* Title - hide on mobile */}
+      {!isMobile && (
+        <h1 className="text-xl sm:text-2xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400 mb-2 md:mb-6 tracking-tight">
+          JEFF: The Robot Wizard
+        </h1>
+      )}
 
-      {/* Game Container */}
-      <div className="relative w-full max-w-[800px]" style={{ aspectRatio: '800/600' }}>
+      {/* Game Container - full height on mobile */}
+      <div className={`relative w-full ${isMobile ? 'h-[60vh]' : 'max-w-[800px]'}`} style={{ aspectRatio: isMobile ? 'auto' : '800/600' }}>
         <div className="absolute inset-0">
         {gameState === 'playing' && (
             <GameEngine
@@ -265,8 +270,8 @@ export default function Game() {
         <TouchControls onInput={handleTouchInput} />
         )}
 
-      {/* Shop Buttons */}
-      <div className="mt-4 flex gap-3 flex-wrap justify-center">
+      {/* Shop Buttons - smaller on mobile */}
+      <div className={`${isMobile ? 'mt-1' : 'mt-4'} flex gap-2 md:gap-3 flex-wrap justify-center`}
         <Link to={createPageUrl('UpgradeShop')}>
           <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500">
             <ShoppingBag className="w-5 h-5 mr-2" />
