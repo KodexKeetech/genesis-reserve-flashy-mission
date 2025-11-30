@@ -117,7 +117,7 @@ export default function Home() {
           className="bg-gradient-to-r from-purple-600/90 to-blue-600/90 backdrop-blur-sm hover:from-purple-500 hover:to-blue-500 text-white text-xs md:text-sm px-4 py-2.5 rounded-lg border border-purple-400/50 hover:border-purple-300 transition-all flex items-center gap-2 shadow-lg shadow-purple-500/20"
         >
           <span>📖</span>
-          <span className="font-semibold">Read our Comic to Support the Game!</span>
+          <span className="font-semibold">Read the Lore Comic to Support the Game!</span>
         </a>
         <a 
           href="https://linktr.ee/JeffTheRobotWizard" 
