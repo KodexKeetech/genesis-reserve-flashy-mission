@@ -205,6 +205,28 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
           ))}
         </div>
         
+        {/* Comic Links - Top Left */}
+        <div className="absolute top-3 left-3 z-20 flex flex-col gap-2">
+          <a 
+            href="https://globalcomix.com/a/jeff-the-robot-wizard" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="bg-black/60 backdrop-blur-sm hover:bg-black/80 text-white text-xs px-3 py-2 rounded-lg border border-purple-500/50 hover:border-purple-400 transition-all flex items-center gap-2"
+          >
+            <span>📖</span>
+            <span>Read Jeff's Comic</span>
+          </a>
+          <a 
+            href="https://linktr.ee/JeffTheRobotWizard" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="bg-black/60 backdrop-blur-sm hover:bg-black/80 text-white text-xs px-3 py-2 rounded-lg border border-cyan-500/50 hover:border-cyan-400 transition-all flex items-center gap-2"
+          >
+            <span>🔗</span>
+            <span>Jeff's Socials</span>
+          </a>
+        </div>
+
         {/* Content */}
         <div className="relative z-10 h-full flex flex-col items-center justify-center">
           <motion.div
