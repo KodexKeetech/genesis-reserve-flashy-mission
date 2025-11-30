@@ -268,9 +268,21 @@ export function drawBoss(ctx, boss, bx, time, isFrozen, biomeKey) {
   const healthPercent = boss.health / boss.maxHealth;
   const rage = healthPercent < 0.3;
   const pulse = Math.sin(time * (rage ? 0.3 : 0.1)) * 0.2 + 0.8;
+  const auraPulse = Math.sin(time * 0.15) * 0.5 + 0.5;
 
   if (isFrozen) {
     ctx.globalAlpha = 0.7;
+  }
+
+  // Enhanced rage aura effect
+  if (rage && !isFrozen) {
+    ctx.fillStyle = `rgba(239, 68, 68, ${0.15 + auraPulse * 0.15})`;
+    ctx.shadowColor = '#EF4444';
+    ctx.shadowBlur = 40 + auraPulse * 20;
+    ctx.beginPath();
+    ctx.arc(bx + boss.width / 2, boss.y + boss.height / 2, boss.width * 0.9 + auraPulse * 15, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
   }
 
   switch (boss.type) {
@@ -288,13 +300,72 @@ export function drawBoss(ctx, boss, bx, time, isFrozen, biomeKey) {
       break;
   }
 
-  // Health bar
-  const barWidth = 80;
+  // Enhanced health bar
+  const barWidth = 120;
+  const barHeight = 10;
   const barX = bx + boss.width / 2 - barWidth / 2;
-  ctx.fillStyle = '#1E293B';
-  ctx.fillRect(barX, boss.y - 20, barWidth, 8);
-  ctx.fillStyle = rage ? '#EF4444' : '#22C55E';
-  ctx.fillRect(barX + 1, boss.y - 19, (barWidth - 2) * healthPercent, 6);
+  const barY = boss.y - 25;
+  
+  // Bar background with shadow
+  ctx.fillStyle = '#0F172A';
+  ctx.shadowColor = '#000000';
+  ctx.shadowBlur = 8;
+  ctx.beginPath();
+  ctx.roundRect(barX - 2, barY - 2, barWidth + 4, barHeight + 4, 4);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  
+  ctx.fillStyle = '#1F2937';
+  ctx.beginPath();
+  ctx.roundRect(barX, barY, barWidth, barHeight, 3);
+  ctx.fill();
+  
+  // Health gradient
+  const healthGradient = ctx.createLinearGradient(barX, barY, barX + barWidth * healthPercent, barY);
+  if (healthPercent > 0.5) {
+    healthGradient.addColorStop(0, '#22C55E');
+    healthGradient.addColorStop(1, '#16A34A');
+  } else if (healthPercent > 0.25) {
+    healthGradient.addColorStop(0, '#FBBF24');
+    healthGradient.addColorStop(1, '#F59E0B');
+  } else {
+    healthGradient.addColorStop(0, '#EF4444');
+    healthGradient.addColorStop(1, '#DC2626');
+  }
+  ctx.fillStyle = healthGradient;
+  ctx.beginPath();
+  ctx.roundRect(barX, barY, barWidth * healthPercent, barHeight, 3);
+  ctx.fill();
+  
+  // Health bar shine
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+  ctx.beginPath();
+  ctx.roundRect(barX, barY, barWidth * healthPercent, barHeight / 3, [3, 3, 0, 0]);
+  ctx.fill();
+  
+  // Rage border glow
+  if (rage) {
+    ctx.strokeStyle = `rgba(239, 68, 68, ${0.5 + auraPulse * 0.5})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(barX - 1, barY - 1, barWidth + 2, barHeight + 2, 4);
+    ctx.stroke();
+  }
+
+  // Boss name with shadow
+  ctx.fillStyle = '#000000';
+  ctx.font = 'bold 14px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText(boss.name, bx + boss.width / 2 + 1, barY - 7);
+  ctx.fillStyle = rage ? '#EF4444' : '#FFFFFF';
+  ctx.fillText(boss.name, bx + boss.width / 2, barY - 8);
+  
+  // Attack indicator
+  if (boss.isAttacking) {
+    ctx.fillStyle = `rgba(255, 255, 255, ${0.8 - (time % 20) / 25})`;
+    ctx.font = 'bold 20px Arial';
+    ctx.fillText('!', bx + boss.width / 2, boss.y - 45);
+  }
 
   ctx.restore();
 }
