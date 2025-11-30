@@ -1,7 +1,8 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 
 const GRAVITY = 0.6;
-const JUMP_FORCE = -14;
+const JUMP_FORCE = -13;
+const DOUBLE_JUMP_FORCE = -11;
 const MOVE_SPEED = 5;
 const PROJECTILE_SPEED = 10;
 const DASH_SPEED = 25;
@@ -35,6 +36,9 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       maxHealth: 100,
       invincible: false,
       invincibleTimer: 0,
+      // Double jump
+      canDoubleJump: true,
+      hasDoubleJumped: false,
       // New abilities
       dashCooldown: 0,
       isDashing: false,
@@ -74,40 +78,196 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     state.particles = [];
     state.powerUpItems = [];
     
-    // Ground platform
-    state.platforms.push({ x: 0, y: 500, width: 2000, height: 100, type: 'ground' });
+    const levelWidth = 2400 + level * 600;
+    let currentX = 0;
     
-    // Generate platforms based on level
-    const platformCount = 8 + level * 2;
-    for (let i = 0; i < platformCount; i++) {
-      state.platforms.push({
-        x: 200 + i * 200 + Math.random() * 100,
-        y: 350 - Math.random() * 200,
-        width: 100 + Math.random() * 80,
-        height: 20,
-        type: i % 3 === 0 ? 'magic' : 'normal'
-      });
+    // Starting safe zone
+    state.platforms.push({ x: 0, y: 500, width: 300, height: 100, type: 'ground' });
+    currentX = 300;
+    
+    // Generate varied terrain sections
+    const sectionCount = 6 + level;
+    for (let section = 0; section < sectionCount; section++) {
+      const sectionType = section % 5;
+      
+      if (sectionType === 0) {
+        // Gap section with floating platforms
+        const gapWidth = 120 + level * 20;
+        state.platforms.push({
+          x: currentX + gapWidth / 2 - 40,
+          y: 380,
+          width: 80,
+          height: 20,
+          type: 'magic'
+        });
+        state.platforms.push({
+          x: currentX + gapWidth,
+          y: 500,
+          width: 200,
+          height: 100,
+          type: 'ground'
+        });
+        currentX += gapWidth + 200;
+      } else if (sectionType === 1) {
+        // Staircase up
+        for (let step = 0; step < 4; step++) {
+          state.platforms.push({
+            x: currentX + step * 80,
+            y: 460 - step * 50,
+            width: 100,
+            height: 20,
+            type: step % 2 === 0 ? 'normal' : 'magic'
+          });
+        }
+        // High platform
+        state.platforms.push({
+          x: currentX + 320,
+          y: 260,
+          width: 150,
+          height: 20,
+          type: 'normal'
+        });
+        currentX += 500;
+      } else if (sectionType === 2) {
+        // Floating island chain
+        state.platforms.push({
+          x: currentX,
+          y: 400,
+          width: 100,
+          height: 20,
+          type: 'normal'
+        });
+        state.platforms.push({
+          x: currentX + 150,
+          y: 350,
+          width: 80,
+          height: 20,
+          type: 'magic'
+        });
+        state.platforms.push({
+          x: currentX + 280,
+          y: 320,
+          width: 100,
+          height: 20,
+          type: 'normal'
+        });
+        state.platforms.push({
+          x: currentX + 420,
+          y: 380,
+          width: 120,
+          height: 20,
+          type: 'normal'
+        });
+        currentX += 560;
+      } else if (sectionType === 3) {
+        // Ground with obstacles
+        state.platforms.push({
+          x: currentX,
+          y: 500,
+          width: 400,
+          height: 100,
+          type: 'ground'
+        });
+        // Obstacle platforms to jump over
+        state.platforms.push({
+          x: currentX + 100,
+          y: 440,
+          width: 60,
+          height: 60,
+          type: 'obstacle'
+        });
+        state.platforms.push({
+          x: currentX + 250,
+          y: 420,
+          width: 60,
+          height: 80,
+          type: 'obstacle'
+        });
+        currentX += 400;
+      } else {
+        // Vertical challenge
+        state.platforms.push({
+          x: currentX,
+          y: 500,
+          width: 150,
+          height: 100,
+          type: 'ground'
+        });
+        state.platforms.push({
+          x: currentX + 50,
+          y: 380,
+          width: 70,
+          height: 20,
+          type: 'magic'
+        });
+        state.platforms.push({
+          x: currentX + 130,
+          y: 280,
+          width: 70,
+          height: 20,
+          type: 'normal'
+        });
+        state.platforms.push({
+          x: currentX + 50,
+          y: 180,
+          width: 100,
+          height: 20,
+          type: 'magic'
+        });
+        // Drop down platform
+        state.platforms.push({
+          x: currentX + 200,
+          y: 350,
+          width: 100,
+          height: 20,
+          type: 'normal'
+        });
+        currentX += 320;
+      }
     }
     
-    // Generate enemies
-    const enemyCount = 3 + level * 2;
+    // Final stretch to goal
+    state.platforms.push({
+      x: currentX,
+      y: 500,
+      width: 400,
+      height: 100,
+      type: 'ground'
+    });
+    
+    state.levelWidth = currentX + 400;
+    state.goalX = currentX + 300;
+    
+    // Generate enemies on platforms and ground
+    const enemyCount = 4 + level * 2;
     for (let i = 0; i < enemyCount; i++) {
+      const enemyX = 350 + (i * (state.levelWidth - 500) / enemyCount);
+      // Find a platform near this x position
+      const nearbyPlatform = state.platforms.find(p => 
+        p.x <= enemyX && p.x + p.width >= enemyX && p.type !== 'obstacle'
+      );
+      const enemyY = nearbyPlatform ? nearbyPlatform.y - 40 : 460;
+      
       state.enemies.push({
-        x: 400 + i * 300,
-        y: 460,
+        x: enemyX,
+        y: enemyY,
         width: 40,
         height: 40,
         velocityX: (Math.random() > 0.5 ? 1 : -1) * (1.5 + level * 0.3),
-        type: i % 2 === 0 ? 'slime' : 'bat',
-        health: 2
+        type: i % 3 === 0 ? 'bat' : 'slime',
+        health: 2,
+        patrolStart: enemyX - 80,
+        patrolEnd: enemyX + 80
       });
     }
     
-    // Generate collectibles (magic orbs)
-    for (let i = 0; i < 10; i++) {
+    // Generate collectibles spread across level
+    const collectibleCount = 12 + level * 2;
+    for (let i = 0; i < collectibleCount; i++) {
+      const collectX = 150 + (i * (state.levelWidth - 300) / collectibleCount);
       state.collectibles.push({
-        x: 150 + i * 180 + Math.random() * 50,
-        y: 300 - Math.random() * 150,
+        x: collectX + Math.random() * 50,
+        y: 250 - Math.random() * 150,
         width: 24,
         height: 24,
         collected: false,
@@ -115,13 +275,14 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       });
     }
     
-    // Generate power-ups
+    // Generate power-ups on platforms
     const powerUpTypes = Object.keys(POWERUP_TYPES);
-    const powerUpCount = 3 + level;
+    const powerUpCount = 4 + level;
     for (let i = 0; i < powerUpCount; i++) {
+      const puX = 250 + (i * (state.levelWidth - 400) / powerUpCount);
       state.powerUpItems.push({
-        x: 300 + i * 350 + Math.random() * 100,
-        y: 280 - Math.random() * 180,
+        x: puX + Math.random() * 60,
+        y: 200 - Math.random() * 120,
         width: 28,
         height: 28,
         collected: false,
@@ -132,17 +293,17 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     
     // Reset player
     state.player.x = 100;
-    state.player.y = 300;
+    state.player.y = 400;
     state.player.velocityX = 0;
     state.player.velocityY = 0;
     state.player.health = 100;
+    state.player.canDoubleJump = true;
+    state.player.hasDoubleJumped = false;
     state.player.dashCooldown = 0;
     state.player.isDashing = false;
     state.player.powerUps = { SPEED: 0, INVINCIBILITY: 0, POWER_SHOT: 0, SHIELD: 0, shieldHealth: 0 };
     state.player.selectedProjectile = 0;
     state.cameraX = 0;
-    state.levelWidth = 2000 + level * 500;
-    state.goalX = state.levelWidth - 100;
   }, []);
 
   useEffect(() => {
@@ -536,11 +697,44 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         player.dashCooldown--;
       }
       
-      if ((keys['ArrowUp'] || keys['KeyW'] || keys['Space']) && player.onGround) {
-        player.velocityY = JUMP_FORCE;
-        player.onGround = false;
-        player.isJumping = true;
+      // Jump and double jump
+      const jumpKeyPressed = keys['ArrowUp'] || keys['KeyW'] || keys['Space'];
+      if (jumpKeyPressed && !player.jumpKeyHeld) {
+        if (player.onGround) {
+          player.velocityY = JUMP_FORCE;
+          player.onGround = false;
+          player.isJumping = true;
+          player.hasDoubleJumped = false;
+          
+          // Jump particles
+          for (let i = 0; i < 6; i++) {
+            particles.push({
+              x: player.x + player.width / 2 + (Math.random() - 0.5) * 20,
+              y: player.y + player.height,
+              velocityX: (Math.random() - 0.5) * 3,
+              velocityY: Math.random() * 2,
+              life: 15,
+              color: '#94A3B8'
+            });
+          }
+        } else if (player.canDoubleJump && !player.hasDoubleJumped) {
+          player.velocityY = DOUBLE_JUMP_FORCE;
+          player.hasDoubleJumped = true;
+          
+          // Double jump magic particles
+          for (let i = 0; i < 10; i++) {
+            particles.push({
+              x: player.x + player.width / 2,
+              y: player.y + player.height / 2,
+              velocityX: (Math.random() - 0.5) * 5,
+              velocityY: (Math.random() - 0.5) * 5,
+              life: 20,
+              color: `hsl(${180 + Math.random() * 40}, 100%, 70%)`
+            });
+          }
+        }
       }
+      player.jumpKeyHeld = jumpKeyPressed;
       
       // Physics (skip gravity during dash)
       if (!player.isDashing) {
@@ -552,12 +746,45 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       // Platform collision
       player.onGround = false;
       for (const platform of platforms) {
-        if (checkCollision(player, platform)) {
-          if (player.velocityY > 0 && player.y + player.height - player.velocityY <= platform.y) {
+        if (platform.type === 'obstacle') {
+          // Obstacles block from all sides
+          if (checkCollision(player, platform)) {
+            // Determine collision side
+            const overlapLeft = (player.x + player.width) - platform.x;
+            const overlapRight = (platform.x + platform.width) - player.x;
+            const overlapTop = (player.y + player.height) - platform.y;
+            const overlapBottom = (platform.y + platform.height) - player.y;
+            
+            const minOverlapX = Math.min(overlapLeft, overlapRight);
+            const minOverlapY = Math.min(overlapTop, overlapBottom);
+            
+            if (minOverlapY < minOverlapX) {
+              if (overlapTop < overlapBottom) {
+                player.y = platform.y - player.height;
+                player.velocityY = 0;
+                player.onGround = true;
+                player.isJumping = false;
+                player.hasDoubleJumped = false;
+              } else {
+                player.y = platform.y + platform.height;
+                player.velocityY = 0;
+              }
+            } else {
+              if (overlapLeft < overlapRight) {
+                player.x = platform.x - player.width;
+              } else {
+                player.x = platform.x + platform.width;
+              }
+              player.velocityX = 0;
+            }
+          }
+        } else if (checkCollision(player, platform)) {
+          if (player.velocityY > 0 && player.y + player.height - player.velocityY <= platform.y + 10) {
             player.y = platform.y - player.height;
             player.velocityY = 0;
             player.onGround = true;
             player.isJumping = false;
+            player.hasDoubleJumped = false;
           }
         }
       }
@@ -798,17 +1025,57 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             groundGrad.addColorStop(0, '#1E293B');
             groundGrad.addColorStop(1, '#0F172A');
             ctx.fillStyle = groundGrad;
+            ctx.beginPath();
+            ctx.roundRect(px, platform.y, platform.width, platform.height, 4);
+            ctx.fill();
+            // Grass on top
+            ctx.fillStyle = '#166534';
+            ctx.fillRect(px, platform.y, platform.width, 6);
           } else if (platform.type === 'magic') {
             ctx.fillStyle = '#6B21A8';
             ctx.shadowColor = '#A855F7';
             ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.roundRect(px, platform.y, platform.width, platform.height, 4);
+            ctx.fill();
+            // Magic runes
+            ctx.fillStyle = '#C084FC';
+            ctx.globalAlpha = 0.5 + Math.sin(time * 0.1) * 0.3;
+            for (let r = 0; r < platform.width / 20; r++) {
+              ctx.beginPath();
+              ctx.arc(px + 10 + r * 20, platform.y + 10, 3, 0, Math.PI * 2);
+              ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+            ctx.shadowBlur = 0;
+          } else if (platform.type === 'obstacle') {
+            // Stone obstacle
+            const obstGrad = ctx.createLinearGradient(px, platform.y, px + platform.width, platform.y + platform.height);
+            obstGrad.addColorStop(0, '#475569');
+            obstGrad.addColorStop(0.5, '#334155');
+            obstGrad.addColorStop(1, '#1E293B');
+            ctx.fillStyle = obstGrad;
+            ctx.beginPath();
+            ctx.roundRect(px, platform.y, platform.width, platform.height, 2);
+            ctx.fill();
+            // Cracks
+            ctx.strokeStyle = '#1E293B';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(px + platform.width * 0.3, platform.y);
+            ctx.lineTo(px + platform.width * 0.4, platform.y + platform.height * 0.5);
+            ctx.lineTo(px + platform.width * 0.2, platform.y + platform.height);
+            ctx.stroke();
           } else {
+            // Normal floating platform
             ctx.fillStyle = '#334155';
+            ctx.beginPath();
+            ctx.roundRect(px, platform.y, platform.width, platform.height, 4);
+            ctx.fill();
+            // Top highlight
+            ctx.fillStyle = '#475569';
+            ctx.fillRect(px + 2, platform.y + 2, platform.width - 4, 4);
           }
-          ctx.beginPath();
-          ctx.roundRect(px, platform.y, platform.width, platform.height, 4);
-          ctx.fill();
-          ctx.shadowBlur = 0;
         }
       }
       
