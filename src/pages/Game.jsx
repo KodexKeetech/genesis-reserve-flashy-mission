@@ -187,8 +187,8 @@ export default function Game() {
   }, []);
 
   const handleSkipTutorial = useCallback(() => {
-    setShowLevelStart(true);
     setLevel(1);
+    setGameState('playing');
   }, []);
 
   const handleLevelStartConfirm = useCallback(() => {
