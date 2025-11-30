@@ -1143,14 +1143,17 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       // Face features - simple dot eyes
       const eyeOffsetX = facingRight ? 2 : -2;
       
-      // Two small black dot eyes
-      ctx.fillStyle = '#1A1A1A';
+      // Two black vertical line eyes
+      ctx.strokeStyle = '#1A1A1A';
+      ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(centerX - 4 + eyeOffsetX, y + 5 - bodyBob + breathe, 1.25, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.moveTo(centerX - 4 + eyeOffsetX, y + 3 - bodyBob + breathe);
+      ctx.lineTo(centerX - 4 + eyeOffsetX, y + 7 - bodyBob + breathe);
+      ctx.stroke();
       ctx.beginPath();
-      ctx.arc(centerX + 4 + eyeOffsetX, y + 5 - bodyBob + breathe, 1.25, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.moveTo(centerX + 4 + eyeOffsetX, y + 3 - bodyBob + breathe);
+      ctx.lineTo(centerX + 4 + eyeOffsetX, y + 7 - bodyBob + breathe);
+      ctx.stroke();
       
       // Neutral expression mouth - simple horizontal line
       ctx.strokeStyle = '#1A1A1A';
