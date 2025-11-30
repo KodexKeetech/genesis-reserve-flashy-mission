@@ -74,24 +74,42 @@ function getSlimeColor(type, isFrozen) {
 
 function drawSlime(ctx, enemy, ex, time, isFrozen) {
   const colors = getSlimeColor(enemy.type, isFrozen);
+  const squish = isFrozen ? 0 : Math.sin(time * 0.2) * 3;
+  const bounce = isFrozen ? 0 : Math.abs(Math.sin(time * 0.15)) * 2;
+  
+  // Subtle glow underneath
+  ctx.fillStyle = `${colors.glow}40`;
+  ctx.beginPath();
+  ctx.ellipse(ex + 20, enemy.y + 42, 18, 6, 0, 0, Math.PI * 2);
+  ctx.fill();
+  
   ctx.fillStyle = colors.fill;
   ctx.shadowColor = colors.glow;
-  ctx.shadowBlur = 8;
+  ctx.shadowBlur = 12 + (enemy.isEnraged ? 8 : 0);
   ctx.beginPath();
-  ctx.ellipse(ex + 20, enemy.y + 30, 20, 15 + (isFrozen ? 0 : Math.sin(time * 0.2) * 3), 0, 0, Math.PI * 2);
+  ctx.ellipse(ex + 20, enemy.y + 30 - bounce, 20 + squish * 0.5, 15 + squish, 0, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Highlight
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+  ctx.beginPath();
+  ctx.ellipse(ex + 14, enemy.y + 22 - bounce, 6, 4, -0.3, 0, Math.PI * 2);
   ctx.fill();
 
-  // Eyes
+  // Eyes with blinking
+  const blink = Math.sin(time * 0.05) > 0.95;
   ctx.fillStyle = '#fff';
   ctx.beginPath();
-  ctx.arc(ex + 12, enemy.y + 25, 5, 0, Math.PI * 2);
-  ctx.arc(ex + 28, enemy.y + 25, 5, 0, Math.PI * 2);
+  ctx.arc(ex + 12, enemy.y + 25 - bounce, blink ? 1 : 5, 0, Math.PI * 2);
+  ctx.arc(ex + 28, enemy.y + 25 - bounce, blink ? 1 : 5, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = isFrozen ? '#67E8F9' : '#000';
-  ctx.beginPath();
-  ctx.arc(ex + 13, enemy.y + 26, 2, 0, Math.PI * 2);
-  ctx.arc(ex + 29, enemy.y + 26, 2, 0, Math.PI * 2);
-  ctx.fill();
+  if (!blink) {
+    ctx.fillStyle = isFrozen ? '#67E8F9' : '#000';
+    ctx.beginPath();
+    ctx.arc(ex + 13, enemy.y + 26 - bounce, 2, 0, Math.PI * 2);
+    ctx.arc(ex + 29, enemy.y + 26 - bounce, 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
 }
 
 function getFlyerColor(type, isFrozen) {
