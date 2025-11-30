@@ -124,29 +124,50 @@ function getFlyerColor(type, isFrozen) {
 
 function drawFlyer(ctx, enemy, ex, time, isFrozen) {
   const colors = getFlyerColor(enemy.type, isFrozen);
+  const hover = isFrozen ? 0 : Math.sin(time * 0.3) * 5;
+  const wingFlap = isFrozen ? 0 : Math.sin(time * 0.5) * 15;
+  
+  // Motion blur/trail effect when moving fast
+  if (Math.abs(enemy.velocityX) > 1 && !isFrozen) {
+    ctx.globalAlpha = 0.3;
+    ctx.fillStyle = colors.fill;
+    ctx.beginPath();
+    ctx.ellipse(ex + 20 - enemy.velocityX * 3, enemy.y + 20 + hover, 10, 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+  
   ctx.fillStyle = colors.fill;
   ctx.shadowColor = colors.glow;
-  ctx.shadowBlur = 10;
+  ctx.shadowBlur = 12 + (enemy.isEnraged ? 10 : 0);
   ctx.beginPath();
-  ctx.ellipse(ex + 20, enemy.y + 20 + (isFrozen ? 0 : Math.sin(time * 0.3) * 5), 12, 10, 0, 0, Math.PI * 2);
+  ctx.ellipse(ex + 20, enemy.y + 20 + hover, 12, 10, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Wings
-  const wingFlap = isFrozen ? 0 : Math.sin(time * 0.5) * 10;
+  // Enhanced wings with gradient
+  ctx.fillStyle = colors.fill;
   ctx.beginPath();
-  ctx.moveTo(ex + 8, enemy.y + 20);
-  ctx.quadraticCurveTo(ex - 10, enemy.y + 10 + wingFlap, ex - 5, enemy.y + 25);
-  ctx.moveTo(ex + 32, enemy.y + 20);
-  ctx.quadraticCurveTo(ex + 50, enemy.y + 10 - wingFlap, ex + 45, enemy.y + 25);
-  ctx.stroke();
+  ctx.moveTo(ex + 8, enemy.y + 20 + hover);
+  ctx.quadraticCurveTo(ex - 15, enemy.y + 5 + wingFlap + hover, ex - 8, enemy.y + 28 + hover);
+  ctx.lineTo(ex + 8, enemy.y + 22 + hover);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(ex + 32, enemy.y + 20 + hover);
+  ctx.quadraticCurveTo(ex + 55, enemy.y + 5 - wingFlap + hover, ex + 48, enemy.y + 28 + hover);
+  ctx.lineTo(ex + 32, enemy.y + 22 + hover);
+  ctx.closePath();
   ctx.fill();
 
-  // Eyes
+  // Eyes with glow
   ctx.fillStyle = colors.eye;
+  ctx.shadowColor = colors.eye;
+  ctx.shadowBlur = 8;
   ctx.beginPath();
-  ctx.arc(ex + 15, enemy.y + 18, 3, 0, Math.PI * 2);
-  ctx.arc(ex + 25, enemy.y + 18, 3, 0, Math.PI * 2);
+  ctx.arc(ex + 15, enemy.y + 18 + hover, 3, 0, Math.PI * 2);
+  ctx.arc(ex + 25, enemy.y + 18 + hover, 3, 0, Math.PI * 2);
   ctx.fill();
+  ctx.shadowBlur = 0;
 }
 
 function drawShooter(ctx, enemy, ex, time, isFrozen) {
