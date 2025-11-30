@@ -11,6 +11,7 @@ export default function Home() {
   const [magicScraps, setMagicScraps] = useState(0);
   const [arcaneCrystals, setArcaneCrystals] = useState(0);
   const [highestLevel, setHighestLevel] = useState(1);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const saved = localStorage.getItem('jeff_save_game');
@@ -27,6 +28,15 @@ export default function Home() {
       }
     };
     loadUserData();
+
+    // Mouse tracking for parallax (desktop only)
+    const handleMouseMove = (e) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 2;
+      const y = (e.clientY / window.innerHeight - 0.5) * 2;
+      setMousePos({ x, y });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
   return (
@@ -65,13 +75,28 @@ export default function Home() {
             }}
           />
         ))}
-        {/* Planets */}
-        <div className="absolute top-[15%] right-[10%] w-16 h-16 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-purple-600 via-purple-800 to-purple-950 opacity-60 shadow-lg shadow-purple-500/20" />
-        <div className="absolute bottom-[20%] left-[8%] w-10 h-10 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-cyan-400 via-blue-600 to-blue-900 opacity-50 shadow-lg shadow-blue-500/20" />
-        <div className="absolute top-[60%] right-[20%] w-6 h-6 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-amber-400 via-orange-500 to-red-700 opacity-40" />
-        {/* Nebula glow */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-blue-600/5 rounded-full blur-3xl" />
+        {/* Planets - with parallax */}
+        <div 
+          className="absolute top-[15%] right-[10%] w-16 h-16 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-purple-600 via-purple-800 to-purple-950 opacity-60 shadow-lg shadow-purple-500/20 transition-transform duration-200 ease-out"
+          style={{ transform: `translate(${mousePos.x * -30}px, ${mousePos.y * -30}px)` }}
+        />
+        <div 
+          className="absolute bottom-[20%] left-[8%] w-10 h-10 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-cyan-400 via-blue-600 to-blue-900 opacity-50 shadow-lg shadow-blue-500/20 transition-transform duration-200 ease-out"
+          style={{ transform: `translate(${mousePos.x * -20}px, ${mousePos.y * -20}px)` }}
+        />
+        <div 
+          className="absolute top-[60%] right-[20%] w-6 h-6 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-amber-400 via-orange-500 to-red-700 opacity-40 transition-transform duration-200 ease-out"
+          style={{ transform: `translate(${mousePos.x * -40}px, ${mousePos.y * -40}px)` }}
+        />
+        {/* Nebula glow - with parallax */}
+        <div 
+          className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl transition-transform duration-300 ease-out"
+          style={{ transform: `translate(${mousePos.x * -15}px, ${mousePos.y * -15}px)` }}
+        />
+        <div 
+          className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl transition-transform duration-300 ease-out"
+          style={{ transform: `translate(${mousePos.x * -10}px, ${mousePos.y * -10}px)` }}
+        />
       </div>
       
       <style>{`
