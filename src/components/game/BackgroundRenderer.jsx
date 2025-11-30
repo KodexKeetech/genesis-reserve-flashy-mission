@@ -10,9 +10,9 @@ export function drawBackground(ctx, biome, time, cameraX) {
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, 800, 600);
 
-  // Stars (for forest and void)
+  // Stars (for forest and void) with parallax
   if (background.stars) {
-    drawStars(ctx, time, biome.key === 'void');
+    drawStars(ctx, time, cameraX, biome.key === 'void');
   }
 
   // Biome-specific background elements
@@ -32,155 +32,304 @@ export function drawBackground(ctx, biome, time, cameraX) {
   }
 }
 
-function drawStars(ctx, time, isVoid) {
-  ctx.fillStyle = isVoid ? '#A855F7' : '#fff';
-  for (let i = 0; i < 50; i++) {
-    const starX = ((i * 137) % 800 + time * 0.1 * ((i % 3) + 1)) % 800;
-    const starY = (i * 73) % 400;
-    const size = (i % 3) + 1;
-    ctx.globalAlpha = 0.3 + (Math.sin(time * 0.05 + i) + 1) * 0.3;
-    ctx.beginPath();
-    ctx.arc(starX, starY, size, 0, Math.PI * 2);
-    ctx.fill();
+function drawStars(ctx, time, cameraX, isVoid) {
+  // Multiple star layers with different parallax speeds
+  for (let layer = 0; layer < 3; layer++) {
+    const parallaxSpeed = 0.02 + layer * 0.03;
+    const starColor = isVoid ? (layer === 0 ? '#7C3AED' : layer === 1 ? '#A855F7' : '#C084FC') : '#fff';
+    ctx.fillStyle = starColor;
+    
+    for (let i = 0; i < 20; i++) {
+      const starX = ((i * 137 + layer * 50 - cameraX * parallaxSpeed) % 850 + 850) % 850 - 25;
+      const starY = (i * 73 + layer * 30) % 350;
+      const size = (i % 3) + 1 - layer * 0.3;
+      const twinkle = Math.sin(time * 0.08 + i * 1.5 + layer) * 0.4 + 0.6;
+      ctx.globalAlpha = twinkle * (0.3 + layer * 0.1);
+      ctx.beginPath();
+      ctx.arc(starX, starY, Math.max(0.5, size), 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
   ctx.globalAlpha = 1;
 }
 
 function drawForestBackground(ctx, time, cameraX) {
-  // Distant trees silhouette
+  // Far mountains (slowest parallax)
+  ctx.fillStyle = '#0a1f14';
+  for (let i = 0; i < 4; i++) {
+    const mtnX = ((i * 300 - cameraX * 0.05) % 1300) - 200;
+    drawMountainShape(ctx, mtnX, 420, 280, 200);
+  }
+  
+  // Mid-distance trees
   ctx.fillStyle = '#0D3320';
-  for (let i = 0; i < 10; i++) {
-    const treeX = (i * 120 - cameraX * 0.1) % 900 - 50;
+  for (let i = 0; i < 12; i++) {
+    const treeX = ((i * 100 - cameraX * 0.15) % 1200) - 80;
     const treeHeight = 100 + (i % 3) * 40;
+    const sway = Math.sin(time * 0.02 + i) * 3;
     ctx.beginPath();
-    ctx.moveTo(treeX, 500);
-    ctx.lineTo(treeX + 30, 500 - treeHeight);
-    ctx.lineTo(treeX + 60, 500);
+    ctx.moveTo(treeX, 480);
+    ctx.lineTo(treeX + 25 + sway, 480 - treeHeight);
+    ctx.lineTo(treeX + 50, 480);
+    ctx.closePath();
+    ctx.fill();
+  }
+  
+  // Close trees (faster parallax)
+  ctx.fillStyle = '#166534';
+  for (let i = 0; i < 8; i++) {
+    const treeX = ((i * 150 - cameraX * 0.3) % 1300) - 100;
+    const treeHeight = 120 + (i % 2) * 50;
+    const sway = Math.sin(time * 0.03 + i * 0.5) * 5;
+    ctx.beginPath();
+    ctx.moveTo(treeX, 520);
+    ctx.lineTo(treeX + 35 + sway, 520 - treeHeight);
+    ctx.lineTo(treeX + 70, 520);
     ctx.closePath();
     ctx.fill();
   }
 
-  // Fireflies
-  ctx.fillStyle = '#FBBF24';
-  for (let i = 0; i < 15; i++) {
-    const ffX = (i * 89 + time * 0.5 + Math.sin(time * 0.02 + i) * 30) % 800;
-    const ffY = 200 + Math.sin(time * 0.03 + i * 2) * 100;
-    ctx.globalAlpha = 0.3 + Math.sin(time * 0.1 + i) * 0.3;
+  // Fireflies with glow
+  for (let i = 0; i < 20; i++) {
+    const ffX = ((i * 89 - cameraX * 0.1) % 900 + 900) % 900 - 50 + Math.sin(time * 0.02 + i) * 40;
+    const ffY = 200 + Math.sin(time * 0.03 + i * 2) * 120;
+    const glow = 0.4 + Math.sin(time * 0.12 + i * 1.5) * 0.4;
+    
+    // Glow
+    ctx.fillStyle = `rgba(251, 191, 36, ${glow * 0.3})`;
+    ctx.beginPath();
+    ctx.arc(ffX, ffY, 8, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Core
+    ctx.fillStyle = `rgba(254, 240, 138, ${glow})`;
     ctx.beginPath();
     ctx.arc(ffX, ffY, 2, 0, Math.PI * 2);
     ctx.fill();
   }
-  ctx.globalAlpha = 1;
+}
+
+function drawMountainShape(ctx, x, y, width, height) {
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + width * 0.4, y - height * 0.8);
+  ctx.lineTo(x + width * 0.5, y - height);
+  ctx.lineTo(x + width * 0.6, y - height * 0.85);
+  ctx.lineTo(x + width, y);
+  ctx.closePath();
+  ctx.fill();
 }
 
 function drawVolcanoBackground(ctx, time, cameraX) {
-  // Lava glow at bottom
-  const lavaGlow = ctx.createLinearGradient(0, 500, 0, 600);
+  // Pulsing lava glow at bottom
+  const glowPulse = Math.sin(time * 0.05) * 0.15 + 0.5;
+  const lavaGlow = ctx.createLinearGradient(0, 450, 0, 600);
   lavaGlow.addColorStop(0, 'rgba(234, 88, 12, 0)');
-  lavaGlow.addColorStop(1, 'rgba(234, 88, 12, 0.5)');
+  lavaGlow.addColorStop(0.5, `rgba(234, 88, 12, ${glowPulse * 0.4})`);
+  lavaGlow.addColorStop(1, `rgba(234, 88, 12, ${glowPulse})`);
   ctx.fillStyle = lavaGlow;
-  ctx.fillRect(0, 500, 800, 100);
+  ctx.fillRect(0, 450, 800, 150);
 
-  // Distant volcanoes
-  ctx.fillStyle = '#292524';
-  ctx.beginPath();
-  ctx.moveTo(100 - cameraX * 0.05, 500);
-  ctx.lineTo(200 - cameraX * 0.05, 300);
-  ctx.lineTo(300 - cameraX * 0.05, 500);
-  ctx.closePath();
-  ctx.fill();
+  // Far volcanic mountains
+  ctx.fillStyle = '#1c1917';
+  for (let i = 0; i < 3; i++) {
+    const vx = ((i * 400 - cameraX * 0.04) % 1300) - 200;
+    ctx.beginPath();
+    ctx.moveTo(vx, 500);
+    ctx.lineTo(vx + 100, 320);
+    ctx.lineTo(vx + 130, 280);
+    ctx.lineTo(vx + 160, 330);
+    ctx.lineTo(vx + 280, 500);
+    ctx.closePath();
+    ctx.fill();
+  }
   
-  ctx.beginPath();
-  ctx.moveTo(500 - cameraX * 0.05, 500);
-  ctx.lineTo(620 - cameraX * 0.05, 250);
-  ctx.lineTo(740 - cameraX * 0.05, 500);
-  ctx.closePath();
-  ctx.fill();
+  // Mid volcanic rocks
+  ctx.fillStyle = '#292524';
+  for (let i = 0; i < 5; i++) {
+    const rx = ((i * 250 - cameraX * 0.12) % 1400) - 150;
+    ctx.beginPath();
+    ctx.moveTo(rx, 500);
+    ctx.lineTo(rx + 50, 380);
+    ctx.lineTo(rx + 80, 350);
+    ctx.lineTo(rx + 110, 390);
+    ctx.lineTo(rx + 150, 500);
+    ctx.closePath();
+    ctx.fill();
+  }
 
-  // Embers
-  ctx.fillStyle = '#F97316';
-  for (let i = 0; i < 20; i++) {
-    const emberX = (i * 67 + time * 0.8) % 800;
-    const emberY = 550 - (time * 0.5 + i * 30) % 400;
+  // Embers rising with trails
+  for (let i = 0; i < 30; i++) {
+    const emberX = ((i * 67 - cameraX * 0.1) % 900 + 900) % 900 - 50;
+    const emberY = 580 - (time * 0.8 + i * 25) % 500;
     const emberSize = 1 + (i % 3);
-    ctx.globalAlpha = 0.4 + Math.sin(time * 0.1 + i) * 0.3;
+    const glow = 0.5 + Math.sin(time * 0.15 + i) * 0.3;
+    
+    // Trail
+    ctx.fillStyle = `rgba(249, 115, 22, ${glow * 0.3})`;
+    for (let t = 1; t <= 3; t++) {
+      ctx.beginPath();
+      ctx.arc(emberX, emberY + t * 8, emberSize * (1 - t * 0.2), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    
+    // Core
+    ctx.fillStyle = `rgba(254, 215, 170, ${glow})`;
     ctx.beginPath();
     ctx.arc(emberX, emberY, emberSize, 0, Math.PI * 2);
     ctx.fill();
   }
-  ctx.globalAlpha = 1;
 }
 
 function drawIceBackground(ctx, time, cameraX) {
-  // Distant mountains
-  ctx.fillStyle = '#BAE6FD';
-  ctx.beginPath();
-  ctx.moveTo(0, 500);
-  ctx.lineTo(150 - cameraX * 0.08, 250);
-  ctx.lineTo(300, 500);
-  ctx.closePath();
-  ctx.fill();
-  
-  ctx.fillStyle = '#E0F2FE';
-  ctx.beginPath();
-  ctx.moveTo(200, 500);
-  ctx.lineTo(400 - cameraX * 0.06, 200);
-  ctx.lineTo(600, 500);
-  ctx.closePath();
-  ctx.fill();
-
-  ctx.fillStyle = '#F0F9FF';
-  ctx.beginPath();
-  ctx.moveTo(450, 500);
-  ctx.lineTo(650 - cameraX * 0.04, 280);
-  ctx.lineTo(850, 500);
-  ctx.closePath();
-  ctx.fill();
-
-  // Snow particles
-  ctx.fillStyle = '#fff';
-  for (let i = 0; i < 30; i++) {
-    const snowX = (i * 53 + time * 0.3 + Math.sin(time * 0.01 + i) * 20) % 800;
-    const snowY = (i * 47 + time * 0.5) % 600;
-    const snowSize = 1 + (i % 3);
-    ctx.globalAlpha = 0.5 + (i % 3) * 0.15;
+  // Far ice mountains with snow caps
+  ctx.fillStyle = '#bae6fd';
+  for (let i = 0; i < 3; i++) {
+    const mx = ((i * 350 - cameraX * 0.04) % 1200) - 150;
     ctx.beginPath();
-    ctx.arc(snowX, snowY, snowSize, 0, Math.PI * 2);
+    ctx.moveTo(mx, 480);
+    ctx.lineTo(mx + 100, 280);
+    ctx.lineTo(mx + 140, 220);
+    ctx.lineTo(mx + 180, 290);
+    ctx.lineTo(mx + 300, 480);
+    ctx.closePath();
     ctx.fill();
+    
+    // Snow cap
+    ctx.fillStyle = '#f0f9ff';
+    ctx.beginPath();
+    ctx.moveTo(mx + 90, 300);
+    ctx.lineTo(mx + 140, 220);
+    ctx.lineTo(mx + 190, 310);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#bae6fd';
+  }
+  
+  // Mid ice formations
+  ctx.fillStyle = '#e0f2fe';
+  for (let i = 0; i < 5; i++) {
+    const ix = ((i * 200 - cameraX * 0.12) % 1100) - 80;
+    ctx.beginPath();
+    ctx.moveTo(ix, 500);
+    ctx.lineTo(ix + 30, 400);
+    ctx.lineTo(ix + 50, 360);
+    ctx.lineTo(ix + 70, 410);
+    ctx.lineTo(ix + 100, 500);
+    ctx.closePath();
+    ctx.fill();
+  }
+  
+  // Ice crystals
+  ctx.fillStyle = '#7dd3fc';
+  for (let i = 0; i < 6; i++) {
+    const cx = ((i * 180 - cameraX * 0.2) % 1100) - 60;
+    const shimmer = Math.sin(time * 0.08 + i) * 0.3 + 0.7;
+    ctx.globalAlpha = shimmer;
+    drawIceCrystalShape(ctx, cx, 450, 25 + (i % 3) * 10);
+    ctx.globalAlpha = 1;
+  }
+
+  // Snow particles - multiple layers
+  for (let layer = 0; layer < 2; layer++) {
+    const parallax = 0.1 + layer * 0.15;
+    const speed = 0.4 + layer * 0.3;
+    for (let i = 0; i < 25; i++) {
+      const snowX = ((i * 53 + layer * 100 - cameraX * parallax) % 900 + 900) % 900 - 50 + Math.sin(time * 0.015 + i) * 30;
+      const snowY = (i * 47 + time * speed) % 650 - 50;
+      const snowSize = 1 + (i % 3) - layer * 0.5;
+      ctx.globalAlpha = (0.6 + (i % 3) * 0.1) - layer * 0.2;
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(snowX, snowY, Math.max(0.5, snowSize), 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
   ctx.globalAlpha = 1;
 }
 
+function drawIceCrystalShape(ctx, x, y, size) {
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + size * 0.3, y - size);
+  ctx.lineTo(x + size * 0.5, y - size * 0.4);
+  ctx.lineTo(x + size * 0.7, y - size * 0.9);
+  ctx.lineTo(x + size, y);
+  ctx.closePath();
+  ctx.fill();
+}
+
 function drawVoidBackground(ctx, time, cameraX) {
-  // Void rifts
-  ctx.strokeStyle = '#7C3AED';
-  ctx.lineWidth = 2;
-  for (let i = 0; i < 5; i++) {
-    const riftX = (i * 200 - cameraX * 0.1 + 50) % 900 - 50;
-    const riftY = 150 + i * 60;
-    ctx.globalAlpha = 0.2 + Math.sin(time * 0.05 + i) * 0.15;
+  // Floating islands
+  ctx.fillStyle = '#3f3f46';
+  for (let i = 0; i < 4; i++) {
+    const ix = ((i * 300 - cameraX * 0.08) % 1300) - 150;
+    const iy = 320 + Math.sin(time * 0.02 + i * 2) * 25;
+    const size = 60 + (i % 2) * 40;
+    
+    // Island shadow
+    ctx.fillStyle = '#27272a';
+    ctx.beginPath();
+    ctx.ellipse(ix + size / 2, iy + 15, size / 2 + 5, size / 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Island body
+    ctx.fillStyle = '#3f3f46';
+    ctx.beginPath();
+    ctx.ellipse(ix + size / 2, iy, size / 2, size / 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Island top
+    ctx.fillStyle = '#52525b';
+    ctx.beginPath();
+    ctx.ellipse(ix + size / 2, iy - 8, size / 2 - 8, size / 6, 0, Math.PI, Math.PI * 2);
+    ctx.fill();
+  }
+  
+  // Void rifts with glow
+  for (let i = 0; i < 6; i++) {
+    const riftX = ((i * 180 - cameraX * 0.12) % 1000) - 80;
+    const riftY = 180 + i * 50;
+    const pulse = Math.sin(time * 0.06 + i) * 0.4 + 0.6;
+    
+    // Glow
+    ctx.strokeStyle = `rgba(168, 85, 247, ${pulse * 0.3})`;
+    ctx.lineWidth = 6;
     ctx.beginPath();
     ctx.moveTo(riftX, riftY);
     ctx.bezierCurveTo(
-      riftX + 30, riftY + Math.sin(time * 0.03) * 20,
-      riftX + 60, riftY - Math.sin(time * 0.03) * 20,
-      riftX + 100, riftY
+      riftX + 40, riftY + Math.sin(time * 0.04 + i) * 30,
+      riftX + 80, riftY - Math.sin(time * 0.04 + i) * 30,
+      riftX + 120, riftY
     );
+    ctx.stroke();
+    
+    // Core
+    ctx.strokeStyle = `rgba(192, 132, 252, ${pulse})`;
+    ctx.lineWidth = 2;
     ctx.stroke();
   }
 
-  // Floating void particles
-  ctx.fillStyle = '#C084FC';
-  for (let i = 0; i < 25; i++) {
-    const voidX = (i * 73 + Math.sin(time * 0.02 + i * 0.5) * 50) % 800;
-    const voidY = (i * 61 + Math.cos(time * 0.015 + i * 0.3) * 40) % 500;
-    const voidSize = 2 + Math.sin(time * 0.1 + i) * 1;
-    ctx.globalAlpha = 0.3 + Math.sin(time * 0.08 + i * 2) * 0.2;
+  // Floating void particles with trails
+  for (let i = 0; i < 35; i++) {
+    const baseX = ((i * 73 - cameraX * 0.15) % 950 + 950) % 950 - 75;
+    const voidX = baseX + Math.sin(time * 0.025 + i * 0.5) * 60;
+    const voidY = (i * 61 + Math.cos(time * 0.02 + i * 0.3) * 50) % 550;
+    const voidSize = 2 + Math.sin(time * 0.12 + i) * 1.5;
+    const glow = 0.4 + Math.sin(time * 0.1 + i * 2) * 0.3;
+    
+    // Trail
+    ctx.fillStyle = `rgba(192, 132, 252, ${glow * 0.2})`;
+    ctx.beginPath();
+    ctx.arc(voidX - 6, voidY, voidSize * 0.6, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Core
+    ctx.fillStyle = `rgba(192, 132, 252, ${glow})`;
     ctx.beginPath();
     ctx.arc(voidX, voidY, voidSize, 0, Math.PI * 2);
     ctx.fill();
   }
-  ctx.globalAlpha = 1;
 }
 
 export function drawPlatform(ctx, platform, px, time, biome) {
