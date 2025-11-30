@@ -1829,33 +1829,24 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           powerUp.collected = true;
           
           // Play power-up sound
-          soundManager.playPowerUp();
-          
-          // Apply power-up effect
-          const duration = POWERUP_TYPES[powerUp.type].duration;
-          player.powerUps[powerUp.type] = duration;
-          
-          // Special handling for shield
-          if (powerUp.type === 'SHIELD') {
-            player.powerUps.shieldHealth = 3; // Shield can take 3 hits
-          }
-          
-          state.score += 75;
-          onScoreChange(state.score);
-          
-          // Power-up collect particles
-          for (let i = 0; i < 12; i++) {
-            particles.push({
-              x: powerUp.x + powerUp.width / 2,
-              y: powerUp.y + powerUp.height / 2,
-              velocityX: (Math.random() - 0.5) * 6,
-              velocityY: (Math.random() - 0.5) * 6,
-              life: 30,
-              color: POWERUP_TYPES[powerUp.type].color
-            });
-          }
-        }
-      }
+                          soundManager.playPowerUp();
+
+                          // Apply power-up effect
+                          const duration = POWERUP_TYPES[powerUp.type].duration;
+                          player.powerUps[powerUp.type] = duration;
+
+                          // Special handling for shield
+                          if (powerUp.type === 'SHIELD') {
+                            player.powerUps.shieldHealth = 3;
+                          }
+
+                          state.score += 75;
+                          onScoreChange(state.score);
+
+                          // Enhanced power-up collect effect
+                          createPowerUpCollectEffect(particles, powerUp.x + powerUp.width / 2, powerUp.y + powerUp.height / 2, POWERUP_TYPES[powerUp.type].color);
+                        }
+                      }
       
       // Update collectibles
       for (const collectible of collectibles) {
