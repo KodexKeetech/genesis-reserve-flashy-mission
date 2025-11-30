@@ -290,6 +290,7 @@ export default function Game() {
             powerUps={powerUps}
             abilityCooldowns={abilityCooldowns}
             sessionScraps={sessionScraps}
+            isTutorial={level === 0}
           />
         )}
         </div>
