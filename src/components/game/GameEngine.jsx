@@ -1506,6 +1506,38 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                   if (onCoinAmmoChange) {
                     onCoinAmmoChange(player.coinAmmo);
                   }
+
+                  // Report gun change
+                  if (onGunChange) {
+                    onGunChange(player.selectedProjectile);
+                  }
+
+                  // Check for checkpoint
+                  if (!state.checkpointReached && player.x >= state.checkpointX && state.checkpointX > 0) {
+                    state.checkpointReached = true;
+                    if (onCheckpointReached) {
+                      onCheckpointReached({
+                        level: currentLevel,
+                        x: player.x,
+                        y: player.y,
+                        score: state.score,
+                        health: player.health,
+                        gun: player.selectedProjectile
+                      });
+                    }
+                    // Visual feedback for checkpoint
+                    soundManager.playPowerUp();
+                    for (let i = 0; i < 20; i++) {
+                      particles.push({
+                        x: player.x + player.width / 2,
+                        y: player.y + player.height / 2,
+                        velocityX: (Math.random() - 0.5) * 8,
+                        velocityY: (Math.random() - 0.5) * 8,
+                        life: 30,
+                        color: '#22C55E'
+                      });
+                    }
+                  }
       
       // Calculate effective speed (with power-up)
       const effectiveSpeed = player.powerUps.SPEED > 0 ? MOVE_SPEED * 1.8 : MOVE_SPEED;
