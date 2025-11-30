@@ -11,7 +11,11 @@ import { Sparkles, ShoppingBag, Gem, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function Game() {
-  const [gameState, setGameState] = useState('playing'); // start, playing, gameOver, levelComplete
+  // Check if continuing from saved game
+  const urlParams = new URLSearchParams(window.location.search);
+  const shouldContinue = urlParams.get('continue') === 'true';
+  
+  const [gameState, setGameState] = useState('playing'); // playing, gameOver, levelComplete
   const [score, setScore] = useState(0);
   const [health, setHealth] = useState(100);
   const [level, setLevel] = useState(1);
@@ -111,25 +115,18 @@ export default function Game() {
     touchInputRef.current[action] = value;
   }, []);
 
-  const handleStart = useCallback(() => {
+  // Load saved game on mount if continuing
+  useEffect(() => {
     soundManager.init();
-    setGameState('playing');
-    setScore(0);
-    setHealth(100);
-    setLevel(1);
-  }, []);
-
-  const handleLoadGame = useCallback(() => {
-    soundManager.init();
-    const saved = localStorage.getItem('jeff_save_game');
-    if (saved) {
-      const saveData = JSON.parse(saved);
-      setLevel(saveData.level || 1);
-      setScore(saveData.score || 0);
+    if (shouldContinue) {
+      const saved = localStorage.getItem('jeff_save_game');
+      if (saved) {
+        const saveData = JSON.parse(saved);
+        setLevel(saveData.level || 1);
+        setScore(saveData.score || 0);
+      }
     }
-    setHealth(100);
-    setGameState('playing');
-  }, []);
+  }, [shouldContinue]);
 
   // Initialize sound on first load
   React.useEffect(() => {

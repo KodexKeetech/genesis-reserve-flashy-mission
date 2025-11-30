@@ -1,10 +1,164 @@
-// Placeholder file, this should be overridden by the generated code
-
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
+import { Button } from '@/components/ui/button';
+import { Play, ShoppingBag, Zap, Sparkles, Gem, FolderOpen } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { base44 } from '@/api/base44Client';
 
 export default function Home() {
+  const [hasSavedGame, setHasSavedGame] = useState(false);
+  const [magicScraps, setMagicScraps] = useState(0);
+  const [arcaneCrystals, setArcaneCrystals] = useState(0);
+  const [highestLevel, setHighestLevel] = useState(1);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('jeff_save_game');
+    setHasSavedGame(!!saved);
+
+    const loadUserData = async () => {
+      try {
+        const user = await base44.auth.me();
+        setMagicScraps(user.magicScraps || 0);
+        setArcaneCrystals(user.arcaneCrystals || 0);
+        setHighestLevel(user.highestLevel || 1);
+      } catch (e) {
+        // Not logged in
+      }
+    };
+    loadUserData();
+  }, []);
 
   return (
-    <div>
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex flex-col items-center justify-center p-4 overflow-hidden">
+      {/* Background effects */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cyan-600/5 rounded-full blur-3xl" />
+      </div>
+
+      {/* Comic Links - Top Left */}
+      <div className="fixed top-3 left-3 z-20 flex flex-col gap-2">
+        <a 
+          href="https://globalcomix.com/a/jeff-the-robot-wizard" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="bg-black/60 backdrop-blur-sm hover:bg-black/80 text-white text-xs px-3 py-2 rounded-lg border border-purple-500/50 hover:border-purple-400 transition-all flex items-center gap-2"
+        >
+          <span>📖</span>
+          <span>Read the Comic</span>
+        </a>
+        <a 
+          href="https://linktr.ee/JeffTheRobotWizard" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="bg-black/60 backdrop-blur-sm hover:bg-black/80 text-white text-xs px-3 py-2 rounded-lg border border-cyan-500/50 hover:border-cyan-400 transition-all flex items-center gap-2"
+        >
+          <span>🔗</span>
+          <span>Socials</span>
+        </a>
+      </div>
+
+      {/* Main Content */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative z-10 text-center"
+      >
+        {/* Jeff character preview */}
+        <div className="mb-6 relative">
+          <motion.img 
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692c28c6355507b7b2161062/7af5ab7fc_GeneratedImageSeptember302025-6_44PM.png"
+            alt="Jeff the Robot Wizard"
+            className="w-32 h-32 md:w-48 md:h-48 mx-auto object-contain drop-shadow-2xl"
+            animate={{ y: [0, -10, 0] }}
+            transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="absolute -right-2 top-1/2 w-4 h-4 md:w-6 md:h-6 bg-cyan-400 rounded-full opacity-70"
+            animate={{ scale: [1, 1.3, 1], opacity: [0.5, 1, 0.5] }}
+            transition={{ repeat: Infinity, duration: 1.5 }}
+          />
+          <motion.div
+            className="absolute -left-2 top-1/3 w-3 h-3 md:w-4 md:h-4 bg-blue-400 rounded-full opacity-70"
+            animate={{ scale: [1, 1.2, 1], opacity: [0.7, 1, 0.7] }}
+            transition={{ repeat: Infinity, duration: 2, delay: 0.5 }}
+          />
+          <Sparkles className="absolute -top-2 -right-2 w-6 h-6 md:w-8 md:h-8 text-cyan-400 animate-pulse" />
+          <Sparkles className="absolute -bottom-2 -left-2 w-4 h-4 md:w-6 md:h-6 text-blue-400 animate-pulse" />
+        </div>
+        
+        <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-slate-400 mb-2">
+          JEFF
+        </h1>
+        <p className="text-xl md:text-2xl font-bold text-slate-400 mb-1">The Robot Wizard</p>
+        <p className="text-slate-500 mb-6 md:mb-8 text-sm md:text-base">A Magical Platformer Adventure</p>
+
+        {/* Stats Row */}
+        <div className="flex justify-center gap-3 mb-6 md:mb-8">
+          <div className="bg-slate-900/80 backdrop-blur-sm rounded-lg px-3 py-2 border border-purple-500/30 flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-purple-400" />
+            <span className="text-purple-300 font-bold text-sm">{magicScraps}</span>
+          </div>
+          <div className="bg-slate-900/80 backdrop-blur-sm rounded-lg px-3 py-2 border border-indigo-500/30 flex items-center gap-2">
+            <Gem className="w-4 h-4 text-indigo-400" />
+            <span className="text-indigo-300 font-bold text-sm">{arcaneCrystals}</span>
+          </div>
+          <div className="bg-slate-900/80 backdrop-blur-sm rounded-lg px-3 py-2 border border-blue-500/30 flex items-center gap-2">
+            <Zap className="w-4 h-4 text-blue-400" />
+            <span className="text-blue-300 font-bold text-sm">Lv {highestLevel}</span>
+          </div>
+        </div>
+        
+        {/* Main Buttons */}
+        <div className="flex flex-col gap-3 mb-6">
+          <Link to={createPageUrl('Game')}>
+            <Button
+              size="lg"
+              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold px-8 py-6 text-lg md:text-xl rounded-xl shadow-lg shadow-purple-500/30"
+            >
+              <Play className="w-5 h-5 md:w-6 md:h-6 mr-2" />
+              Play Game
+            </Button>
+          </Link>
+          
+          {hasSavedGame && (
+            <Link to={createPageUrl('Game') + '?continue=true'}>
+              <Button
+                size="lg"
+                variant="outline"
+                className="w-full border-cyan-500 text-cyan-400 hover:bg-cyan-500/20 font-bold px-8 py-4 text-base md:text-lg rounded-xl"
+              >
+                <FolderOpen className="w-4 h-4 md:w-5 md:h-5 mr-2" />
+                Continue (Level {JSON.parse(localStorage.getItem('jeff_save_game') || '{}').level || 1})
+              </Button>
+            </Link>
+          )}
+        </div>
+
+        {/* Shop Buttons */}
+        <div className="flex gap-3 justify-center">
+          <Link to={createPageUrl('UpgradeShop')}>
+            <Button className="bg-gradient-to-r from-purple-600/80 to-blue-600/80 hover:from-purple-500 hover:to-blue-500 text-sm md:text-base">
+              <ShoppingBag className="w-4 h-4 mr-2" />
+              Upgrades
+            </Button>
+          </Link>
+          <Link to={createPageUrl('AbilityShop')}>
+            <Button className="bg-gradient-to-r from-indigo-600/80 to-purple-600/80 hover:from-indigo-500 hover:to-purple-500 text-sm md:text-base">
+              <Zap className="w-4 h-4 mr-2" />
+              Abilities
+            </Button>
+          </Link>
+        </div>
+
+        {/* Controls hint */}
+        <div className="mt-8 text-slate-500 text-xs md:text-sm space-y-1">
+          <p>← → Move | SPACE Jump | CLICK Cast</p>
+          <p>SHIFT Dash | Q Switch Spell</p>
+        </div>
+      </motion.div>
     </div>
   );
 }
