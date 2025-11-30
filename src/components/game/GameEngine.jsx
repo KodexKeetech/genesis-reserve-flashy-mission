@@ -821,215 +821,446 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
 
       // Casting animation
       const castingPose = player.isCasting ? Math.sin(time * 0.5) * 5 : 0;
+      
+      // Idle breathing animation
+      const breathe = !isMoving ? Math.sin(time * 0.08) * 1.5 : 0;
 
       // Apply scale transform
       ctx.translate(centerX, y + player.height);
       ctx.scale(scaleX, scaleY);
       ctx.translate(-centerX, -(y + player.height));
 
-      // Coat tail (behind) - Dark navy blue long coat
-      ctx.fillStyle = '#1E3A5F';
+      // Magic aura glow (subtle ambient effect)
+      const auraAlpha = 0.1 + Math.sin(time * 0.05) * 0.05;
+      ctx.shadowColor = '#A855F7';
+      ctx.shadowBlur = 25 + Math.sin(time * 0.1) * 8;
+      ctx.fillStyle = `rgba(168, 85, 247, ${auraAlpha})`;
+      ctx.beginPath();
+      ctx.ellipse(centerX, y + 32 - bodyBob, 28, 35, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      // Coat tail (behind) - Dark navy blue long coat with gradient
+      const coatGrad = ctx.createLinearGradient(centerX - 18, y + 28, centerX - 18, y + 58);
+      coatGrad.addColorStop(0, '#1E3A5F');
+      coatGrad.addColorStop(1, '#152A45');
+      ctx.fillStyle = coatGrad;
       ctx.beginPath();
       ctx.moveTo(centerX - 14, y + 28 - bodyBob);
       ctx.lineTo(centerX - 18 - coatFlap * dir, y + 58);
       ctx.lineTo(centerX - 8, y + 56);
       ctx.closePath();
       ctx.fill();
+      // Coat tail edge highlight
+      ctx.strokeStyle = '#2A4A6F';
+      ctx.lineWidth = 1;
+      ctx.stroke();
 
-      // Back leg (red pants + brown boot)
+      // Back leg (bright red pants + brown boot)
       ctx.save();
-      ctx.translate(centerX - 6, y + 42 - bodyBob);
+      ctx.translate(centerX - 6, y + 42 - bodyBob + breathe);
       ctx.rotate((-legSwing * Math.PI) / 180);
-      // Red pants
-      ctx.fillStyle = '#8B2942';
-      ctx.fillRect(-4, 0, 8, 14);
-      // Brown boot cuff
-      ctx.fillStyle = '#5D4E37';
-      ctx.fillRect(-5, 12, 10, 4);
-      // Dark boot
-      ctx.fillStyle = '#2D2D2D';
-      ctx.fillRect(-5, 14, 10, 8);
-      ctx.restore();
-
-      // Front leg (red pants + brown boot)
-      ctx.save();
-      ctx.translate(centerX + 6, y + 42 - bodyBob);
-      ctx.rotate((legSwing * Math.PI) / 180);
-      // Red pants
-      ctx.fillStyle = '#9B3A52';
-      ctx.fillRect(-4, 0, 8, 14);
-      // Brown boot cuff
+      // Red pants with shading
+      const pantsGradBack = ctx.createLinearGradient(-4, 0, 4, 0);
+      pantsGradBack.addColorStop(0, '#8B1538');
+      pantsGradBack.addColorStop(0.5, '#DC2626');
+      pantsGradBack.addColorStop(1, '#991B1B');
+      ctx.fillStyle = pantsGradBack;
+      ctx.beginPath();
+      ctx.roundRect(-5, 0, 10, 14, 2);
+      ctx.fill();
+      // Pants highlight
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+      ctx.fillRect(-3, 1, 3, 10);
+      // Brown boot cuff with detail
       ctx.fillStyle = '#6B5A43';
-      ctx.fillRect(-5, 12, 10, 4);
-      // Dark boot
-      ctx.fillStyle = '#3D3D3D';
-      ctx.fillRect(-5, 14, 10, 8);
+      ctx.fillRect(-6, 11, 12, 5);
+      ctx.fillStyle = '#8B7355';
+      ctx.fillRect(-5, 12, 2, 3);
+      // Dark boot with shine
+      ctx.fillStyle = '#1F1F1F';
+      ctx.beginPath();
+      ctx.roundRect(-6, 14, 12, 9, [0, 0, 3, 3]);
+      ctx.fill();
+      // Boot shine
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.fillRect(-4, 15, 4, 2);
       ctx.restore();
 
-      // Belt
-      ctx.fillStyle = '#5D4E37';
-      ctx.fillRect(centerX - 12, y + 38 - bodyBob, 24, 4);
-      // Belt buckle
-      ctx.fillStyle = '#8B7355';
-      ctx.fillRect(centerX - 3, y + 37 - bodyBob, 6, 6);
+      // Front leg (bright red pants + brown boot)
+      ctx.save();
+      ctx.translate(centerX + 6, y + 42 - bodyBob + breathe);
+      ctx.rotate((legSwing * Math.PI) / 180);
+      // Red pants with shading
+      const pantsGradFront = ctx.createLinearGradient(-4, 0, 4, 0);
+      pantsGradFront.addColorStop(0, '#991B1B');
+      pantsGradFront.addColorStop(0.5, '#EF4444');
+      pantsGradFront.addColorStop(1, '#DC2626');
+      ctx.fillStyle = pantsGradFront;
+      ctx.beginPath();
+      ctx.roundRect(-5, 0, 10, 14, 2);
+      ctx.fill();
+      // Pants highlight
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.fillRect(-2, 1, 3, 10);
+      // Brown boot cuff with detail
+      ctx.fillStyle = '#7A6950';
+      ctx.fillRect(-6, 11, 12, 5);
+      ctx.fillStyle = '#9B8B70';
+      ctx.fillRect(-4, 12, 2, 3);
+      // Dark boot with shine
+      ctx.fillStyle = '#2A2A2A';
+      ctx.beginPath();
+      ctx.roundRect(-6, 14, 12, 9, [0, 0, 3, 3]);
+      ctx.fill();
+      // Boot shine
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+      ctx.fillRect(-3, 15, 4, 2);
+      ctx.restore();
+
+      // Belt with metallic look
+      const beltGrad = ctx.createLinearGradient(centerX - 12, y + 38, centerX - 12, y + 42);
+      beltGrad.addColorStop(0, '#7A6950');
+      beltGrad.addColorStop(0.5, '#5D4E37');
+      beltGrad.addColorStop(1, '#4A3F2D');
+      ctx.fillStyle = beltGrad;
+      ctx.fillRect(centerX - 13, y + 38 - bodyBob + breathe, 26, 5);
+      // Belt buckle with shine
+      ctx.fillStyle = '#C9A227';
+      ctx.shadowColor = '#C9A227';
+      ctx.shadowBlur = 4;
+      ctx.beginPath();
+      ctx.roundRect(centerX - 4, y + 37 - bodyBob + breathe, 8, 7, 1);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      // Buckle detail
+      ctx.fillStyle = '#FFD700';
+      ctx.fillRect(centerX - 2, y + 39 - bodyBob + breathe, 4, 3);
 
       // Dark undershirt/torso
-      ctx.fillStyle = '#3D4852';
+      ctx.fillStyle = '#2D3748';
       ctx.beginPath();
-      ctx.roundRect(centerX - 10, y + 22 - bodyBob, 20, 18, 2);
+      ctx.roundRect(centerX - 11, y + 20 - bodyBob + breathe, 22, 20, 3);
       ctx.fill();
 
-      // Navy blue coat - main body
-      ctx.fillStyle = '#1E3A5F';
+      // Navy blue coat - main body with gradient
+      const coatBodyGrad = ctx.createLinearGradient(centerX - 16, y + 20, centerX + 16, y + 55);
+      coatBodyGrad.addColorStop(0, '#1E3A5F');
+      coatBodyGrad.addColorStop(0.5, '#234B73');
+      coatBodyGrad.addColorStop(1, '#162D47');
+      ctx.fillStyle = coatBodyGrad;
       // Left coat panel
       ctx.beginPath();
-      ctx.moveTo(centerX - 14, y + 20 - bodyBob);
-      ctx.lineTo(centerX - 16, y + 55);
-      ctx.lineTo(centerX - 2, y + 55);
-      ctx.lineTo(centerX - 2, y + 20 - bodyBob);
+      ctx.moveTo(centerX - 15, y + 18 - bodyBob + breathe);
+      ctx.lineTo(centerX - 17, y + 56);
+      ctx.lineTo(centerX - 3, y + 56);
+      ctx.lineTo(centerX - 3, y + 18 - bodyBob + breathe);
       ctx.closePath();
       ctx.fill();
       // Right coat panel
       ctx.beginPath();
-      ctx.moveTo(centerX + 14, y + 20 - bodyBob);
-      ctx.lineTo(centerX + 16 + coatFlap * dir, y + 55);
-      ctx.lineTo(centerX + 2, y + 55);
-      ctx.lineTo(centerX + 2, y + 20 - bodyBob);
+      ctx.moveTo(centerX + 15, y + 18 - bodyBob + breathe);
+      ctx.lineTo(centerX + 17 + coatFlap * dir, y + 56);
+      ctx.lineTo(centerX + 3, y + 56);
+      ctx.lineTo(centerX + 3, y + 18 - bodyBob + breathe);
       ctx.closePath();
       ctx.fill();
-
-      // Coat buttons
-      ctx.fillStyle = '#4A6A8A';
+      
+      // Coat edge highlights
+      ctx.strokeStyle = '#3A5A7F';
+      ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.arc(centerX - 6, y + 30 - bodyBob, 2, 0, Math.PI * 2);
-      ctx.arc(centerX - 6, y + 38 - bodyBob, 2, 0, Math.PI * 2);
+      ctx.moveTo(centerX - 3, y + 20 - bodyBob + breathe);
+      ctx.lineTo(centerX - 3, y + 54);
+      ctx.moveTo(centerX + 3, y + 20 - bodyBob + breathe);
+      ctx.lineTo(centerX + 3, y + 54);
+      ctx.stroke();
+
+      // Coat buttons with shine
+      ctx.fillStyle = '#5A7A9A';
+      ctx.shadowColor = '#7AA0C0';
+      ctx.shadowBlur = 3;
+      ctx.beginPath();
+      ctx.arc(centerX - 7, y + 28 - bodyBob + breathe, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(centerX - 7, y + 36 - bodyBob + breathe, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      // Button holes
+      ctx.fillStyle = '#1E3A5F';
+      ctx.beginPath();
+      ctx.arc(centerX - 7, y + 28 - bodyBob + breathe, 1, 0, Math.PI * 2);
+      ctx.arc(centerX - 7, y + 36 - bodyBob + breathe, 1, 0, Math.PI * 2);
       ctx.fill();
 
       // Back arm (dark glove)
       ctx.save();
-      ctx.translate(centerX - 12, y + 24 - bodyBob);
+      ctx.translate(centerX - 13, y + 22 - bodyBob + breathe);
       ctx.rotate((-armSwing * Math.PI) / 180);
-      // Coat sleeve
-      ctx.fillStyle = '#1E3A5F';
-      ctx.fillRect(-4, 0, 8, 14);
-      // Sleeve cuff
-      ctx.fillStyle = '#5D4E37';
-      ctx.fillRect(-4, 12, 8, 3);
-      // Dark glove
-      ctx.fillStyle = '#2D2D2D';
+      // Coat sleeve with gradient
+      const sleeveGrad = ctx.createLinearGradient(-5, 0, 5, 0);
+      sleeveGrad.addColorStop(0, '#152A45');
+      sleeveGrad.addColorStop(0.5, '#1E3A5F');
+      sleeveGrad.addColorStop(1, '#162D47');
+      ctx.fillStyle = sleeveGrad;
       ctx.beginPath();
-      ctx.ellipse(0, 18, 5, 4, 0, 0, Math.PI * 2);
+      ctx.roundRect(-5, 0, 10, 15, 2);
+      ctx.fill();
+      // Sleeve cuff
+      ctx.fillStyle = '#6B5A43';
+      ctx.fillRect(-5, 12, 10, 4);
+      ctx.fillStyle = '#8B7355';
+      ctx.fillRect(-4, 13, 3, 2);
+      // Dark glove with detail
+      ctx.fillStyle = '#1F1F1F';
+      ctx.beginPath();
+      ctx.ellipse(0, 20, 6, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // Glove shine
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+      ctx.beginPath();
+      ctx.ellipse(-2, 18, 2, 1.5, -0.3, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
 
       // Front arm (with magic glow if casting)
       ctx.save();
-      ctx.translate(centerX + 12, y + 24 - bodyBob);
+      ctx.translate(centerX + 13, y + 22 - bodyBob + breathe);
       const armAngle = player.isCasting ? -45 + castingPose : armSwing;
       ctx.rotate((armAngle * Math.PI) / 180);
-      // Coat sleeve
-      ctx.fillStyle = '#243F64';
-      ctx.fillRect(-4, 0, 8, 14);
+      // Coat sleeve with gradient
+      const sleeveGrad2 = ctx.createLinearGradient(-5, 0, 5, 0);
+      sleeveGrad2.addColorStop(0, '#1E3A5F');
+      sleeveGrad2.addColorStop(0.5, '#2A4A70');
+      sleeveGrad2.addColorStop(1, '#1E3A5F');
+      ctx.fillStyle = sleeveGrad2;
+      ctx.beginPath();
+      ctx.roundRect(-5, 0, 10, 15, 2);
+      ctx.fill();
       // Sleeve cuff
-      ctx.fillStyle = '#6B5A43';
-      ctx.fillRect(-4, 12, 8, 3);
+      ctx.fillStyle = '#7A6950';
+      ctx.fillRect(-5, 12, 10, 4);
+      ctx.fillStyle = '#9B8B70';
+      ctx.fillRect(-3, 13, 3, 2);
       // Dark glove with magic glow
       if (player.isCasting) {
-        ctx.shadowColor = player.selectedProjectile === 1 ? '#22D3EE' : '#A855F7';
-        ctx.shadowBlur = 20 + Math.sin(time * 0.5) * 10;
-        // Magic orb in hand
-        ctx.fillStyle = player.selectedProjectile === 1 ? '#22D3EE' : '#A855F7';
+        const spellColor = player.selectedProjectile === 1 ? '#22D3EE' : 
+                          player.selectedProjectile === 2 ? '#FBBF24' : '#A855F7';
+        ctx.shadowColor = spellColor;
+        ctx.shadowBlur = 25 + Math.sin(time * 0.5) * 12;
+        // Magic orb in hand with inner glow
+        const orbSize = 9 + Math.sin(time * 0.5) * 3;
+        const orbGrad = ctx.createRadialGradient(0, 24, 0, 0, 24, orbSize);
+        orbGrad.addColorStop(0, '#FFFFFF');
+        orbGrad.addColorStop(0.3, spellColor);
+        orbGrad.addColorStop(1, spellColor + '80');
+        ctx.fillStyle = orbGrad;
         ctx.beginPath();
-        ctx.arc(0, 22, 8 + Math.sin(time * 0.5) * 2, 0, Math.PI * 2);
+        ctx.arc(0, 24, orbSize, 0, Math.PI * 2);
         ctx.fill();
+        // Magic sparkles
+        for (let i = 0; i < 3; i++) {
+          const sparkAngle = time * 0.2 + (i * Math.PI * 2 / 3);
+          const sparkX = Math.cos(sparkAngle) * (orbSize + 4);
+          const sparkY = 24 + Math.sin(sparkAngle) * (orbSize + 4);
+          ctx.fillStyle = '#FFFFFF';
+          ctx.beginPath();
+          ctx.arc(sparkX, sparkY, 1.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
-      ctx.fillStyle = '#3D3D3D';
+      ctx.fillStyle = '#2A2A2A';
       ctx.beginPath();
-      ctx.ellipse(0, 18, 5, 4, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 20, 6, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // Glove shine
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.beginPath();
+      ctx.ellipse(-2, 18, 2, 1.5, -0.3, 0, Math.PI * 2);
       ctx.fill();
       ctx.shadowBlur = 0;
       ctx.restore();
 
-      // Gray scarf
-      ctx.fillStyle = '#9CA3AF';
+      // Gray scarf with depth
+      const scarfGrad = ctx.createLinearGradient(centerX - 12, y + 14, centerX + 12, y + 22);
+      scarfGrad.addColorStop(0, '#7A8A9A');
+      scarfGrad.addColorStop(0.5, '#B0B8C4');
+      scarfGrad.addColorStop(1, '#8A9AAA');
+      ctx.fillStyle = scarfGrad;
       ctx.beginPath();
-      ctx.ellipse(centerX, y + 18 - bodyBob, 12, 6, 0, 0, Math.PI * 2);
+      ctx.ellipse(centerX, y + 17 - bodyBob + breathe, 13, 7, 0, 0, Math.PI * 2);
       ctx.fill();
-      // Scarf highlight
-      ctx.fillStyle = '#B0B8C4';
+      // Scarf folds
+      ctx.strokeStyle = '#6A7A8A';
+      ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.ellipse(centerX, y + 16 - bodyBob, 8, 3, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Robot head - light cyan/blue square
-      ctx.fillStyle = '#7DD3E8';
+      ctx.arc(centerX - 5, y + 17 - bodyBob + breathe, 4, 0.5, 2.5);
+      ctx.stroke();
       ctx.beginPath();
-      ctx.roundRect(centerX - 10, y - 2 - bodyBob, 20, 18, 3);
-      ctx.fill();
-      // Head highlight
-      ctx.fillStyle = '#A5E8F5';
-      ctx.beginPath();
-      ctx.roundRect(centerX - 8, y - bodyBob, 16, 8, 2);
-      ctx.fill();
-
-      // Face features (dot eyes and line mouth)
-      ctx.fillStyle = '#2D3748';
-      const eyeOffsetX = facingRight ? 2 : -2;
-      // Left eye
-      ctx.beginPath();
-      ctx.arc(centerX - 4 + eyeOffsetX, y + 6 - bodyBob, 2, 0, Math.PI * 2);
-      ctx.fill();
-      // Right eye
-      ctx.beginPath();
-      ctx.arc(centerX + 4 + eyeOffsetX, y + 6 - bodyBob, 2, 0, Math.PI * 2);
-      ctx.fill();
-      // Mouth line
-      ctx.strokeStyle = '#2D3748';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(centerX - 4 + eyeOffsetX, y + 12 - bodyBob);
-      ctx.lineTo(centerX + 4 + eyeOffsetX, y + 12 - bodyBob);
+      ctx.arc(centerX + 5, y + 17 - bodyBob + breathe, 4, 0.8, 2.2);
       ctx.stroke();
 
-      // Industrial wizard hat - wide brim
-      ctx.fillStyle = '#3D4852';
+      // Robot head - enhanced with metallic cyan look
+      const headGrad = ctx.createLinearGradient(centerX - 10, y - 2, centerX + 10, y + 16);
+      headGrad.addColorStop(0, '#A5E8F5');
+      headGrad.addColorStop(0.3, '#7DD3E8');
+      headGrad.addColorStop(0.7, '#5BC0D8');
+      headGrad.addColorStop(1, '#4AA8C4');
+      ctx.fillStyle = headGrad;
       ctx.beginPath();
-      ctx.ellipse(centerX, y - 4 - bodyBob, 22, 5, 0, 0, Math.PI * 2);
+      ctx.roundRect(centerX - 11, y - 3 - bodyBob + breathe, 22, 20, 4);
       ctx.fill();
-      // Hat brim top surface
-      ctx.fillStyle = '#4A5568';
+      // Head edge highlight
+      ctx.strokeStyle = '#B8F0FC';
+      ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.ellipse(centerX, y - 6 - bodyBob, 20, 4, 0, 0, Math.PI);
+      ctx.roundRect(centerX - 11, y - 3 - bodyBob + breathe, 22, 10, [4, 4, 0, 0]);
+      ctx.stroke();
+      // Head reflection
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.beginPath();
+      ctx.roundRect(centerX - 9, y - 1 - bodyBob + breathe, 8, 5, 2);
       ctx.fill();
 
-      // Hat cylindrical top
-      ctx.fillStyle = '#3D4852';
+      // Antenna on head
+      ctx.strokeStyle = '#4AA8C4';
+      ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.roundRect(centerX - 8, y - 28 - bodyBob, 16, 24, 2);
-      ctx.fill();
-      // Hat top cap
-      ctx.fillStyle = '#4A5568';
+      ctx.moveTo(centerX, y - 3 - bodyBob + breathe);
+      ctx.lineTo(centerX, y - 8 - bodyBob + breathe);
+      ctx.stroke();
+      // Antenna tip glow
+      const antennaGlow = Math.sin(time * 0.15) * 0.3 + 0.7;
+      ctx.fillStyle = `rgba(168, 85, 247, ${antennaGlow})`;
+      ctx.shadowColor = '#A855F7';
+      ctx.shadowBlur = 6;
       ctx.beginPath();
-      ctx.ellipse(centerX, y - 28 - bodyBob, 8, 3, 0, 0, Math.PI * 2);
-      ctx.fill();
-      // Hat band
-      ctx.fillStyle = '#2D3748';
-      ctx.fillRect(centerX - 8, y - 10 - bodyBob, 16, 3);
-
-      // "M" badge on hat
-      ctx.fillStyle = '#3B82F6';
-      ctx.shadowColor = '#3B82F6';
-      ctx.shadowBlur = 8;
-      ctx.beginPath();
-      ctx.arc(centerX, y - 18 - bodyBob, 6, 0, Math.PI * 2);
+      ctx.arc(centerX, y - 9 - bodyBob + breathe, 3, 0, Math.PI * 2);
       ctx.fill();
       ctx.shadowBlur = 0;
-      // M letter
+
+      // Face features - expressive eyes
+      const eyeOffsetX = facingRight ? 2 : -2;
+      const blinkOffset = Math.floor(time / 120) % 40 === 0 ? 1 : 0;
+      
+      // Eye sockets (dark)
+      ctx.fillStyle = '#1A2530';
+      ctx.beginPath();
+      ctx.roundRect(centerX - 7 + eyeOffsetX, y + 3 - bodyBob + breathe, 6, 6 - blinkOffset * 4, 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.roundRect(centerX + 1 + eyeOffsetX, y + 3 - bodyBob + breathe, 6, 6 - blinkOffset * 4, 2);
+      ctx.fill();
+      
+      // Eye glow (cyan)
+      if (blinkOffset === 0) {
+        ctx.fillStyle = '#22D3EE';
+        ctx.shadowColor = '#22D3EE';
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(centerX - 4 + eyeOffsetX, y + 6 - bodyBob + breathe, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(centerX + 4 + eyeOffsetX, y + 6 - bodyBob + breathe, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        // Eye sparkle
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        ctx.arc(centerX - 5 + eyeOffsetX, y + 5 - bodyBob + breathe, 0.8, 0, Math.PI * 2);
+        ctx.arc(centerX + 3 + eyeOffsetX, y + 5 - bodyBob + breathe, 0.8, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      
+      // Mouth - LED display style
+      ctx.fillStyle = '#22D3EE';
+      ctx.shadowColor = '#22D3EE';
+      ctx.shadowBlur = 4;
+      ctx.beginPath();
+      ctx.roundRect(centerX - 4 + eyeOffsetX, y + 11 - bodyBob + breathe, 8, 2, 1);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      // Industrial wizard hat with more detail
+      // Hat brim shadow
+      ctx.fillStyle = '#2D3748';
+      ctx.beginPath();
+      ctx.ellipse(centerX, y - 3 - bodyBob + breathe, 24, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // Hat brim main
+      const brimGrad = ctx.createLinearGradient(centerX - 22, y - 5, centerX + 22, y - 5);
+      brimGrad.addColorStop(0, '#3D4852');
+      brimGrad.addColorStop(0.5, '#5A6570');
+      brimGrad.addColorStop(1, '#3D4852');
+      ctx.fillStyle = brimGrad;
+      ctx.beginPath();
+      ctx.ellipse(centerX, y - 5 - bodyBob + breathe, 22, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // Brim highlight
+      ctx.strokeStyle = '#6A7580';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.ellipse(centerX, y - 6 - bodyBob + breathe, 20, 4, 0, Math.PI, Math.PI * 2);
+      ctx.stroke();
+
+      // Hat cylindrical top with gradient
+      const hatGrad = ctx.createLinearGradient(centerX - 9, y - 30, centerX + 9, y - 10);
+      hatGrad.addColorStop(0, '#4A5568');
+      hatGrad.addColorStop(0.3, '#3D4852');
+      hatGrad.addColorStop(0.7, '#3D4852');
+      hatGrad.addColorStop(1, '#2D3748');
+      ctx.fillStyle = hatGrad;
+      ctx.beginPath();
+      ctx.roundRect(centerX - 9, y - 30 - bodyBob + breathe, 18, 26, 3);
+      ctx.fill();
+      // Hat seam lines
+      ctx.strokeStyle = '#2D3748';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(centerX - 5, y - 28 - bodyBob + breathe);
+      ctx.lineTo(centerX - 5, y - 6 - bodyBob + breathe);
+      ctx.moveTo(centerX + 5, y - 28 - bodyBob + breathe);
+      ctx.lineTo(centerX + 5, y - 6 - bodyBob + breathe);
+      ctx.stroke();
+      
+      // Hat top cap
+      ctx.fillStyle = '#5A6570';
+      ctx.beginPath();
+      ctx.ellipse(centerX, y - 30 - bodyBob + breathe, 9, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Hat band with buckle
+      const bandGrad = ctx.createLinearGradient(centerX - 9, y - 12, centerX - 9, y - 8);
+      bandGrad.addColorStop(0, '#1A2530');
+      bandGrad.addColorStop(0.5, '#2D3748');
+      bandGrad.addColorStop(1, '#1A2530');
+      ctx.fillStyle = bandGrad;
+      ctx.fillRect(centerX - 9, y - 12 - bodyBob + breathe, 18, 5);
+
+      // Magic "M" badge on hat with enhanced glow
+      const badgeGlow = 0.7 + Math.sin(time * 0.1) * 0.3;
+      ctx.fillStyle = '#3B82F6';
+      ctx.shadowColor = '#3B82F6';
+      ctx.shadowBlur = 12 * badgeGlow;
+      ctx.beginPath();
+      ctx.arc(centerX, y - 20 - bodyBob + breathe, 7, 0, Math.PI * 2);
+      ctx.fill();
+      // Badge inner glow
+      ctx.fillStyle = '#60A5FA';
+      ctx.beginPath();
+      ctx.arc(centerX, y - 20 - bodyBob + breathe, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      // M letter with outline
+      ctx.strokeStyle = '#1E40AF';
+      ctx.lineWidth = 0.5;
       ctx.fillStyle = '#E0F2FE';
-      ctx.font = 'bold 8px Arial';
+      ctx.font = 'bold 9px Arial';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('M', centerX, y - 17 - bodyBob);
+      ctx.strokeText('M', centerX, y - 19 - bodyBob + breathe);
+      ctx.fillText('M', centerX, y - 19 - bodyBob + breathe);
 
       ctx.restore();
     };
