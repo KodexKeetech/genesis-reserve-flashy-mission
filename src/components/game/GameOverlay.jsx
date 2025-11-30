@@ -294,7 +294,7 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
         </div>
 
         {/* Content */}
-        <div className="relative z-10 h-full flex flex-col items-center justify-center">
+        <div className="relative z-10 h-full flex flex-col items-center justify-end pb-8">
           <motion.div
             initial={{ scale: 0.8, y: 20 }}
             animate={{ scale: 1, y: 0 }}
