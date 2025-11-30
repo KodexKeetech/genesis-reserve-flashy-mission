@@ -1857,21 +1857,12 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           onScoreChange(state.score);
 
           // Play collect sound
-          soundManager.playCollect();
+                          soundManager.playCollect();
 
-          // Sparkle particles
-          for (let i = 0; i < 8; i++) {
-            particles.push({
-              x: collectible.x + collectible.width / 2,
-              y: collectible.y + collectible.height / 2,
-              velocityX: (Math.random() - 0.5) * 5,
-              velocityY: (Math.random() - 0.5) * 5,
-              life: 25,
-              color: '#FBBF24'
-            });
-          }
-        }
-      }
+                          // Enhanced coin collect effect
+                          createCoinCollectEffect(particles, collectible.x + collectible.width / 2, collectible.y + collectible.height / 2);
+                        }
+                      }
       
       // Update particles
       for (let i = particles.length - 1; i >= 0; i--) {
