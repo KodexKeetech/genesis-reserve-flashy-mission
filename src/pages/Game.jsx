@@ -150,13 +150,6 @@ export default function Game() {
         const saveData = JSON.parse(saved);
         setLevel(saveData.level || 1);
         setScore(saveData.score || 0);
-        setShowLevelStart(true);
-      }
-    } else if (startLevelParam) {
-      const startLevel = parseInt(startLevelParam, 10);
-      if (startLevel > 0) {
-        setLevel(startLevel);
-        setShowLevelStart(false);
         setGameState('playing');
       }
     }
@@ -215,10 +208,7 @@ export default function Game() {
     setGameState('playing');
   }, []);
 
-  const handleLevelStartConfirm = useCallback(() => {
-    setShowLevelStart(false);
-    setGameState('playing');
-  }, []);
+  
 
   const handleGunChange = useCallback((gun) => {
     setCurrentGun(gun);
@@ -347,7 +337,7 @@ export default function Game() {
             />
           </div>
         )}
-        {gameState === 'playing' && !showLevelStart && (
+        {gameState === 'playing' && (
               <GameEngine
                 currentLevel={level}
                 onScoreChange={handleScoreChange}
@@ -372,16 +362,7 @@ export default function Game() {
               />
             )}
 
-          {showLevelStart && (
-            <div className="w-full h-full bg-slate-900 rounded-xl relative">
-              <LevelStartMenu
-                level={level}
-                coinAmmo={coinAmmo}
-                onSelectGun={setStartingGun}
-                onStart={handleLevelStartConfirm}
-              />
-            </div>
-          )}
+
 
           {showSettings && (
             <SettingsMenu
