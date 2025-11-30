@@ -644,7 +644,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     state.cameraX = 0;
 
 
-    }, [startingGun, checkpoint]);
+    }, [startingGun]);
 
   useEffect(() => {
     generateLevel(currentLevel);
