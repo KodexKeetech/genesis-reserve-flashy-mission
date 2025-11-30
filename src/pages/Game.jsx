@@ -193,6 +193,7 @@ export default function Game() {
   const handleSkipTutorial = useCallback(() => {
     setLevel(1);
     setGameState('playing');
+    musicManager.play();
   }, []);
 
   const handleLevelStartConfirm = useCallback(() => {
