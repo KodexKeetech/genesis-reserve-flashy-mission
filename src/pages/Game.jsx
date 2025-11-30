@@ -6,8 +6,10 @@ import GameEngine from '@/components/game/GameEngine';
 import GameUI from '@/components/game/GameUI';
 import GameOverlay from '@/components/game/GameOverlay';
 import TouchControls from '@/components/game/TouchControls';
+import SettingsMenu from '@/components/game/SettingsMenu';
+import LevelStartMenu from '@/components/game/LevelStartMenu';
 import soundManager from '@/components/game/SoundManager';
-import { Sparkles, ShoppingBag, Gem, Zap } from 'lucide-react';
+import { Sparkles, ShoppingBag, Gem, Zap, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function Game() {
@@ -48,6 +50,13 @@ export default function Game() {
   const [arcaneCrystals, setArcaneCrystals] = useState(0);
   const [sessionCrystals, setSessionCrystals] = useState(0);
   const [coinAmmo, setCoinAmmo] = useState(0);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showLevelStart, setShowLevelStart] = useState(false);
+  const [startingGun, setStartingGun] = useState(0);
+  const [gameSettings, setGameSettings] = useState(() => {
+    const saved = localStorage.getItem('jeff_settings');
+    return saved ? JSON.parse(saved) : { sound: true, graphics: 'high', particles: true };
+  });
   
   const touchInputRef = useRef({
     move: { x: 0, y: 0 },
@@ -116,16 +125,23 @@ export default function Game() {
     touchInputRef.current[action] = value;
   }, []);
 
+  // Save settings when changed
+  useEffect(() => {
+    localStorage.setItem('jeff_settings', JSON.stringify(gameSettings));
+    soundManager.setMuted(!gameSettings.sound);
+  }, [gameSettings]);
+
   // Load saved game on mount if continuing
   useEffect(() => {
     soundManager.init();
+    soundManager.setMuted(!gameSettings.sound);
     if (shouldContinue) {
       const saved = localStorage.getItem('jeff_save_game');
       if (saved) {
         const saveData = JSON.parse(saved);
         setLevel(saveData.level || 1);
         setScore(saveData.score || 0);
-        setGameState('playing');
+        setShowLevelStart(true);
       }
     }
   }, [shouldContinue]);
@@ -162,7 +178,7 @@ export default function Game() {
     };
     setLevel(prev => prev + 1);
     setHealth(100);
-    setGameState('playing');
+    setShowLevelStart(true);
   }, []);
 
   const handleStartTutorial = useCallback(() => {
@@ -171,8 +187,13 @@ export default function Game() {
   }, []);
 
   const handleSkipTutorial = useCallback(() => {
-    setGameState('playing');
+    setShowLevelStart(true);
     setLevel(1);
+  }, []);
+
+  const handleLevelStartConfirm = useCallback(() => {
+    setShowLevelStart(false);
+    setGameState('playing');
   }, []);
 
   const handleGameOver = useCallback(() => {
@@ -248,12 +269,22 @@ export default function Game() {
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl" />
       </div>
 
-      {/* Title - hide on mobile */}
-      {!isMobile && (
-        <h1 className="text-xl sm:text-2xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400 mb-2 md:mb-6 tracking-tight">
-          JEFF: The Robot Wizard
-        </h1>
-      )}
+      {/* Title and Settings - hide title on mobile */}
+      <div className="flex items-center justify-center gap-4 mb-2 md:mb-6">
+        {!isMobile && (
+          <h1 className="text-xl sm:text-2xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400 tracking-tight">
+            JEFF: The Robot Wizard
+          </h1>
+        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setShowSettings(true)}
+          className="text-slate-400 hover:text-white hover:bg-slate-800"
+        >
+          <Settings className="w-5 h-5" />
+        </Button>
+      </div>
 
       {/* Game Container */}
       <div className="relative w-[65vw] md:w-full md:max-w-[800px]" style={{ aspectRatio: '800/600' }}>
@@ -269,23 +300,42 @@ export default function Game() {
             />
           </div>
         )}
-        {gameState === 'playing' && (
-            <GameEngine
-              currentLevel={level}
-              onScoreChange={handleScoreChange}
-              onHealthChange={handleHealthChange}
-              onLevelComplete={handleLevelComplete}
-              onGameOver={handleGameOver}
-              onPowerUpChange={handlePowerUpChange}
-              onAbilityCooldowns={handleAbilityCooldowns}
-              onScrapsEarned={handleScrapsEarned}
-              onCrystalsEarned={handleCrystalsEarned}
-              onCoinAmmoChange={setCoinAmmo}
-              savedCoinAmmo={coinAmmo}
-              playerUpgrades={playerUpgrades}
-              unlockedAbilities={unlockedAbilities}
-              abilityUpgrades={abilityUpgrades}
-              touchInput={touchInputRef}
+        {gameState === 'playing' && !showLevelStart && (
+              <GameEngine
+                currentLevel={level}
+                onScoreChange={handleScoreChange}
+                onHealthChange={handleHealthChange}
+                onLevelComplete={handleLevelComplete}
+                onGameOver={handleGameOver}
+                onPowerUpChange={handlePowerUpChange}
+                onAbilityCooldowns={handleAbilityCooldowns}
+                onScrapsEarned={handleScrapsEarned}
+                onCrystalsEarned={handleCrystalsEarned}
+                onCoinAmmoChange={setCoinAmmo}
+                savedCoinAmmo={coinAmmo}
+                playerUpgrades={playerUpgrades}
+                unlockedAbilities={unlockedAbilities}
+                abilityUpgrades={abilityUpgrades}
+                touchInput={touchInputRef}
+                startingGun={startingGun}
+                gameSettings={gameSettings}
+              />
+            )}
+
+          {showLevelStart && (
+            <LevelStartMenu
+              level={level}
+              coinAmmo={coinAmmo}
+              onSelectGun={setStartingGun}
+              onStart={handleLevelStartConfirm}
+            />
+          )}
+
+          {showSettings && (
+            <SettingsMenu
+              settings={gameSettings}
+              onSettingsChange={setGameSettings}
+              onClose={() => setShowSettings(false)}
             />
           )}
         

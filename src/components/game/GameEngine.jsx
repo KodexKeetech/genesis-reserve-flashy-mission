@@ -25,7 +25,7 @@ const POWERUP_TYPES = {
   SHIELD: { color: '#3B82F6', icon: '🛡️', duration: 400, name: 'Shield' }
 };
 
-export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel, onPowerUpChange, onAbilityCooldowns, onScrapsEarned, onCrystalsEarned, onCoinAmmoChange, savedCoinAmmo, playerUpgrades, unlockedAbilities, abilityUpgrades, touchInput }) {
+export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel, onPowerUpChange, onAbilityCooldowns, onScrapsEarned, onCrystalsEarned, onCoinAmmoChange, savedCoinAmmo, playerUpgrades, unlockedAbilities, abilityUpgrades, touchInput, startingGun = 0, gameSettings = { sound: true, graphics: 'high', particles: true } }) {
   const canvasRef = useRef(null);
   const mouseRef = useRef({ x: 400, y: 300 }); // Track mouse position relative to canvas
   const gameStateRef = useRef({
@@ -155,7 +155,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           state.player.dashCooldown = 0;
           state.player.isDashing = false;
           state.player.powerUps = { SPEED: 0, INVINCIBILITY: 0, POWER_SHOT: 0, SHIELD: 0, shieldHealth: 0 };
-          state.player.selectedProjectile = 0;
+          state.player.selectedProjectile = startingGun;
           state.player.coinAmmo = savedCoinAmmo || 0;
           state.player.specialAbilities = {
             aoeBlast: { cooldown: 0, active: false },
@@ -632,7 +632,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     state.player.dashCooldown = 0;
     state.player.isDashing = false;
     state.player.powerUps = { SPEED: 0, INVINCIBILITY: 0, POWER_SHOT: 0, SHIELD: 0, shieldHealth: 0 };
-    state.player.selectedProjectile = 0;
+    state.player.selectedProjectile = startingGun;
     state.player.coinAmmo = savedCoinAmmo || 0;
     state.player.specialAbilities = {
       aoeBlast: { cooldown: 0, active: false },
@@ -641,7 +641,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     };
     state.bossNoDamage = true;
     state.cameraX = 0;
-  }, []);
+  }, [startingGun]);
 
   useEffect(() => {
     generateLevel(currentLevel);
@@ -2062,8 +2062,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                         }
                       }
       
-      // Spawn ambient particles based on biome
-                  if (state.biome && Math.random() < 0.05) {
+      // Spawn ambient particles based on biome (respect graphics settings)
+                  if (state.biome && gameSettings.particles && Math.random() < (gameSettings.graphics === 'low' ? 0.01 : gameSettings.graphics === 'medium' ? 0.03 : 0.05)) {
                     createAmbientParticle(particles, state.biome.key, state.cameraX, state.levelWidth);
                   }
 
@@ -2641,13 +2641,17 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         ctx.shadowBlur = 0;
       }
       
-      // Draw particles with enhanced effects
-                  for (const particle of particles) {
-                    const adjustedParticle = { ...particle, x: particle.x - state.cameraX };
-                    if (['firefly', 'leaf', 'ember', 'ash', 'snow', 'iceSparkle', 'voidParticle'].includes(particle.type)) {
-                      drawAmbientParticle(ctx, adjustedParticle, time);
-                    } else {
-                      drawParticle(ctx, adjustedParticle, time);
+      // Draw particles with enhanced effects (respect graphics settings)
+                  if (gameSettings.particles) {
+                    const maxParticles = gameSettings.graphics === 'low' ? 20 : gameSettings.graphics === 'medium' ? 50 : particles.length;
+                    const particlesToDraw = particles.slice(0, maxParticles);
+                    for (const particle of particlesToDraw) {
+                      const adjustedParticle = { ...particle, x: particle.x - state.cameraX };
+                      if (['firefly', 'leaf', 'ember', 'ash', 'snow', 'iceSparkle', 'voidParticle'].includes(particle.type)) {
+                        drawAmbientParticle(ctx, adjustedParticle, time);
+                      } else {
+                        drawParticle(ctx, adjustedParticle, time);
+                      }
                     }
                   }
       
@@ -2868,7 +2872,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       canvas.removeEventListener('click', handleClick);
       canvas.removeEventListener('mousemove', handleMouseMove);
     };
-  }, [currentLevel, onScoreChange, onHealthChange, onLevelComplete, onGameOver, generateLevel, onPowerUpChange, onAbilityCooldowns, unlockedAbilities, abilityUpgrades, playerUpgrades, onScrapsEarned, onCrystalsEarned]);
+  }, [currentLevel, onScoreChange, onHealthChange, onLevelComplete, onGameOver, generateLevel, onPowerUpChange, onAbilityCooldowns, unlockedAbilities, abilityUpgrades, playerUpgrades, onScrapsEarned, onCrystalsEarned, gameSettings]);
 
   const restartGame = () => {
     const state = gameStateRef.current;
