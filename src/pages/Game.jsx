@@ -295,13 +295,14 @@ export default function Game() {
 
         {gameState === 'playing' && (
           <GameUI 
-            score={score} 
-            health={health} 
-            level={level} 
-            powerUps={powerUps}
-            abilityCooldowns={abilityCooldowns}
-            sessionScraps={sessionScraps}
-          />
+                            score={score} 
+                            health={health} 
+                            level={level} 
+                            powerUps={powerUps}
+                            abilityCooldowns={abilityCooldowns}
+                            sessionScraps={sessionScraps}
+                            isTutorial={isTutorial}
+                          />
         )}
         </div>
       </div>

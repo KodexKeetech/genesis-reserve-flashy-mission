@@ -11,7 +11,7 @@ const POWERUP_INFO = {
   SHIELD: { color: '#3B82F6', icon: Shield, name: 'Shield', maxDuration: 400 }
 };
 
-export default function GameUI({ score, health, level, powerUps, abilityCooldowns, sessionScraps = 0 }) {
+export default function GameUI({ score, health, level, powerUps, abilityCooldowns, sessionScraps = 0, isTutorial = false }) {
   const activePowerUps = powerUps ? Object.entries(powerUps).filter(
     ([key, value]) => key !== 'shieldHealth' && value > 0
   ) : [];
@@ -21,6 +21,17 @@ export default function GameUI({ score, health, level, powerUps, abilityCooldown
 
   return (
     <div className="absolute top-2 left-2 right-2 flex justify-between items-start pointer-events-none">
+      {/* Tutorial instructions overlay */}
+      {isTutorial && (
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-slate-900/90 backdrop-blur-sm rounded-b-lg px-4 py-2 border border-cyan-500/50 border-t-0 z-10">
+          <div className="flex gap-4 text-xs text-slate-300">
+            <span><kbd className="px-1 bg-slate-700 rounded text-cyan-400">←→</kbd> Move</span>
+            <span><kbd className="px-1 bg-slate-700 rounded text-green-400">SPACE</kbd> Jump</span>
+            <span><kbd className="px-1 bg-slate-700 rounded text-purple-400">CLICK</kbd> Cast</span>
+            <span><kbd className="px-1 bg-slate-700 rounded text-cyan-400">SHIFT</kbd> Dash</span>
+          </div>
+        </div>
+      )}
       {/* Left side - Health & Power-ups */}
       <div className="space-y-1">
         {/* Health Bar - compact */}
@@ -78,10 +89,11 @@ export default function GameUI({ score, health, level, powerUps, abilityCooldown
         {/* Top row - Level, Score, Scraps */}
         <div className="flex gap-2 justify-end">
           <div className="bg-slate-900/70 backdrop-blur-sm rounded-lg px-2 py-1 border border-blue-500/30 flex items-center gap-1">
-            <Zap className="w-3 h-3 text-blue-400" fill="currentColor" />
-            <span className="text-blue-400 font-bold text-xs">Lv{level}</span>
-            {isBoss && <span className="text-red-400 text-xs font-bold animate-pulse">BOSS</span>}
-          </div>
+                          <Zap className="w-3 h-3 text-blue-400" fill="currentColor" />
+                          <span className="text-blue-400 font-bold text-xs">Lv{level}</span>
+                          {level === 0 && <span className="text-cyan-400 text-xs font-bold">TUT</span>}
+                          {isBoss && level !== 0 && <span className="text-red-400 text-xs font-bold animate-pulse">BOSS</span>}
+                        </div>
           <div className="bg-slate-900/70 backdrop-blur-sm rounded-lg px-2 py-1 border border-yellow-500/30 flex items-center gap-1">
             <Star className="w-3 h-3 text-yellow-400" fill="currentColor" />
             <span className="text-yellow-400 font-bold text-xs">{score.toLocaleString()}</span>
