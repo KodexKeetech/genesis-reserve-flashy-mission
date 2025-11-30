@@ -328,28 +328,147 @@ export function drawParticle(ctx, particle, time) {
       particle.x, particle.y, 0,
       particle.x, particle.y, particle.size * (particle.life / 10)
     );
-    gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
-    gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.3)');
+    gradient.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
+    gradient.addColorStop(0.3, 'rgba(255, 255, 255, 0.5)');
     gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
     ctx.fillStyle = gradient;
     ctx.beginPath();
     ctx.arc(particle.x, particle.y, particle.size * (particle.life / 10), 0, Math.PI * 2);
     ctx.fill();
-  } else if (particle.type === 'heal' && particle.symbol) {
+  } else if (particle.type === 'screenFlash') {
+    ctx.globalAlpha = alpha * 0.6;
     ctx.fillStyle = particle.color;
-    ctx.font = `bold ${particle.size * 3}px Arial`;
-    ctx.textAlign = 'center';
-    ctx.fillText('+', particle.x, particle.y);
-  } else if (particle.type === 'trail') {
-    ctx.fillStyle = particle.color;
+    ctx.fillRect(0, 0, 800, 600);
+  } else if (particle.type === 'shockwave') {
+    const currentSize = particle.size + (30 - particle.life) * particle.growthRate;
+    ctx.strokeStyle = particle.color;
+    ctx.lineWidth = 4 * alpha;
+    ctx.shadowColor = particle.color;
+    ctx.shadowBlur = 20;
     ctx.beginPath();
-    ctx.ellipse(particle.x, particle.y, particle.size * alpha, particle.size * alpha * 0.6, 0, 0, Math.PI * 2);
-    ctx.fill();
-  } else {
+    ctx.arc(particle.x, particle.y, currentSize, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  } else if (particle.type === 'scoreText') {
     ctx.fillStyle = particle.color;
+    ctx.shadowColor = particle.color;
+    ctx.shadowBlur = 10;
+    ctx.font = `bold ${particle.size}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.fillText(particle.text, particle.x, particle.y);
+    ctx.shadowBlur = 0;
+  } else if (particle.type === 'crackle') {
+    ctx.save();
+    ctx.translate(particle.x, particle.y);
+    ctx.rotate(particle.angle);
+    ctx.strokeStyle = particle.color;
+    ctx.lineWidth = 2 * alpha;
+    ctx.shadowColor = '#FFFFFF';
+    ctx.shadowBlur = 15;
+    // Draw lightning bolt shape
+    ctx.beginPath();
+    ctx.moveTo(-particle.size/2, 0);
+    ctx.lineTo(-particle.size/4, -particle.size/4);
+    ctx.lineTo(0, 0);
+    ctx.lineTo(particle.size/4, -particle.size/3);
+    ctx.lineTo(particle.size/2, 0);
+    ctx.stroke();
+    ctx.restore();
+    ctx.shadowBlur = 0;
+  } else if (particle.type === 'smoke') {
+    const smokeAlpha = alpha * 0.5;
+    ctx.globalAlpha = smokeAlpha;
+    const gradient = ctx.createRadialGradient(
+      particle.x, particle.y, 0,
+      particle.x, particle.y, particle.size
+    );
+    gradient.addColorStop(0, particle.color);
+    gradient.addColorStop(1, 'transparent');
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(particle.x, particle.y, particle.size * (1 + (1 - alpha) * 0.5), 0, Math.PI * 2);
+    ctx.fill();
+  } else if (particle.type === 'sparkle') {
+    ctx.fillStyle = particle.color;
+    ctx.shadowColor = particle.color;
+    ctx.shadowBlur = 8;
+    // Draw star shape
+    ctx.save();
+    ctx.translate(particle.x, particle.y);
+    ctx.rotate(time * 0.1);
+    ctx.beginPath();
+    for (let i = 0; i < 4; i++) {
+      const angle = (i / 4) * Math.PI * 2;
+      const innerAngle = angle + Math.PI / 4;
+      ctx.lineTo(Math.cos(angle) * particle.size * alpha, Math.sin(angle) * particle.size * alpha);
+      ctx.lineTo(Math.cos(innerAngle) * particle.size * 0.3 * alpha, Math.sin(innerAngle) * particle.size * 0.3 * alpha);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+    ctx.shadowBlur = 0;
+  } else if (particle.type === 'magic') {
+    ctx.fillStyle = particle.color;
+    ctx.shadowColor = particle.color;
+    ctx.shadowBlur = 12;
     ctx.beginPath();
     ctx.arc(particle.x, particle.y, particle.size * alpha, 0, Math.PI * 2);
     ctx.fill();
+    // Inner glow
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.arc(particle.x, particle.y, particle.size * alpha * 0.4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  } else if (particle.type === 'powerup' || particle.type === 'ring') {
+    ctx.fillStyle = particle.color;
+    ctx.shadowColor = particle.color;
+    ctx.shadowBlur = 15;
+    ctx.beginPath();
+    ctx.arc(particle.x, particle.y, particle.size * alpha, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  } else if (particle.type === 'coin') {
+    ctx.fillStyle = particle.color;
+    ctx.shadowColor = '#FBBF24';
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.arc(particle.x, particle.y, particle.size * alpha, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  } else if (particle.type === 'bossHit') {
+    ctx.fillStyle = particle.color;
+    ctx.shadowColor = particle.color;
+    ctx.shadowBlur = 20;
+    const size = particle.size * alpha;
+    ctx.beginPath();
+    ctx.arc(particle.x, particle.y, size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  } else if (particle.type === 'heal' && particle.symbol) {
+    ctx.fillStyle = particle.color;
+    ctx.shadowColor = particle.color;
+    ctx.shadowBlur = 10;
+    ctx.font = `bold ${particle.size * 3}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.fillText('+', particle.x, particle.y);
+    ctx.shadowBlur = 0;
+  } else if (particle.type === 'trail') {
+    ctx.fillStyle = particle.color;
+    ctx.shadowColor = particle.color;
+    ctx.shadowBlur = 8;
+    ctx.beginPath();
+    ctx.ellipse(particle.x, particle.y, particle.size * alpha, particle.size * alpha * 0.6, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  } else {
+    ctx.fillStyle = particle.color;
+    ctx.shadowColor = particle.color;
+    ctx.shadowBlur = 6;
+    ctx.beginPath();
+    ctx.arc(particle.x, particle.y, particle.size * alpha, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
   }
   
   ctx.globalAlpha = 1;
