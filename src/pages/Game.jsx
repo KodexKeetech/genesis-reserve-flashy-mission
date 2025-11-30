@@ -168,6 +168,7 @@ export default function Game() {
     setHealth(100);
     setSessionScraps(0);
     setSessionCrystals(0);
+    musicManager.play();
   }, []);
 
   const handleNextLevel = useCallback(() => {
