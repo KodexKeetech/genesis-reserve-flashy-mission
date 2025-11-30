@@ -178,7 +178,7 @@ export default function Game() {
     };
     setLevel(prev => prev + 1);
     setHealth(100);
-    setShowLevelStart(true);
+    setGameState('playing');
   }, []);
 
   const handleStartTutorial = useCallback(() => {
