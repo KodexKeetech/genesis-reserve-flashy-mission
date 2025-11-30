@@ -61,8 +61,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         SHIELD: 0,
         shieldHealth: 0
       },
-      // Projectile type (0 = normal, 1 = freeze)
+      // Projectile type (0 = normal, 1 = freeze, 2 = coin)
       selectedProjectile: 0,
+      // Coin ammo for golden gun
+      coinAmmo: 0,
       // Special abilities
       specialAbilities: {
         aoeBlast: { cooldown: 0, active: false },
@@ -373,6 +375,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     state.player.isDashing = false;
     state.player.powerUps = { SPEED: 0, INVINCIBILITY: 0, POWER_SHOT: 0, SHIELD: 0, shieldHealth: 0 };
     state.player.selectedProjectile = 0;
+    state.player.coinAmmo = 0;
     state.player.specialAbilities = {
       aoeBlast: { cooldown: 0, active: false },
       reflectShield: { cooldown: 0, active: false, timer: 0 },
@@ -414,7 +417,14 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       if (player.castTimer <= 0) {
         const isPowerShot = player.powerUps.POWER_SHOT > 0;
         const isFreeze = player.selectedProjectile === 1;
+        const isCoin = player.selectedProjectile === 2;
         const bonusDamage = upgrades.spellPower || 0;
+
+        // If trying to use coin gun with no ammo, switch to purple
+        if (isCoin && player.coinAmmo <= 0) {
+          player.selectedProjectile = 0;
+          return;
+        }
 
         // Calculate direction to aim point
         const playerCenterX = player.x - state.cameraX + player.width / 2;
@@ -428,31 +438,44 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         // Update facing direction based on aim
         player.facingRight = dx >= 0;
 
+        // Consume coin ammo if using coin gun
+        if (isCoin) {
+          player.coinAmmo--;
+          // Auto-switch to purple when out of ammo
+          if (player.coinAmmo <= 0) {
+            player.selectedProjectile = 0;
+          }
+        }
+
         state.projectiles.push({
           x: player.x + player.width / 2,
           y: player.y + player.height / 2,
-          velocityX: dirX * PROJECTILE_SPEED,
-          velocityY: dirY * PROJECTILE_SPEED,
-          width: isPowerShot ? 24 : 16,
-          height: isPowerShot ? 24 : 16,
+          velocityX: dirX * (isCoin ? PROJECTILE_SPEED * 1.2 : PROJECTILE_SPEED),
+          velocityY: dirY * (isCoin ? PROJECTILE_SPEED * 1.2 : PROJECTILE_SPEED),
+          width: isCoin ? 20 : (isPowerShot ? 24 : 16),
+          height: isCoin ? 20 : (isPowerShot ? 24 : 16),
           life: 100,
-          type: isFreeze ? 'freeze' : 'normal',
-          damage: (isPowerShot ? 3 : 1) + bonusDamage,
-          isPowerShot
+          type: isCoin ? 'coin' : (isFreeze ? 'freeze' : 'normal'),
+          damage: isCoin ? (3 + bonusDamage) : ((isPowerShot ? 3 : 1) + bonusDamage),
+          isPowerShot,
+          isCoin
         });
         player.isCasting = true;
-        player.castTimer = Math.floor((isFreeze ? BASE_FREEZE_CAST_TIMER : BASE_CAST_TIMER) * castReduction);
+        player.castTimer = Math.floor((isCoin ? BASE_CAST_TIMER * 0.8 : (isFreeze ? BASE_FREEZE_CAST_TIMER : BASE_CAST_TIMER)) * castReduction);
 
-        if (isFreeze) {
+        if (isCoin) {
+          soundManager.playCollect(); // Coin sound for coin gun
+        } else if (isFreeze) {
           soundManager.playFreezeCast();
         } else {
           soundManager.playCast();
         }
 
-        const particleColor = isFreeze ? `hsl(${180 + Math.random() * 20}, 100%, 70%)` : 
+        const particleColor = isCoin ? `hsl(${45 + Math.random() * 15}, 100%, 60%)` :
+                             isFreeze ? `hsl(${180 + Math.random() * 20}, 100%, 70%)` : 
                              isPowerShot ? `hsl(${0 + Math.random() * 30}, 100%, 60%)` :
                              `hsl(${260 + Math.random() * 40}, 100%, 70%)`;
-        for (let i = 0; i < (isPowerShot ? 10 : 5); i++) {
+        for (let i = 0; i < (isCoin ? 8 : (isPowerShot ? 10 : 5)); i++) {
           state.particles.push({
             x: player.x + player.width / 2,
             y: player.y + player.height / 2,
@@ -561,7 +584,13 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     // Handle projectile switch (Q key)
     const handleSwitchProjectile = () => {
       const state = gameStateRef.current;
-      state.player.selectedProjectile = (state.player.selectedProjectile + 1) % 2;
+      // Cycle through: 0 (purple), 1 (freeze), 2 (coin if has ammo)
+      let next = (state.player.selectedProjectile + 1) % 3;
+      // Skip coin gun if no ammo
+      if (next === 2 && state.player.coinAmmo <= 0) {
+        next = 0;
+      }
+      state.player.selectedProjectile = next;
     };
 
     // Handle special abilities
@@ -995,6 +1024,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           dashCooldown: player.dashCooldown,
           dashMaxCooldown: dashCooldown,
           selectedProjectile: player.selectedProjectile,
+          coinAmmo: player.coinAmmo,
           specialAbilities: player.specialAbilities,
           unlockedAbilities: unlockedAbilities
         });
@@ -1570,11 +1600,12 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         if (!collectible.collected && checkCollision(player, collectible)) {
           collectible.collected = true;
           state.score += 50;
+          player.coinAmmo++; // Add coin ammo
           onScoreChange(state.score);
-          
+
           // Play collect sound
           soundManager.playCollect();
-          
+
           // Sparkle particles
           for (let i = 0; i < 8; i++) {
             particles.push({
@@ -2094,19 +2125,39 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       // Draw projectiles with trails
       for (const proj of projectiles) {
         const projX = proj.x - state.cameraX;
-        const size = proj.isPowerShot ? 12 : 8;
-        
+        const size = proj.isCoin ? 10 : (proj.isPowerShot ? 12 : 8);
+
         // Draw trail first
         drawProjectileTrail(ctx, proj, state.cameraX, time);
-        
-        if (proj.type === 'freeze') {
+
+        if (proj.type === 'coin') {
+          // Golden coin projectile
+          ctx.fillStyle = '#FBBF24';
+          ctx.shadowColor = '#FBBF24';
+          ctx.shadowBlur = 25 + Math.sin(time * 0.4) * 8;
+          ctx.beginPath();
+          ctx.arc(projX + 8, proj.y + 8, size + Math.sin(time * 0.5) * 2, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Inner shine
+          ctx.fillStyle = '#FEF3C7';
+          ctx.beginPath();
+          ctx.arc(projX + 6, proj.y + 6, size * 0.4, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Sparkle effect
+          ctx.fillStyle = '#FFFFFF';
+          ctx.beginPath();
+          ctx.arc(projX + 5, proj.y + 5, 2, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (proj.type === 'freeze') {
           ctx.fillStyle = '#22D3EE';
           ctx.shadowColor = '#22D3EE';
           ctx.shadowBlur = 25 + Math.sin(time * 0.3) * 5;
           ctx.beginPath();
           ctx.arc(projX + 8, proj.y + 8, size + Math.sin(time * 0.4) * 2, 0, Math.PI * 2);
           ctx.fill();
-          
+
           // Rotating ice crystal
           ctx.save();
           ctx.translate(projX + 8, proj.y + 8);
@@ -2128,12 +2179,12 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.beginPath();
           ctx.arc(projX + 8, proj.y + 8, size + Math.sin(time * 0.5) * 3, 0, Math.PI * 2);
           ctx.fill();
-          
+
           ctx.fillStyle = '#FBBF24';
           ctx.beginPath();
           ctx.arc(projX + 8, proj.y + 8, size * 0.5, 0, Math.PI * 2);
           ctx.fill();
-          
+
           // Fire flicker
           ctx.fillStyle = '#FEF3C7';
           ctx.beginPath();
@@ -2148,7 +2199,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.beginPath();
           ctx.arc(projX + 8, proj.y + 8, size + pulse, 0, Math.PI * 2);
           ctx.fill();
-          
+
           ctx.fillStyle = '#E9D5FF';
           ctx.beginPath();
           ctx.arc(projX + 8, proj.y + 8, size * 0.5, 0, Math.PI * 2);

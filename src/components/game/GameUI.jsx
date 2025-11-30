@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heart, Star, Zap, Wind, Shield, Flame, Snowflake, Map, Sparkles, Circle } from 'lucide-react';
+import { Heart, Star, Zap, Wind, Shield, Flame, Snowflake, Map, Sparkles, Circle, Coins } from 'lucide-react';
 import { SPECIAL_ABILITIES } from './AbilitySystem';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getBiomeForLevel, isBossLevel } from './BiomeConfig';
@@ -107,14 +107,25 @@ export default function GameUI({ score, health, level, powerUps, abilityCooldown
 
             {/* Spell type */}
             <div className={`w-7 h-7 rounded flex items-center justify-center ${
-              abilityCooldowns.selectedProjectile === 0 ? 'bg-purple-500/40' : 'bg-cyan-500/40'
+              abilityCooldowns.selectedProjectile === 0 ? 'bg-purple-500/40' : 
+              abilityCooldowns.selectedProjectile === 1 ? 'bg-cyan-500/40' : 'bg-yellow-500/40'
             }`}>
               {abilityCooldowns.selectedProjectile === 0 ? (
                 <Flame className="w-3 h-3 text-purple-400" />
-              ) : (
+              ) : abilityCooldowns.selectedProjectile === 1 ? (
                 <Snowflake className="w-3 h-3 text-cyan-400" />
+              ) : (
+                <Coins className="w-3 h-3 text-yellow-400" />
               )}
             </div>
+
+            {/* Coin ammo indicator */}
+            {abilityCooldowns.coinAmmo > 0 && (
+              <div className="bg-yellow-500/40 rounded px-1.5 py-0.5 flex items-center gap-1">
+                <Coins className="w-3 h-3 text-yellow-400" />
+                <span className="text-yellow-400 text-xs font-bold">{abilityCooldowns.coinAmmo}</span>
+              </div>
+            )}
 
             {/* Special abilities */}
             {abilityCooldowns.unlockedAbilities?.aoeBlast && (
