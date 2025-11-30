@@ -1549,24 +1549,24 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             }
             
             if (enemies[j].health <= 0) {
-              soundManager.playEnemyDefeat();
-              const enemyColor = enemies[j].type.includes('fire') || enemies[j].type.includes('lava') ? '#F97316' :
-                                enemies[j].type.includes('ice') || enemies[j].type.includes('frost') || enemies[j].type.includes('snow') ? '#22D3EE' :
-                                enemies[j].type.includes('void') || enemies[j].type.includes('shadow') ? '#A855F7' :
-                                enemies[j].type === 'slime' ? '#22C55E' : '#A855F7';
-              createExplosionEffect(particles, enemies[j].x + enemies[j].width / 2, enemies[j].y + enemies[j].height / 2, enemyColor, 1);
-              enemies.splice(j, 1);
-              state.score += 100;
-              onScoreChange(state.score);
-              
-              // Award magic scraps
-              const scrapBonus = 1 + ((playerUpgrades || {}).scrapMagnet || 0) * 0.2;
-              const scrapsEarned = Math.floor((5 + Math.random() * 5) * scrapBonus);
-              if (onScrapsEarned) onScrapsEarned(scrapsEarned);
-            } else {
-              soundManager.playEnemyHit();
-              createImpactEffect(particles, enemies[j].x + enemies[j].width / 2, enemies[j].y + enemies[j].height / 2, '#FFFFFF', 6);
-            }
+                                soundManager.playEnemyDefeat();
+                                const enemyColor = enemies[j].type.includes('fire') || enemies[j].type.includes('lava') ? '#F97316' :
+                                                  enemies[j].type.includes('ice') || enemies[j].type.includes('frost') || enemies[j].type.includes('snow') ? '#22D3EE' :
+                                                  enemies[j].type.includes('void') || enemies[j].type.includes('shadow') ? '#A855F7' :
+                                                  enemies[j].type === 'slime' ? '#22C55E' : '#A855F7';
+                                createEnemyDeathEffect(particles, enemies[j].x + enemies[j].width / 2, enemies[j].y + enemies[j].height / 2, enemyColor, enemies[j].type);
+                                enemies.splice(j, 1);
+                                state.score += 100;
+                                onScoreChange(state.score);
+
+                                // Award magic scraps
+                                const scrapBonus = 1 + ((playerUpgrades || {}).scrapMagnet || 0) * 0.2;
+                                const scrapsEarned = Math.floor((5 + Math.random() * 5) * scrapBonus);
+                                if (onScrapsEarned) onScrapsEarned(scrapsEarned);
+                              } else {
+                                soundManager.playEnemyHit();
+                                createImpactEffect(particles, enemies[j].x + enemies[j].width / 2, enemies[j].y + enemies[j].height / 2, '#FFFFFF', 10);
+                              }
             projectiles.splice(i, 1);
             break;
           }
