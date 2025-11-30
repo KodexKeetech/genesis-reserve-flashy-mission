@@ -156,6 +156,7 @@ export default function Game() {
       const startLevel = parseInt(startLevelParam, 10);
       if (startLevel > 0) {
         setLevel(startLevel);
+        setShowLevelStart(false);
         setGameState('playing');
       }
     }
