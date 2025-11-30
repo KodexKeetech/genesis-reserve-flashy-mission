@@ -38,7 +38,7 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
             <Sparkles className="absolute -bottom-2 -left-2 w-6 h-6 text-blue-400 animate-pulse" />
           </div>
           
-          <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 mb-2">
+          <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-slate-400 mb-2">
             JEFF
           </h1>
           <p className="text-2xl font-bold text-slate-400 mb-1">The Robot Wizard</p>
