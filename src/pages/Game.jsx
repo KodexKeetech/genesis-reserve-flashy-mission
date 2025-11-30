@@ -124,6 +124,7 @@ export default function Game() {
         const saveData = JSON.parse(saved);
         setLevel(saveData.level || 1);
         setScore(saveData.score || 0);
+        setGameState('playing');
       }
     }
   }, [shouldContinue]);
