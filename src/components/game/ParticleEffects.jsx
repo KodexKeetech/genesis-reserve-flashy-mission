@@ -518,26 +518,221 @@ export function drawProjectileTrail(ctx, proj, cameraX, time) {
 
 export function drawEnemyProjectileTrail(ctx, proj, cameraX, time) {
   const px = proj.x - cameraX;
+  const trailLength = 6;
   
-  for (let i = 1; i <= 4; i++) {
-    const trailX = px - proj.velocityX * i * 0.4;
-    const trailY = proj.y - proj.velocityY * i * 0.4;
-    const alpha = (1 - i / 4) * 0.5;
+  for (let i = 1; i <= trailLength; i++) {
+    const trailX = px - proj.velocityX * i * 0.35;
+    const trailY = proj.y - (proj.velocityY || 0) * i * 0.35;
+    const alpha = (1 - i / trailLength) * 0.6;
     ctx.globalAlpha = alpha;
     
     let color = '#EF4444';
+    let secondaryColor = '#FCA5A5';
+    let size = 6 - i * 0.8;
+    
     if (proj.type === 'ice' || proj.type === 'iceBreath') {
       color = '#67E8F9';
+      secondaryColor = '#A5F3FC';
+      ctx.shadowColor = '#22D3EE';
     } else if (proj.type === 'void') {
       color = '#A855F7';
+      secondaryColor = '#C084FC';
+      ctx.shadowColor = '#A855F7';
     } else if (proj.type === 'fireball') {
       color = '#F97316';
+      secondaryColor = '#FBBF24';
+      ctx.shadowColor = '#F97316';
+    } else {
+      ctx.shadowColor = '#EF4444';
     }
     
-    ctx.fillStyle = color;
+    ctx.shadowBlur = 10 * alpha;
+    ctx.fillStyle = i % 2 === 0 ? color : secondaryColor;
     ctx.beginPath();
-    ctx.arc(trailX, trailY, 5 - i, 0, Math.PI * 2);
+    ctx.arc(trailX, trailY, Math.max(2, size), 0, Math.PI * 2);
     ctx.fill();
   }
+  ctx.shadowBlur = 0;
+  ctx.globalAlpha = 1;
+}
+
+// Ambient particles for environment
+export function createAmbientParticle(particles, biomeKey, cameraX, levelWidth) {
+  const x = cameraX + Math.random() * 800;
+  const y = Math.random() * 500;
+  
+  if (biomeKey === 'forest') {
+    // Fireflies
+    if (Math.random() < 0.3) {
+      particles.push({
+        x,
+        y,
+        velocityX: (Math.random() - 0.5) * 0.5,
+        velocityY: (Math.random() - 0.5) * 0.5,
+        life: 100 + Math.random() * 100,
+        color: '#FBBF24',
+        size: 2 + Math.random() * 2,
+        type: 'firefly',
+        flickerRate: 0.1 + Math.random() * 0.1
+      });
+    }
+    // Falling leaves
+    particles.push({
+      x,
+      y: -10,
+      velocityX: (Math.random() - 0.5) * 1,
+      velocityY: 1 + Math.random() * 1,
+      life: 200,
+      color: Math.random() > 0.5 ? '#22C55E' : '#84CC16',
+      size: 4 + Math.random() * 4,
+      type: 'leaf',
+      rotation: Math.random() * Math.PI * 2,
+      rotationSpeed: (Math.random() - 0.5) * 0.1
+    });
+  } else if (biomeKey === 'volcano') {
+    // Embers floating up
+    particles.push({
+      x,
+      y: 550 + Math.random() * 50,
+      velocityX: (Math.random() - 0.5) * 2,
+      velocityY: -2 - Math.random() * 3,
+      life: 80 + Math.random() * 60,
+      color: Math.random() > 0.5 ? '#F97316' : '#FBBF24',
+      size: 2 + Math.random() * 3,
+      type: 'ember'
+    });
+    // Ash particles
+    if (Math.random() < 0.5) {
+      particles.push({
+        x,
+        y: -10,
+        velocityX: (Math.random() - 0.5) * 1.5,
+        velocityY: 0.5 + Math.random() * 1,
+        life: 150,
+        color: '#475569',
+        size: 2 + Math.random() * 3,
+        type: 'ash'
+      });
+    }
+  } else if (biomeKey === 'ice') {
+    // Snow particles
+    particles.push({
+      x,
+      y: -10,
+      velocityX: (Math.random() - 0.5) * 1,
+      velocityY: 1 + Math.random() * 2,
+      life: 200,
+      color: '#FFFFFF',
+      size: 2 + Math.random() * 3,
+      type: 'snow'
+    });
+    // Ice sparkles
+    if (Math.random() < 0.2) {
+      particles.push({
+        x,
+        y,
+        velocityX: 0,
+        velocityY: 0,
+        life: 30 + Math.random() * 30,
+        color: '#A5F3FC',
+        size: 2 + Math.random() * 2,
+        type: 'iceSparkle'
+      });
+    }
+  } else if (biomeKey === 'void') {
+    // Void particles
+    particles.push({
+      x,
+      y,
+      velocityX: (Math.random() - 0.5) * 1,
+      velocityY: -0.5 - Math.random() * 1,
+      life: 100 + Math.random() * 100,
+      color: Math.random() > 0.5 ? '#A855F7' : '#7C3AED',
+      size: 2 + Math.random() * 3,
+      type: 'voidParticle'
+    });
+    // Energy crackle
+    if (Math.random() < 0.1) {
+      particles.push({
+        x,
+        y,
+        velocityX: 0,
+        velocityY: 0,
+        life: 10,
+        color: '#C084FC',
+        size: 15 + Math.random() * 15,
+        type: 'crackle',
+        angle: Math.random() * Math.PI
+      });
+    }
+  }
+}
+
+export function drawAmbientParticle(ctx, particle, time) {
+  const alpha = Math.min(1, particle.life / 30);
+  ctx.globalAlpha = alpha;
+  
+  if (particle.type === 'firefly') {
+    const flicker = Math.sin(time * particle.flickerRate) > 0 ? 1 : 0.3;
+    ctx.globalAlpha = alpha * flicker;
+    ctx.fillStyle = particle.color;
+    ctx.shadowColor = particle.color;
+    ctx.shadowBlur = 15 * flicker;
+    ctx.beginPath();
+    ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  } else if (particle.type === 'leaf') {
+    ctx.save();
+    ctx.translate(particle.x, particle.y);
+    ctx.rotate(particle.rotation);
+    ctx.fillStyle = particle.color;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, particle.size, particle.size * 0.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    particle.rotation += particle.rotationSpeed;
+  } else if (particle.type === 'ember') {
+    ctx.fillStyle = particle.color;
+    ctx.shadowColor = particle.color;
+    ctx.shadowBlur = 8;
+    ctx.beginPath();
+    ctx.arc(particle.x, particle.y, particle.size * alpha, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  } else if (particle.type === 'ash') {
+    ctx.fillStyle = particle.color;
+    ctx.globalAlpha = alpha * 0.6;
+    ctx.beginPath();
+    ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (particle.type === 'snow') {
+    ctx.fillStyle = particle.color;
+    ctx.shadowColor = '#FFFFFF';
+    ctx.shadowBlur = 5;
+    ctx.beginPath();
+    ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  } else if (particle.type === 'iceSparkle') {
+    const sparkle = Math.sin(time * 0.3) * 0.5 + 0.5;
+    ctx.globalAlpha = alpha * sparkle;
+    ctx.fillStyle = particle.color;
+    ctx.shadowColor = particle.color;
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  } else if (particle.type === 'voidParticle') {
+    ctx.fillStyle = particle.color;
+    ctx.shadowColor = particle.color;
+    ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.arc(particle.x, particle.y, particle.size * alpha, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+  
   ctx.globalAlpha = 1;
 }
