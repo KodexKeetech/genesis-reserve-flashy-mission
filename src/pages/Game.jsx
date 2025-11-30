@@ -254,10 +254,8 @@ export default function Game() {
               type={gameState}
               score={score}
               level={level}
-              onStart={handleStart}
               onRestart={handleRestart}
               onNextLevel={handleNextLevel}
-              onLoadGame={handleLoadGame}
             />
           </div>
         )}
