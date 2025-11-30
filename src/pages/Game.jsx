@@ -9,7 +9,7 @@ import TouchControls from '@/components/game/TouchControls';
 import SettingsMenu from '@/components/game/SettingsMenu';
 import LevelStartMenu from '@/components/game/LevelStartMenu';
 import soundManager from '@/components/game/SoundManager';
-import musicManager from '@/components/game/MusicManager';
+
 import { Sparkles, ShoppingBag, Gem, Zap, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
