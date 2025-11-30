@@ -3,9 +3,9 @@ class MusicManager {
   constructor() {
     this.audio = null;
     this.tracks = [
-      'https://drive.google.com/uc?export=download&id=11H7HA7HzzHwIkdwAOpNHPV6nFKWmyBLD',
-      'https://drive.google.com/uc?export=download&id=196pmOSeoz2DbUEEZvJA6lL15z0s5h-Bw',
-      'https://drive.google.com/uc?export=download&id=1kZHnpdEv63dogPFpEnV6is1Gec6nRaK-'
+      'https://docs.google.com/uc?export=download&id=11H7HA7HzzHwIkdwAOpNHPV6nFKWmyBLD',
+      'https://docs.google.com/uc?export=download&id=196pmOSeoz2DbUEEZvJA6lL15z0s5h-Bw',
+      'https://docs.google.com/uc?export=download&id=1kZHnpdEv63dogPFpEnV6is1Gec6nRaK-'
     ];
     this.currentTrack = 0;
     this.volume = 0.3;
