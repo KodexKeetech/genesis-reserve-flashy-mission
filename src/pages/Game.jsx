@@ -270,8 +270,8 @@ export default function Game() {
             />
           )}
         
-        {gameState !== 'playing' && (
-          <div className="w-[800px] h-[600px] bg-slate-900 rounded-xl relative">
+        {gameState !== 'playing' && gameState !== 'tutorial' && (
+          <div className="w-full h-full bg-slate-900 rounded-xl relative">
             <GameOverlay
               type={gameState}
               score={score}
