@@ -1409,10 +1409,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       lastTouchCast = touch.cast;
 
       // Handle touch switch spell
-      if (touch.switch && !lastTouchSwitch) {
-        player.selectedProjectile = (player.selectedProjectile + 1) % 2;
-      }
-      lastTouchSwitch = touch.switch;
+                  if (touch.switch && !lastTouchSwitch) {
+                    player.selectedProjectile = (player.selectedProjectile + 1) % 3;
+                  }
+                  lastTouchSwitch = touch.switch;
       
       // Track landing for squash effect
       const wasOnGround = player.onGround;
