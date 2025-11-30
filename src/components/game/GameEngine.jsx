@@ -1285,18 +1285,23 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       });
       
       // Report cooldowns
-      const upgrades = playerUpgrades || {};
-      const dashCooldown = Math.floor(BASE_DASH_COOLDOWN * (1 - (upgrades.dashEfficiency || 0) * 0.1));
-      if (onAbilityCooldowns) {
-        onAbilityCooldowns({
-          dashCooldown: player.dashCooldown,
-          dashMaxCooldown: dashCooldown,
-          selectedProjectile: player.selectedProjectile,
-          coinAmmo: player.coinAmmo,
-          specialAbilities: player.specialAbilities,
-          unlockedAbilities: unlockedAbilities
-        });
-      }
+                  const upgrades = playerUpgrades || {};
+                  const dashCooldown = Math.floor(BASE_DASH_COOLDOWN * (1 - (upgrades.dashEfficiency || 0) * 0.1));
+                  if (onAbilityCooldowns) {
+                    onAbilityCooldowns({
+                      dashCooldown: player.dashCooldown,
+                      dashMaxCooldown: dashCooldown,
+                      selectedProjectile: player.selectedProjectile,
+                      coinAmmo: player.coinAmmo,
+                      specialAbilities: player.specialAbilities,
+                      unlockedAbilities: unlockedAbilities
+                    });
+                  }
+
+                  // Report coin ammo for persistence
+                  if (onCoinAmmoChange) {
+                    onCoinAmmoChange(player.coinAmmo);
+                  }
       
       // Calculate effective speed (with power-up)
       const effectiveSpeed = player.powerUps.SPEED > 0 ? MOVE_SPEED * 1.8 : MOVE_SPEED;
