@@ -31,12 +31,55 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex flex-col items-center justify-center p-4 overflow-hidden">
-      {/* Background effects */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cyan-600/5 rounded-full blur-3xl" />
+      {/* Space Background */}
+      <div className="fixed inset-0 bg-black overflow-hidden pointer-events-none">
+        {/* Stars */}
+        {[...Array(100)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute rounded-full bg-white"
+            style={{
+              width: Math.random() * 2 + 1 + 'px',
+              height: Math.random() * 2 + 1 + 'px',
+              top: Math.random() * 100 + '%',
+              left: Math.random() * 100 + '%',
+              opacity: Math.random() * 0.7 + 0.3,
+              animation: `twinkle ${Math.random() * 3 + 2}s ease-in-out infinite`,
+              animationDelay: Math.random() * 2 + 's'
+            }}
+          />
+        ))}
+        {/* Larger stars */}
+        {[...Array(20)].map((_, i) => (
+          <div
+            key={`big-${i}`}
+            className="absolute rounded-full"
+            style={{
+              width: Math.random() * 3 + 2 + 'px',
+              height: Math.random() * 3 + 2 + 'px',
+              top: Math.random() * 100 + '%',
+              left: Math.random() * 100 + '%',
+              backgroundColor: ['#fff', '#A5F3FC', '#C4B5FD', '#FDE68A'][Math.floor(Math.random() * 4)],
+              boxShadow: '0 0 6px currentColor',
+              animation: `twinkle ${Math.random() * 4 + 3}s ease-in-out infinite`
+            }}
+          />
+        ))}
+        {/* Planets */}
+        <div className="absolute top-[15%] right-[10%] w-16 h-16 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-purple-600 via-purple-800 to-purple-950 opacity-60 shadow-lg shadow-purple-500/20" />
+        <div className="absolute bottom-[20%] left-[8%] w-10 h-10 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-cyan-400 via-blue-600 to-blue-900 opacity-50 shadow-lg shadow-blue-500/20" />
+        <div className="absolute top-[60%] right-[20%] w-6 h-6 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-amber-400 via-orange-500 to-red-700 opacity-40" />
+        {/* Nebula glow */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-blue-600/5 rounded-full blur-3xl" />
       </div>
+      
+      <style>{`
+        @keyframes twinkle {
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 1; }
+        }
+      `}</style>
 
       {/* Comic Links - Top Left */}
       <div className="fixed top-3 left-3 z-20 flex flex-col gap-2">
