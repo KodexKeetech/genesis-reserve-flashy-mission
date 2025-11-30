@@ -2882,7 +2882,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       canvas.removeEventListener('click', handleClick);
       canvas.removeEventListener('mousemove', handleMouseMove);
     };
-  }, [currentLevel, onScoreChange, onHealthChange, onLevelComplete, onGameOver, generateLevel, onPowerUpChange, onAbilityCooldowns, unlockedAbilities, abilityUpgrades, playerUpgrades, onScrapsEarned, onCrystalsEarned, gameSettings, onGunChange, onCheckpointReached]);
+  }, [currentLevel, onScoreChange, onHealthChange, onLevelComplete, onGameOver, generateLevel, onPowerUpChange, onAbilityCooldowns, unlockedAbilities, abilityUpgrades, playerUpgrades, onScrapsEarned, onCrystalsEarned, gameSettings, onGunChange]);
 
   const restartGame = () => {
     const state = gameStateRef.current;
