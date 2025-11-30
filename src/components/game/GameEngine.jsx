@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import soundManager from './SoundManager';
-import { getBiomeForLevel, isBossLevel } from './BiomeConfig';
+import { getBiomeForLevel, isBossLevel, getEnemiesForLevel } from './BiomeConfig';
 import { drawBackground, drawPlatform, drawEnvironmentalHazard } from './BackgroundRenderer';
 import { drawEnemy, drawBoss } from './EnemyRenderer';
 
@@ -238,10 +238,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       state.goalX = currentX + 300;
     }
     
-    // Generate enemies based on biome (skip for boss levels - boss is the only enemy)
+    // Generate enemies based on level (skip for boss levels - boss is the only enemy)
     if (!isBoss) {
       const enemyCount = 5 + level * 2;
-      const biomeEnemies = biome.enemies;
+      const levelEnemies = getEnemiesForLevel(level);
       
       for (let i = 0; i < enemyCount; i++) {
         const enemyX = 350 + (i * (state.levelWidth - 500) / enemyCount);
@@ -249,8 +249,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           p.x <= enemyX && p.x + p.width >= enemyX && p.type !== 'obstacle'
         );
         
-        // Pick enemy type from biome's available enemies
-        const enemyType = biomeEnemies[i % biomeEnemies.length];
+        // Pick enemy type - cycle through available enemies for variety
+        const enemyType = levelEnemies[i % levelEnemies.length];
         
         let enemyY = nearbyPlatform ? nearbyPlatform.y - 40 : 460;
         
@@ -264,6 +264,18 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           enemyY = nearbyPlatform.y - 45;
         }
         
+        // Calculate max health based on type
+        const maxHealth = enemyType === 'bomber' ? 3 : (enemyType === 'voidWalker' ? 4 : 2);
+        
+        // Create patrol path for patrolling enemies
+        const hasPatrolPath = ['slime', 'fireSlime', 'iceSlime', 'voidSlime'].includes(enemyType);
+        const patrolPoints = hasPatrolPath ? [
+          { x: enemyX - 100, y: enemyY },
+          { x: enemyX, y: enemyY - 50 },
+          { x: enemyX + 100, y: enemyY },
+          { x: enemyX, y: enemyY }
+        ] : null;
+        
         state.enemies.push({
           x: enemyX,
           y: enemyY,
@@ -272,16 +284,35 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           velocityX: (Math.random() > 0.5 ? 1 : -1) * (['shooter', 'frostShooter'].includes(enemyType) ? 0.8 : 1.5 + level * 0.3),
           velocityY: 0,
           type: enemyType,
-          health: enemyType === 'bomber' ? 3 : (enemyType === 'voidWalker' ? 4 : 2),
+          health: maxHealth,
+          maxHealth: maxHealth,
           patrolStart: enemyX - 80,
           patrolEnd: enemyX + 80,
           shootCooldown: 0,
           diveState: 'patrol',
           originalY: enemyY,
           bombCooldown: 0,
-          facingRight: Math.random() > 0.5
+          facingRight: Math.random() > 0.5,
+          // New advanced behaviors
+          canDodge: ['shooter', 'frostShooter', 'voidWalker'].includes(enemyType),
+          dodgeCooldown: 0,
+          isEnraged: false,
+          patrolPath: patrolPoints,
+          patrolIndex: 0,
+          coordinatedWith: null, // Will be set up after spawning
+          waitingForSignal: false
         });
       }
+      
+      // Set up coordinated attacks between divers and shooters
+      const divers = state.enemies.filter(e => e.type === 'diver');
+      const shooters = state.enemies.filter(e => ['shooter', 'frostShooter'].includes(e.type));
+      divers.forEach((diver, i) => {
+        if (shooters[i]) {
+          diver.coordinatedWith = shooters[i];
+          shooters[i].waitingForSignal = true;
+        }
+      });
     }
     
     // Generate collectibles spread across level
@@ -931,29 +962,88 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           continue; // Skip AI while frozen
         }
         
+        // Check for enrage state (low health)
+        if (enemy.maxHealth && enemy.health <= enemy.maxHealth * 0.4 && !enemy.isEnraged) {
+          enemy.isEnraged = true;
+          enemy.velocityX *= 1.5; // Move faster when enraged
+          if (enemy.originalVelocityX) enemy.originalVelocityX *= 1.5;
+        }
+        
+        // Dodge player projectiles
+        if (enemy.canDodge && enemy.dodgeCooldown <= 0) {
+          for (const proj of projectiles) {
+            const distX = Math.abs(proj.x - enemy.x);
+            const distY = Math.abs(proj.y - enemy.y);
+            const projComingTowards = (proj.velocityX > 0 && proj.x < enemy.x) || 
+                                       (proj.velocityX < 0 && proj.x > enemy.x);
+            if (distX < 100 && distY < 50 && projComingTowards) {
+              // Dodge!
+              enemy.y += (enemy.y > 300 ? -40 : 40);
+              enemy.dodgeCooldown = 45; // Can't dodge again for 0.75 sec
+              // Dodge particles
+              for (let i = 0; i < 5; i++) {
+                particles.push({
+                  x: enemy.x + enemy.width / 2,
+                  y: enemy.y + enemy.height / 2,
+                  velocityX: (Math.random() - 0.5) * 3,
+                  velocityY: (Math.random() - 0.5) * 3,
+                  life: 15,
+                  color: '#94A3B8'
+                });
+              }
+              break;
+            }
+          }
+        }
+        if (enemy.dodgeCooldown > 0) enemy.dodgeCooldown--;
+        
+        // Patrol path following for certain enemies
+        if (enemy.patrolPath && enemy.patrolPath.length > 0) {
+          const target = enemy.patrolPath[enemy.patrolIndex];
+          const dx = target.x - enemy.x;
+          const dy = target.y - enemy.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          
+          if (dist < 10) {
+            enemy.patrolIndex = (enemy.patrolIndex + 1) % enemy.patrolPath.length;
+          } else {
+            const speed = enemy.isEnraged ? 2.5 : 1.5;
+            enemy.x += (dx / dist) * speed;
+            enemy.y += (dy / dist) * speed;
+          }
+          enemy.facingRight = dx > 0;
+        }
         // Type-specific AI
-        if (enemy.type === 'shooter') {
+        else if (['shooter', 'frostShooter'].includes(enemy.type)) {
           // Shooter - moves slowly and fires projectiles at player
-          enemy.x += enemy.velocityX;
+          if (!enemy.waitingForSignal) {
+            enemy.x += enemy.velocityX;
+          }
           enemy.shootCooldown--;
+          enemy.facingRight = player.x > enemy.x;
           
           const distToPlayer = Math.abs(enemy.x - player.x);
-          if (distToPlayer < 400 && enemy.shootCooldown <= 0) {
-            // Fire at player
+          const canShoot = !enemy.waitingForSignal || enemy.signalReceived;
+          
+          if (distToPlayer < 400 && enemy.shootCooldown <= 0 && canShoot) {
             const dirX = player.x > enemy.x ? 1 : -1;
-            state.enemyProjectiles.push({
-              x: enemy.x + enemy.width / 2,
-              y: enemy.y + enemy.height / 2,
-              velocityX: dirX * 5,
-              velocityY: 0,
-              width: 12,
-              height: 12,
-              life: 120,
-              type: 'energy'
-            });
-            enemy.shootCooldown = 90; // 1.5 seconds between shots
+            const speed = enemy.isEnraged ? 7 : 5;
+            const projectileCount = enemy.isEnraged ? 3 : 1;
             
-            // Shoot sound
+            for (let p = 0; p < projectileCount; p++) {
+              state.enemyProjectiles.push({
+                x: enemy.x + enemy.width / 2,
+                y: enemy.y + enemy.height / 2,
+                velocityX: dirX * speed,
+                velocityY: enemy.isEnraged ? (p - 1) * 2 : 0,
+                width: 12,
+                height: 12,
+                life: 120,
+                type: enemy.type === 'frostShooter' ? 'ice' : 'energy'
+              });
+            }
+            enemy.shootCooldown = enemy.isEnraged ? 50 : 90;
+            enemy.signalReceived = false;
             soundManager.createOscillator('square', 400, 0.1, 0.2);
           }
         } else if (enemy.type === 'diver') {
@@ -962,20 +1052,23 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             enemy.x += enemy.velocityX;
             enemy.y = enemy.originalY + Math.sin(time * 0.05) * 20;
             
-            // Check if player is below and close
             const distX = Math.abs(enemy.x - player.x);
             if (distX < 80 && player.y > enemy.y) {
               enemy.diveState = 'diving';
-              enemy.velocityY = 8;
+              enemy.velocityY = enemy.isEnraged ? 12 : 8;
               enemy.originalVelocityY = enemy.velocityY;
+              
+              // Signal coordinated shooter to fire
+              if (enemy.coordinatedWith) {
+                enemy.coordinatedWith.signalReceived = true;
+              }
             }
           } else if (enemy.diveState === 'diving') {
             enemy.y += enemy.velocityY;
             
-            // Hit ground or reached target
             if (enemy.y > 480 || enemy.y > player.y + 50) {
               enemy.diveState = 'returning';
-              enemy.velocityY = -3;
+              enemy.velocityY = enemy.isEnraged ? -5 : -3;
             }
           } else if (enemy.diveState === 'returning') {
             enemy.y += enemy.velocityY;
@@ -988,33 +1081,74 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             }
           }
         } else if (enemy.type === 'bomber') {
-          // Bomber - moves and drops hazards
           enemy.x += enemy.velocityX;
           enemy.bombCooldown--;
           
+          const bombRate = enemy.isEnraged ? 60 : 120;
           if (enemy.bombCooldown <= 0) {
-            // Drop a hazard
-            state.hazards.push({
-              x: enemy.x + enemy.width / 2 - 15,
-              y: enemy.y + enemy.height,
-              width: 30,
-              height: 20,
-              life: 300, // 5 seconds
-              damage: 15
-            });
-            enemy.bombCooldown = 120; // 2 seconds between drops
-            
-            // Drop sound
+            const bombCount = enemy.isEnraged ? 3 : 1;
+            for (let b = 0; b < bombCount; b++) {
+              state.hazards.push({
+                x: enemy.x + enemy.width / 2 - 15 + (b - 1) * 30,
+                y: enemy.y + enemy.height,
+                width: 30,
+                height: 20,
+                life: 300,
+                damage: 15
+              });
+            }
+            enemy.bombCooldown = bombRate;
             soundManager.createOscillator('sine', 200, 0.15, 0.2);
           }
-        } else {
-          // Default movement for slime and bat
+        } else if (enemy.type === 'voidWalker') {
+          // Void walker - teleports and attacks
           enemy.x += enemy.velocityX;
+          enemy.shootCooldown--;
+          
+          if (enemy.shootCooldown <= 0) {
+            // Teleport near player
+            const teleportDir = Math.random() > 0.5 ? 1 : -1;
+            enemy.x = player.x + teleportDir * (80 + Math.random() * 40);
+            enemy.x = Math.max(50, Math.min(enemy.x, state.levelWidth - 50));
+            
+            // Attack after teleport
+            const dirX = player.x > enemy.x ? 1 : -1;
+            state.enemyProjectiles.push({
+              x: enemy.x + enemy.width / 2,
+              y: enemy.y + enemy.height / 2,
+              velocityX: dirX * 6,
+              velocityY: 0,
+              width: 16,
+              height: 16,
+              life: 80,
+              type: 'void'
+            });
+            enemy.shootCooldown = enemy.isEnraged ? 60 : 100;
+            
+            // Teleport particles
+            for (let i = 0; i < 10; i++) {
+              particles.push({
+                x: enemy.x + enemy.width / 2,
+                y: enemy.y + enemy.height / 2,
+                velocityX: (Math.random() - 0.5) * 5,
+                velocityY: (Math.random() - 0.5) * 5,
+                life: 20,
+                color: '#A855F7'
+              });
+            }
+          }
+        } else {
+          // Default movement for flying enemies
+          enemy.x += enemy.velocityX;
+          if (['bat', 'lavaBat', 'snowOwl', 'shadowBat'].includes(enemy.type)) {
+            enemy.y = enemy.originalY + Math.sin(time * 0.05 + enemy.x * 0.01) * 30;
+          }
         }
         
-        // Simple AI - reverse at edges (for ground enemies)
-        if (enemy.x < 50 || enemy.x > state.levelWidth - 50) {
+        // Simple AI - reverse at edges (for non-patrol enemies)
+        if (!enemy.patrolPath && (enemy.x < 50 || enemy.x > state.levelWidth - 50)) {
           enemy.velocityX *= -1;
+          enemy.facingRight = enemy.velocityX > 0;
           if (enemy.originalVelocityX !== undefined) {
             enemy.originalVelocityX *= -1;
           }

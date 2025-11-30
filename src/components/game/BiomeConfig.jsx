@@ -14,7 +14,12 @@ export const BIOMES = {
       normal: { fill: '#334155', highlight: '#475569' },
       magic: { fill: '#6B21A8', glow: '#A855F7' }
     },
-    enemies: ['slime', 'bat', 'shooter'],
+    // Different enemy sets per level in biome
+    enemiesByLevel: {
+      1: ['slime', 'bat'],
+      2: ['slime', 'bat', 'shooter'],
+      3: ['slime', 'bat', 'shooter'] // Boss level
+    },
     hazards: [],
     boss: {
       name: 'Ancient Treant',
@@ -39,7 +44,11 @@ export const BIOMES = {
       magic: { fill: '#B91C1C', glow: '#EF4444' },
       lava: { fill: '#EA580C', glow: '#F97316' }
     },
-    enemies: ['fireSlime', 'lavaBat', 'shooter', 'bomber'],
+    enemiesByLevel: {
+      4: ['fireSlime', 'lavaBat'],
+      5: ['fireSlime', 'lavaBat', 'shooter', 'diver'],
+      6: ['fireSlime', 'lavaBat', 'shooter', 'bomber']
+    },
     hazards: ['lava', 'fireball'],
     boss: {
       name: 'Magma Golem',
@@ -64,7 +73,11 @@ export const BIOMES = {
       magic: { fill: '#0EA5E9', glow: '#38BDF8' },
       ice: { fill: '#A5F3FC', slippery: true }
     },
-    enemies: ['iceSlime', 'snowOwl', 'diver', 'frostShooter'],
+    enemiesByLevel: {
+      7: ['iceSlime', 'snowOwl'],
+      8: ['iceSlime', 'snowOwl', 'frostShooter'],
+      9: ['iceSlime', 'snowOwl', 'diver', 'frostShooter']
+    },
     hazards: ['icicle', 'slippery'],
     boss: {
       name: 'Frost Wyrm',
@@ -89,7 +102,11 @@ export const BIOMES = {
       magic: { fill: '#7C3AED', glow: '#A855F7' },
       void: { fill: '#4C1D95', unstable: true }
     },
-    enemies: ['voidSlime', 'shadowBat', 'shooter', 'diver', 'bomber', 'voidWalker'],
+    enemiesByLevel: {
+      10: ['voidSlime', 'shadowBat', 'shooter'],
+      11: ['voidSlime', 'shadowBat', 'diver', 'bomber'],
+      12: ['voidSlime', 'shadowBat', 'shooter', 'voidWalker']
+    },
     hazards: ['voidZone', 'darkPulse'],
     boss: {
       name: 'Void Lord',
@@ -109,12 +126,24 @@ export function getBiomeForLevel(level) {
   // Default to cycling through biomes for endless mode
   const biomeKeys = Object.keys(BIOMES);
   const index = Math.floor((level - 1) / 3) % biomeKeys.length;
-  return { key: biomeKeys[index], ...BIOMES[biomeKeys[index]] };
+  const biomeKey = biomeKeys[index];
+  return { key: biomeKey, ...BIOMES[biomeKey] };
+}
+
+export function getEnemiesForLevel(level) {
+  const biome = getBiomeForLevel(level);
+  if (biome.enemiesByLevel && biome.enemiesByLevel[level]) {
+    return biome.enemiesByLevel[level];
+  }
+  // Fallback for endless mode
+  const allEnemies = ['slime', 'bat', 'shooter', 'diver', 'bomber'];
+  const count = 2 + Math.min(level % 3, 2);
+  return allEnemies.slice(0, count);
 }
 
 export function isBossLevel(level) {
   for (const biome of Object.values(BIOMES)) {
     if (biome.bossLevel === level) return true;
   }
-  return level % 3 === 0; // Every 3rd level is a boss
+  return level % 3 === 0;
 }
