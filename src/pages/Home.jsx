@@ -3,17 +3,20 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { Play, ShoppingBag, Zap, Sparkles, Gem, FolderOpen } from 'lucide-react';
-// Removed unused hasSavedGame state since we now only use highestLevel
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 
 export default function Home() {
+  const [hasSavedGame, setHasSavedGame] = useState(false);
   const [magicScraps, setMagicScraps] = useState(0);
   const [arcaneCrystals, setArcaneCrystals] = useState(0);
   const [highestLevel, setHighestLevel] = useState(1);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
+    const saved = localStorage.getItem('jeff_save_game');
+    setHasSavedGame(!!saved);
+
     const loadUserData = async () => {
       try {
         const user = await base44.auth.me();
@@ -108,7 +111,7 @@ export default function Home() {
       {/* Support Banner & Socials - Top Left */}
       <div className="fixed top-3 left-3 z-20 flex flex-col gap-2">
         <a 
-          href="https://globalcomix.com/c/jefftherobotwizard" 
+          href="https://globalcomix.com/a/jeff-the-robot-wizard" 
           target="_blank" 
           rel="noopener noreferrer"
           className="bg-gradient-to-r from-purple-600/90 to-blue-600/90 backdrop-blur-sm hover:from-purple-500 hover:to-blue-500 text-white text-xs md:text-sm px-4 py-2.5 rounded-lg border border-purple-400/50 hover:border-purple-300 transition-all flex items-center gap-2 shadow-lg shadow-purple-500/20"
@@ -183,15 +186,15 @@ export default function Home() {
             </Button>
           </Link>
           
-          {highestLevel > 1 && (
-            <Link to={createPageUrl('Game') + `?startLevel=${highestLevel}`}>
+          {hasSavedGame && (
+            <Link to={createPageUrl('Game') + '?continue=true'}>
               <Button
                 size="lg"
                 variant="outline"
                 className="w-full border-cyan-500 text-cyan-400 hover:bg-cyan-500/20 font-bold px-8 py-4 text-base md:text-lg rounded-xl"
               >
                 <FolderOpen className="w-4 h-4 md:w-5 md:h-5 mr-2" />
-                Continue from Level {highestLevel}
+                Continue (Level {JSON.parse(localStorage.getItem('jeff_save_game') || '{}').level || 1})
               </Button>
             </Link>
           )}
