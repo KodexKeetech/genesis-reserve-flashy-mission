@@ -4,6 +4,12 @@ export function drawEnemy(ctx, enemy, ex, time, isFrozen, biomeKey) {
   if (isFrozen) {
     ctx.globalAlpha = 0.8;
   }
+  
+  // Enraged glow effect
+  if (enemy.isEnraged) {
+    ctx.shadowColor = '#EF4444';
+    ctx.shadowBlur = 15 + Math.sin(time * 0.3) * 5;
+  }
 
   switch (enemy.type) {
     case 'slime':
