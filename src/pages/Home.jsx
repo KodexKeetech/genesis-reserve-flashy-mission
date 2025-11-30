@@ -69,7 +69,7 @@ export default function Home() {
         {/* Jeff character preview */}
         <div className="mb-6 relative">
           <motion.img 
-            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692c28c6355507b7b2161062/7af5ab7fc_GeneratedImageSeptember302025-6_44PM.png"
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692c28c6355507b7b2161062/e1f8515a1_artworks_00005.png"
             alt="Jeff the Robot Wizard"
             className="w-32 h-32 md:w-48 md:h-48 mx-auto object-contain drop-shadow-2xl"
             animate={{ y: [0, -10, 0] }}
