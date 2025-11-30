@@ -60,6 +60,74 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
     const saved = localStorage.getItem('jeff_save_game');
     setHasSavedGame(!!saved);
   }, []);
+  if (type === 'tutorial') {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="absolute inset-0 bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center rounded-xl p-6"
+      >
+        <motion.div
+          initial={{ scale: 0.8, y: 20 }}
+          animate={{ scale: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 100 }}
+          className="text-center max-w-lg"
+        >
+          <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400 mb-6">
+            Welcome, Wizard!
+          </h2>
+          
+          <div className="bg-slate-800/80 rounded-xl p-5 mb-6 text-left space-y-3">
+            <div className="flex items-center gap-3">
+              <kbd className="px-2 py-1 bg-slate-700 rounded text-cyan-400 text-sm">← →</kbd>
+              <span className="text-slate-300">Move left and right</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <kbd className="px-2 py-1 bg-slate-700 rounded text-green-400 text-sm">SPACE</kbd>
+              <span className="text-slate-300">Jump (press again to double jump!)</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <kbd className="px-2 py-1 bg-slate-700 rounded text-purple-400 text-sm">CLICK</kbd>
+              <span className="text-slate-300">Cast magic toward cursor</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <kbd className="px-2 py-1 bg-slate-700 rounded text-cyan-400 text-sm">SHIFT</kbd>
+              <span className="text-slate-300">Dash through enemies</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <kbd className="px-2 py-1 bg-slate-700 rounded text-yellow-400 text-sm">Q</kbd>
+              <span className="text-slate-300">Switch between spells</span>
+            </div>
+          </div>
+
+          <p className="text-slate-400 mb-6 text-sm">
+            Collect coins 🪙 and reach the purple portal to complete each level!
+          </p>
+          
+          <div className="flex flex-col gap-3">
+            <Button
+              onClick={onStart}
+              size="lg"
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold px-8 py-5 text-lg rounded-xl shadow-lg shadow-purple-500/30"
+            >
+              <Play className="w-5 h-5 mr-2" />
+              Start Tutorial Level
+            </Button>
+            
+            <Button
+              onClick={onNextLevel}
+              size="lg"
+              variant="outline"
+              className="border-slate-600 text-slate-400 hover:text-white hover:bg-slate-800 font-medium px-6 py-4 rounded-xl"
+            >
+              Skip Tutorial →
+            </Button>
+          </div>
+        </motion.div>
+      </motion.div>
+    );
+  }
+
   if (type === 'start') {
     return (
       <motion.div

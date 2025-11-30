@@ -94,22 +94,82 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
   });
 
   const generateLevel = useCallback((level) => {
-    const state = gameStateRef.current;
-    state.platforms = [];
-    state.enemies = [];
-    state.collectibles = [];
-    state.projectiles = [];
-    state.particles = [];
-    state.powerUpItems = [];
-    state.hazards = [];
-    state.enemyProjectiles = [];
-    state.environmentalHazards = [];
-    state.boss = null;
-    
-    // Get biome for this level
-    const biome = getBiomeForLevel(level);
-    state.biome = biome;
-    const isBoss = isBossLevel(level);
+        const state = gameStateRef.current;
+        state.platforms = [];
+        state.enemies = [];
+        state.collectibles = [];
+        state.projectiles = [];
+        state.particles = [];
+        state.powerUpItems = [];
+        state.hazards = [];
+        state.enemyProjectiles = [];
+        state.environmentalHazards = [];
+        state.boss = null;
+
+        // Tutorial level (level 0)
+        if (level === 0) {
+          const biome = getBiomeForLevel(1); // Use forest biome for tutorial
+          state.biome = biome;
+          state.levelWidth = 1200;
+          state.goalX = 1100;
+
+          // Simple flat ground with a few platforms
+          state.platforms.push({ x: 0, y: 500, width: 500, height: 100, type: 'ground' });
+          state.platforms.push({ x: 300, y: 400, width: 100, height: 20, type: 'magic' });
+          state.platforms.push({ x: 550, y: 500, width: 200, height: 100, type: 'ground' });
+          state.platforms.push({ x: 600, y: 350, width: 80, height: 20, type: 'normal' });
+          state.platforms.push({ x: 800, y: 500, width: 400, height: 100, type: 'ground' });
+
+          // Just 2 easy enemies
+          state.enemies.push({
+            x: 650, y: 460, width: 40, height: 40,
+            velocityX: 0.8, velocityY: 0, type: 'slime',
+            health: 1, maxHealth: 1,
+            patrolStart: 600, patrolEnd: 730,
+            frozen: 0, facingRight: true
+          });
+          state.enemies.push({
+            x: 900, y: 460, width: 40, height: 40,
+            velocityX: 0.8, velocityY: 0, type: 'slime',
+            health: 1, maxHealth: 1,
+            patrolStart: 850, patrolEnd: 980,
+            frozen: 0, facingRight: true
+          });
+
+          // A few coins to collect
+          state.collectibles.push({ x: 320, y: 350, width: 24, height: 24, collected: false, bobOffset: 0 });
+          state.collectibles.push({ x: 620, y: 300, width: 24, height: 24, collected: false, bobOffset: 1 });
+          state.collectibles.push({ x: 950, y: 430, width: 24, height: 24, collected: false, bobOffset: 2 });
+
+          // Reset player
+          const upgrades = playerUpgrades || {};
+          const bonusHealth = (upgrades.maxHealth || 0) * 20;
+          state.player.x = 100;
+          state.player.y = 400;
+          state.player.velocityX = 0;
+          state.player.velocityY = 0;
+          state.player.health = 100 + bonusHealth;
+          state.player.maxHealth = 100 + bonusHealth;
+          state.player.canDoubleJump = true;
+          state.player.hasDoubleJumped = false;
+          state.player.dashCooldown = 0;
+          state.player.isDashing = false;
+          state.player.powerUps = { SPEED: 0, INVINCIBILITY: 0, POWER_SHOT: 0, SHIELD: 0, shieldHealth: 0 };
+          state.player.selectedProjectile = 0;
+          state.player.coinAmmo = 0;
+          state.player.specialAbilities = {
+            aoeBlast: { cooldown: 0, active: false },
+            reflectShield: { cooldown: 0, active: false, timer: 0 },
+            hover: { cooldown: 0, active: false, timer: 0 }
+          };
+          state.cameraX = 0;
+          return;
+        }
+
+        // Get biome for this level
+        const biome = getBiomeForLevel(level);
+        state.biome = biome;
+        const isBoss = isBossLevel(level);
     
     const levelWidth = isBoss ? 1200 : 2400 + level * 600;
     let currentX = 0;

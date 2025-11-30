@@ -11,7 +11,8 @@ import { Sparkles, ShoppingBag, Gem, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function Game() {
-  const [gameState, setGameState] = useState('playing'); // start, playing, gameOver, levelComplete
+  const [gameState, setGameState] = useState('tutorial'); // tutorial, start, playing, gameOver, levelComplete
+  const [isTutorial, setIsTutorial] = useState(false);
   const [score, setScore] = useState(0);
   const [health, setHealth] = useState(100);
   const [level, setLevel] = useState(1);
@@ -111,6 +112,24 @@ export default function Game() {
     touchInputRef.current[action] = value;
   }, []);
 
+  const handleStartTutorial = useCallback(() => {
+    soundManager.init();
+    setIsTutorial(true);
+    setLevel(0); // Tutorial level
+    setGameState('playing');
+    setScore(0);
+    setHealth(100);
+  }, []);
+
+  const handleSkipTutorial = useCallback(() => {
+    soundManager.init();
+    setIsTutorial(false);
+    setLevel(1);
+    setGameState('playing');
+    setScore(0);
+    setHealth(100);
+  }, []);
+
   const handleStart = useCallback(() => {
     soundManager.init();
     setGameState('playing');
@@ -158,6 +177,15 @@ export default function Game() {
   }, [sessionScraps, sessionCrystals, saveScraps]);
 
   const handleLevelComplete = useCallback(() => {
+    // If completing tutorial, go straight to level 1
+    if (isTutorial) {
+      setIsTutorial(false);
+      setLevel(1);
+      setHealth(100);
+      setGameState('playing');
+      return;
+    }
+    
     setGameState('levelComplete');
     // Award bonus crystal every 5 levels
     const bonusCrystal = level % 5 === 0 ? 1 : 0;
@@ -167,7 +195,7 @@ export default function Game() {
       setSessionScraps(0);
       setSessionCrystals(0);
     }
-  }, [sessionScraps, sessionCrystals, saveScraps, level]);
+  }, [sessionScraps, sessionCrystals, saveScraps, level, isTutorial]);
 
   const handleScoreChange = useCallback((newScore) => {
     setScore(newScore);
@@ -254,14 +282,14 @@ export default function Game() {
         {gameState !== 'playing' && (
           <div className="w-[800px] h-[600px] bg-slate-900 rounded-xl relative">
             <GameOverlay
-              type={gameState}
-              score={score}
-              level={level}
-              onStart={handleStart}
-              onRestart={handleRestart}
-              onNextLevel={handleNextLevel}
-              onLoadGame={handleLoadGame}
-            />
+                              type={gameState}
+                              score={score}
+                              level={level}
+                              onStart={gameState === 'tutorial' ? handleStartTutorial : handleStart}
+                              onRestart={handleRestart}
+                              onNextLevel={gameState === 'tutorial' ? handleSkipTutorial : handleNextLevel}
+                              onLoadGame={handleLoadGame}
+                            />
           </div>
         )}
 
