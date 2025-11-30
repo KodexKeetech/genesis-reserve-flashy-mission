@@ -7,7 +7,7 @@ import GameUI from '@/components/game/GameUI';
 import GameOverlay from '@/components/game/GameOverlay';
 import TouchControls from '@/components/game/TouchControls';
 import SettingsMenu from '@/components/game/SettingsMenu';
-import LevelStartMenu from '@/components/game/LevelStartMenu';
+
 import soundManager from '@/components/game/SoundManager';
 
 import { Sparkles, ShoppingBag, Gem, Zap, Settings } from 'lucide-react';
@@ -54,7 +54,7 @@ export default function Game() {
   const [sessionCrystals, setSessionCrystals] = useState(0);
   const [coinAmmo, setCoinAmmo] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
-  const [showLevelStart, setShowLevelStart] = useState(false);
+  
   const [startingGun, setStartingGun] = useState(0);
   const [currentGun, setCurrentGun] = useState(0);
   const [checkpoint, setCheckpoint] = useState(null);
