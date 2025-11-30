@@ -1,6 +1,7 @@
 import React from 'react';
-import { Heart, Star, Zap, Wind, Shield, Flame, Snowflake } from 'lucide-react';
+import { Heart, Star, Zap, Wind, Shield, Flame, Snowflake, Map } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getBiomeForLevel, isBossLevel } from './BiomeConfig';
 
 const POWERUP_INFO = {
   SPEED: { color: '#22D3EE', icon: Wind, name: 'Speed', maxDuration: 300 },
@@ -13,6 +14,9 @@ export default function GameUI({ score, health, level, powerUps, abilityCooldown
   const activePowerUps = powerUps ? Object.entries(powerUps).filter(
     ([key, value]) => key !== 'shieldHealth' && value > 0
   ) : [];
+  
+  const biome = getBiomeForLevel(level);
+  const isBoss = isBossLevel(level);
 
   return (
     <div className="absolute top-4 left-4 right-4 flex justify-between items-start pointer-events-none">
@@ -93,21 +97,34 @@ export default function GameUI({ score, health, level, powerUps, abilityCooldown
 
       {/* Right side - Score, Level & Abilities */}
       <div className="space-y-3">
-        <div className="flex gap-3">
-          <div className="bg-slate-900/80 backdrop-blur-sm rounded-xl px-4 py-3 border border-yellow-500/30">
+        {/* Biome indicator */}
+          <div className="bg-slate-900/80 backdrop-blur-sm rounded-xl px-4 py-2 border border-purple-500/30 mb-2">
             <div className="flex items-center gap-2">
-              <Star className="w-5 h-5 text-yellow-400" fill="currentColor" />
-              <span className="text-yellow-400 font-bold text-lg">{score.toLocaleString()}</span>
+              <Map className="w-4 h-4 text-purple-400" />
+              <span className="text-purple-300 font-medium text-sm">{biome?.name || 'Unknown'}</span>
+              {isBoss && (
+                <span className="bg-red-500/80 text-white text-xs px-2 py-0.5 rounded-full font-bold animate-pulse">
+                  BOSS
+                </span>
+              )}
             </div>
           </div>
-          
-          <div className="bg-slate-900/80 backdrop-blur-sm rounded-xl px-4 py-3 border border-blue-500/30">
-            <div className="flex items-center gap-2">
-              <Zap className="w-5 h-5 text-blue-400" fill="currentColor" />
-              <span className="text-blue-400 font-bold text-lg">Level {level}</span>
+
+          <div className="flex gap-3">
+            <div className="bg-slate-900/80 backdrop-blur-sm rounded-xl px-4 py-3 border border-yellow-500/30">
+              <div className="flex items-center gap-2">
+                <Star className="w-5 h-5 text-yellow-400" fill="currentColor" />
+                <span className="text-yellow-400 font-bold text-lg">{score.toLocaleString()}</span>
+              </div>
+            </div>
+
+            <div className="bg-slate-900/80 backdrop-blur-sm rounded-xl px-4 py-3 border border-blue-500/30">
+              <div className="flex items-center gap-2">
+                <Zap className="w-5 h-5 text-blue-400" fill="currentColor" />
+                <span className="text-blue-400 font-bold text-lg">Level {level}</span>
+              </div>
             </div>
           </div>
-        </div>
 
         {/* Abilities */}
         {abilityCooldowns && (
