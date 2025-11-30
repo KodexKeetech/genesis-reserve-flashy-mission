@@ -27,6 +27,7 @@ const POWERUP_TYPES = {
 
 export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel, onPowerUpChange, onAbilityCooldowns, onScrapsEarned, onCrystalsEarned, playerUpgrades, unlockedAbilities, abilityUpgrades, touchInput }) {
   const canvasRef = useRef(null);
+  const mouseRef = useRef({ x: 400, y: 300 }); // Track mouse position relative to canvas
   const gameStateRef = useRef({
     player: {
       x: 100,
@@ -404,7 +405,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     let lastTouchCast = false;
     let lastTouchSwitch = false;
 
-    const doCast = () => {
+    const doCast = (aimX, aimY) => {
       const state = gameStateRef.current;
       const player = state.player;
       const upgrades = playerUpgrades || {};
@@ -415,10 +416,23 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         const isFreeze = player.selectedProjectile === 1;
         const bonusDamage = upgrades.spellPower || 0;
 
+        // Calculate direction to aim point
+        const playerCenterX = player.x - state.cameraX + player.width / 2;
+        const playerCenterY = player.y + player.height / 2;
+        const dx = aimX - playerCenterX;
+        const dy = aimY - playerCenterY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const dirX = dist > 0 ? dx / dist : 1;
+        const dirY = dist > 0 ? dy / dist : 0;
+
+        // Update facing direction based on aim
+        player.facingRight = dx >= 0;
+
         state.projectiles.push({
-          x: player.x + (player.facingRight ? player.width : 0),
+          x: player.x + player.width / 2,
           y: player.y + player.height / 2,
-          velocityX: player.facingRight ? PROJECTILE_SPEED : -PROJECTILE_SPEED,
+          velocityX: dirX * PROJECTILE_SPEED,
+          velocityY: dirY * PROJECTILE_SPEED,
           width: isPowerShot ? 24 : 16,
           height: isPowerShot ? 24 : 16,
           life: 100,
@@ -452,7 +466,23 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     };
 
     const handleClick = (e) => {
-      doCast();
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = 800 / rect.width;
+      const scaleY = 600 / rect.height;
+      const x = (e.clientX - rect.left) * scaleX;
+      const y = (e.clientY - rect.top) * scaleY;
+      mouseRef.current = { x, y };
+      doCast(x, y);
+    };
+
+    const handleMouseMove = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = 800 / rect.width;
+      const scaleY = 600 / rect.height;
+      mouseRef.current = {
+        x: (e.clientX - rect.left) * scaleX,
+        y: (e.clientY - rect.top) * scaleY
+      };
     };
 
     const handleClickOld = (e) => {
@@ -652,6 +682,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     window.addEventListener('keydown', handleKeyDownWithDash);
     window.addEventListener('keyup', handleKeyUp);
     canvas.addEventListener('click', handleClick);
+    canvas.addEventListener('mousemove', handleMouseMove);
 
     const checkCollision = (a, b) => {
       return a.x < b.x + b.width &&
@@ -1066,9 +1097,11 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       }
       player.jumpKeyHeld = jumpKeyPressed;
 
-      // Handle touch cast
+      // Handle touch cast - aim toward touch aim position or forward
       if (touch.cast && !lastTouchCast) {
-        doCast();
+        const touchAimX = touch.aimX !== undefined ? touch.aimX : (player.facingRight ? 800 : 0);
+        const touchAimY = touch.aimY !== undefined ? touch.aimY : (player.y + player.height / 2);
+        doCast(touchAimX, touchAimY);
       }
       lastTouchCast = touch.cast;
 
@@ -1192,6 +1225,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       for (let i = projectiles.length - 1; i >= 0; i--) {
         const proj = projectiles[i];
         proj.x += proj.velocityX;
+        proj.y += proj.velocityY || 0;
         proj.life--;
         
         // Check enemy collision
@@ -2343,6 +2377,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       window.removeEventListener('keydown', handleKeyDownWithDash);
       window.removeEventListener('keyup', handleKeyUp);
       canvas.removeEventListener('click', handleClick);
+      canvas.removeEventListener('mousemove', handleMouseMove);
     };
   }, [currentLevel, onScoreChange, onHealthChange, onLevelComplete, onGameOver, generateLevel, onPowerUpChange, onAbilityCooldowns]);
 
