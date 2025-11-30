@@ -135,6 +135,14 @@ export default function Game() {
   }, []);
 
   const handleRestart = useCallback(() => {
+    // Reset touch input to prevent auto-movement
+    touchInputRef.current = {
+      move: { x: 0, y: 0 },
+      jump: false,
+      dash: false,
+      cast: false,
+      switch: false
+    };
     setGameState('playing');
     setScore(0);
     setHealth(100);
@@ -143,6 +151,14 @@ export default function Game() {
   }, []);
 
   const handleNextLevel = useCallback(() => {
+    // Reset touch input to prevent auto-movement
+    touchInputRef.current = {
+      move: { x: 0, y: 0 },
+      jump: false,
+      dash: false,
+      cast: false,
+      switch: false
+    };
     setLevel(prev => prev + 1);
     setHealth(100);
     setGameState('playing');
