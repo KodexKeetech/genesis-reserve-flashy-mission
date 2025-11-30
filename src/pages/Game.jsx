@@ -130,6 +130,7 @@ export default function Game() {
   useEffect(() => {
     localStorage.setItem('jeff_settings', JSON.stringify(gameSettings));
     soundManager.setMuted(!gameSettings.sound);
+    musicManager.setMuted(!gameSettings.sound);
   }, [gameSettings]);
 
   // Load saved game on mount if continuing
