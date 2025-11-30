@@ -3,6 +3,7 @@ import soundManager from './SoundManager';
 import { getBiomeForLevel, isBossLevel, getEnemiesForLevel } from './BiomeConfig';
 import { drawBackground, drawPlatform, drawEnvironmentalHazard } from './BackgroundRenderer';
 import { drawEnemy, drawBoss } from './EnemyRenderer';
+import { createImpactEffect, createDamageEffect, createExplosionEffect, drawParticle, drawProjectileTrail, drawEnemyProjectileTrail } from './ParticleEffects';
 
 const GRAVITY = 0.6;
 const JUMP_FORCE = -13;
@@ -533,20 +534,50 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       const facingRight = player.facingRight;
       const dir = facingRight ? 1 : -1;
       const centerX = x + player.width / 2;
-      
+
       ctx.save();
-      
-      if (player.invincible && Math.floor(time / 5) % 2 === 0) {
+
+      // Damage flash effect
+      if (player.invincible && player.invincibleTimer > 50) {
+        ctx.filter = 'brightness(2) saturate(0.5)';
+      } else if (player.invincible && Math.floor(time / 5) % 2 === 0) {
         ctx.globalAlpha = 0.5;
+      }
+
+      // Squash and stretch for jumps
+      let scaleX = 1;
+      let scaleY = 1;
+      if (!player.onGround) {
+        if (player.velocityY < -5) {
+          scaleX = 0.9;
+          scaleY = 1.15;
+        } else if (player.velocityY > 5) {
+          scaleX = 1.1;
+          scaleY = 0.9;
+        }
+      }
+
+      // Landing squash
+      if (player.justLanded) {
+        scaleX = 1.2;
+        scaleY = 0.8;
       }
 
       // Animation offsets
       const isMoving = Math.abs(player.velocityX) > 0.5;
-      const runCycle = time * 0.25;
-      const legSwing = isMoving && player.onGround ? Math.sin(runCycle) * 8 : 0;
-      const armSwing = isMoving && player.onGround ? Math.sin(runCycle) * 6 : 0;
-      const bodyBob = isMoving && player.onGround ? Math.abs(Math.sin(runCycle * 2)) * 2 : 0;
-      const coatFlap = isMoving ? Math.sin(runCycle * 0.8) * 5 : 0;
+      const runCycle = time * 0.3;
+      const legSwing = isMoving && player.onGround ? Math.sin(runCycle) * 12 : 0;
+      const armSwing = isMoving && player.onGround ? Math.sin(runCycle) * 10 : 0;
+      const bodyBob = isMoving && player.onGround ? Math.abs(Math.sin(runCycle * 2)) * 3 : 0;
+      const coatFlap = isMoving ? Math.sin(runCycle * 0.8) * 8 : Math.sin(time * 0.05) * 2;
+
+      // Casting animation
+      const castingPose = player.isCasting ? Math.sin(time * 0.5) * 5 : 0;
+
+      // Apply scale transform
+      ctx.translate(centerX, y + player.height);
+      ctx.scale(scaleX, scaleY);
+      ctx.translate(-centerX, -(y + player.height));
 
       // Coat tail (behind) - Dark navy blue long coat
       ctx.fillStyle = '#1E3A5F';
@@ -646,7 +677,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       // Front arm (with magic glow if casting)
       ctx.save();
       ctx.translate(centerX + 12, y + 24 - bodyBob);
-      ctx.rotate((armSwing * Math.PI) / 180);
+      const armAngle = player.isCasting ? -45 + castingPose : armSwing;
+      ctx.rotate((armAngle * Math.PI) / 180);
       // Coat sleeve
       ctx.fillStyle = '#243F64';
       ctx.fillRect(-4, 0, 8, 14);
@@ -655,8 +687,13 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       ctx.fillRect(-4, 12, 8, 3);
       // Dark glove with magic glow
       if (player.isCasting) {
-        ctx.shadowColor = '#67E8F9';
-        ctx.shadowBlur = 15;
+        ctx.shadowColor = player.selectedProjectile === 1 ? '#22D3EE' : '#A855F7';
+        ctx.shadowBlur = 20 + Math.sin(time * 0.5) * 10;
+        // Magic orb in hand
+        ctx.fillStyle = player.selectedProjectile === 1 ? '#22D3EE' : '#A855F7';
+        ctx.beginPath();
+        ctx.arc(0, 22, 8 + Math.sin(time * 0.5) * 2, 0, Math.PI * 2);
+        ctx.fill();
       }
       ctx.fillStyle = '#3D3D3D';
       ctx.beginPath();
@@ -891,6 +928,9 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       }
       lastTouchSwitch = touch.switch;
       
+      // Track landing for squash effect
+      const wasOnGround = player.onGround;
+
       // Physics (skip gravity during dash)
       if (!player.isDashing) {
         player.velocityY += GRAVITY;
@@ -940,7 +980,11 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             player.onGround = true;
             player.isJumping = false;
             player.hasDoubleJumped = false;
-          }
+            if (!wasOnGround) {
+              player.justLanded = true;
+              setTimeout(() => { player.justLanded = false; }, 100);
+            }
+            }
         }
       }
       
@@ -1002,26 +1046,18 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             }
             
             if (enemies[j].health <= 0) {
-              // Play enemy defeat sound
               soundManager.playEnemyDefeat();
-              
-              // Spawn particles
-              for (let k = 0; k < 10; k++) {
-                particles.push({
-                  x: enemies[j].x + enemies[j].width / 2,
-                  y: enemies[j].y + enemies[j].height / 2,
-                  velocityX: (Math.random() - 0.5) * 6,
-                  velocityY: (Math.random() - 0.5) * 6,
-                  life: 30,
-                  color: enemies[j].type === 'slime' ? '#22C55E' : '#A855F7'
-                });
-              }
+              const enemyColor = enemies[j].type.includes('fire') || enemies[j].type.includes('lava') ? '#F97316' :
+                                enemies[j].type.includes('ice') || enemies[j].type.includes('frost') || enemies[j].type.includes('snow') ? '#22D3EE' :
+                                enemies[j].type.includes('void') || enemies[j].type.includes('shadow') ? '#A855F7' :
+                                enemies[j].type === 'slime' ? '#22C55E' : '#A855F7';
+              createExplosionEffect(particles, enemies[j].x + enemies[j].width / 2, enemies[j].y + enemies[j].height / 2, enemyColor, 1);
               enemies.splice(j, 1);
               state.score += 100;
               onScoreChange(state.score);
             } else {
-              // Play enemy hit sound
               soundManager.playEnemyHit();
+              createImpactEffect(particles, enemies[j].x + enemies[j].width / 2, enemies[j].y + enemies[j].height / 2, '#FFFFFF', 6);
             }
             projectiles.splice(i, 1);
             break;
@@ -1273,7 +1309,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             player.velocityY = -8;
             player.velocityX = player.x < enemy.x ? -5 : 5;
             onHealthChange(player.health);
-          }
+            createDamageEffect(particles, player.x + player.width / 2, player.y + player.height / 2);
+            }
         }
       }
       
@@ -1704,18 +1741,40 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         drawBoss(ctx, state.boss, bx, time, isFrozen, state.biome?.key);
       }
       
-      // Draw enemy projectiles
+      // Draw enemy projectiles with trails
       for (const proj of state.enemyProjectiles) {
         const px = proj.x - state.cameraX;
-        ctx.fillStyle = '#EF4444';
-        ctx.shadowColor = '#EF4444';
-        ctx.shadowBlur = 15;
+        
+        // Draw trail
+        drawEnemyProjectileTrail(ctx, proj, state.cameraX, time);
+        
+        let color = '#EF4444';
+        let innerColor = '#FCA5A5';
+        let size = 6;
+        
+        if (proj.type === 'ice' || proj.type === 'iceBreath') {
+          color = '#22D3EE';
+          innerColor = '#A5F3FC';
+          if (proj.type === 'iceBreath') size = 15;
+        } else if (proj.type === 'void') {
+          color = '#A855F7';
+          innerColor = '#E9D5FF';
+          size = 8;
+        } else if (proj.type === 'fireball') {
+          color = '#F97316';
+          innerColor = '#FBBF24';
+          size = 8;
+        }
+        
+        ctx.fillStyle = color;
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 15 + Math.sin(time * 0.3) * 5;
         ctx.beginPath();
-        ctx.arc(px, proj.y, 6, 0, Math.PI * 2);
+        ctx.arc(px, proj.y, size + Math.sin(time * 0.4) * 2, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = '#FCA5A5';
+        ctx.fillStyle = innerColor;
         ctx.beginPath();
-        ctx.arc(px, proj.y, 3, 0, Math.PI * 2);
+        ctx.arc(px, proj.y, size * 0.5, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
       }
@@ -1739,49 +1798,62 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         ctx.shadowBlur = 0;
       }
       
-      // Draw projectiles
+      // Draw projectiles with trails
       for (const proj of projectiles) {
         const projX = proj.x - state.cameraX;
         const size = proj.isPowerShot ? 12 : 8;
         
+        // Draw trail first
+        drawProjectileTrail(ctx, proj, state.cameraX, time);
+        
         if (proj.type === 'freeze') {
-          // Freeze projectile - cyan/ice colored
           ctx.fillStyle = '#22D3EE';
           ctx.shadowColor = '#22D3EE';
-          ctx.shadowBlur = 25;
+          ctx.shadowBlur = 25 + Math.sin(time * 0.3) * 5;
           ctx.beginPath();
-          ctx.arc(projX + 8, proj.y + 8, size, 0, Math.PI * 2);
+          ctx.arc(projX + 8, proj.y + 8, size + Math.sin(time * 0.4) * 2, 0, Math.PI * 2);
           ctx.fill();
           
-          // Ice crystal effect
+          // Rotating ice crystal
+          ctx.save();
+          ctx.translate(projX + 8, proj.y + 8);
+          ctx.rotate(time * 0.2);
           ctx.fillStyle = '#A5F3FC';
           ctx.beginPath();
-          ctx.moveTo(projX + 8, proj.y);
-          ctx.lineTo(projX + 12, proj.y + 8);
-          ctx.lineTo(projX + 8, proj.y + 16);
-          ctx.lineTo(projX + 4, proj.y + 8);
+          ctx.moveTo(0, -size);
+          ctx.lineTo(size * 0.5, 0);
+          ctx.lineTo(0, size);
+          ctx.lineTo(-size * 0.5, 0);
           ctx.closePath();
           ctx.fill();
+          ctx.restore();
         } else if (proj.isPowerShot) {
-          // Power shot - red/orange fire
+          // Animated fire effect
           ctx.fillStyle = '#EF4444';
           ctx.shadowColor = '#F97316';
-          ctx.shadowBlur = 30;
+          ctx.shadowBlur = 35 + Math.sin(time * 0.4) * 10;
           ctx.beginPath();
-          ctx.arc(projX + 8, proj.y + 8, size, 0, Math.PI * 2);
+          ctx.arc(projX + 8, proj.y + 8, size + Math.sin(time * 0.5) * 3, 0, Math.PI * 2);
           ctx.fill();
           
           ctx.fillStyle = '#FBBF24';
           ctx.beginPath();
           ctx.arc(projX + 8, proj.y + 8, size * 0.5, 0, Math.PI * 2);
           ctx.fill();
+          
+          // Fire flicker
+          ctx.fillStyle = '#FEF3C7';
+          ctx.beginPath();
+          ctx.arc(projX + 6, proj.y + 6, size * 0.25, 0, Math.PI * 2);
+          ctx.fill();
         } else {
-          // Normal projectile - purple
+          // Pulsing magic orb
+          const pulse = Math.sin(time * 0.3) * 2;
           ctx.fillStyle = '#A855F7';
           ctx.shadowColor = '#A855F7';
-          ctx.shadowBlur = 20;
+          ctx.shadowBlur = 20 + pulse * 3;
           ctx.beginPath();
-          ctx.arc(projX + 8, proj.y + 8, size, 0, Math.PI * 2);
+          ctx.arc(projX + 8, proj.y + 8, size + pulse, 0, Math.PI * 2);
           ctx.fill();
           
           ctx.fillStyle = '#E9D5FF';
@@ -1792,16 +1864,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         ctx.shadowBlur = 0;
       }
       
-      // Draw particles
+      // Draw particles with enhanced effects
       for (const particle of particles) {
-        const alpha = particle.life / 30;
-        ctx.fillStyle = particle.color;
-        ctx.globalAlpha = alpha;
-        ctx.beginPath();
-        ctx.arc(particle.x - state.cameraX, particle.y, 4 * alpha, 0, Math.PI * 2);
-        ctx.fill();
+        drawParticle(ctx, { ...particle, x: particle.x - state.cameraX }, time);
       }
-      ctx.globalAlpha = 1;
       
       // Draw shield effect around Jeff if active
       if (player.powerUps.SHIELD > 0) {
