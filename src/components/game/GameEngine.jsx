@@ -92,6 +92,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     goalX: 1900,
     biome: null,
     checkpointX: 0,
+    checkpointY: 400,
     checkpointReached: false
     });
 
