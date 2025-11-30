@@ -24,7 +24,14 @@ export default function Home() {
         setArcaneCrystals(user.arcaneCrystals || 0);
         setHighestLevel(user.highestLevel || 1);
       } catch (e) {
-        // Not logged in
+        // Not logged in - load from localStorage as fallback
+        const localData = localStorage.getItem('jeff_player_data');
+        if (localData) {
+          const data = JSON.parse(localData);
+          setMagicScraps(data.magicScraps || 0);
+          setArcaneCrystals(data.arcaneCrystals || 0);
+          setHighestLevel(data.highestLevel || 1);
+        }
       }
     };
     loadUserData();
