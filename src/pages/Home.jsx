@@ -40,7 +40,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex flex-col items-center justify-center p-4 overflow-hidden">
+    <div className="min-h-screen min-h-[100dvh] bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex flex-col items-center justify-center p-4 overflow-hidden overflow-x-hidden">
       {/* Space Background */}
       <div className="fixed inset-0 bg-black overflow-hidden pointer-events-none">
         {/* Stars - static, no parallax */}
