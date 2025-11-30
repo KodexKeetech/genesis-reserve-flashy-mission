@@ -53,7 +53,15 @@ export default function TouchControls({ onInput }) {
     onInput('move', { x: dx / maxDist, y: dy / maxDist });
   }, [isJoystickActive, onInput]);
 
-  const handleJoystickEnd = useCallback(() => {
+  const handleJoystickEnd = useCallback((e) => {
+    e.preventDefault();
+    setIsJoystickActive(false);
+    setJoystickPos({ x: 0, y: 0 });
+    onInput('move', { x: 0, y: 0 });
+  }, [onInput]);
+
+  const handleJoystickCancel = useCallback((e) => {
+    e.preventDefault();
     setIsJoystickActive(false);
     setJoystickPos({ x: 0, y: 0 });
     onInput('move', { x: 0, y: 0 });
