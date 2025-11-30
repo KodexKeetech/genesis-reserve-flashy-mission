@@ -57,7 +57,7 @@ export default function Game() {
   
   const [startingGun, setStartingGun] = useState(0);
   const [currentGun, setCurrentGun] = useState(0);
-  const [checkpoint, setCheckpoint] = useState(null);
+  
   const [gameSettings, setGameSettings] = useState(() => {
     const saved = localStorage.getItem('jeff_settings');
     return saved ? JSON.parse(saved) : { sound: true, graphics: 'high', particles: true };
@@ -170,16 +170,10 @@ export default function Game() {
       switch: false
     };
     setGameState('playing');
-    // If we have a checkpoint, use it; otherwise restart from beginning
-    if (checkpoint) {
-      setScore(checkpoint.score);
-      setHealth(checkpoint.health);
-    } else {
-      setScore(0);
-      setHealth(100);
-      setSessionScraps(0);
-      setSessionCrystals(0);
-    }
+    setScore(0);
+          setHealth(100);
+          setSessionScraps(0);
+          setSessionCrystals(0);
     // Keep using the same gun
     setStartingGun(currentGun);
   }, [checkpoint, currentGun]);
@@ -214,9 +208,7 @@ export default function Game() {
     setCurrentGun(gun);
   }, []);
 
-  const handleCheckpointReached = useCallback((checkpointData) => {
-    setCheckpoint(checkpointData);
-  }, []);
+  
 
   // Save gun preference
   const saveGunPreference = useCallback(async (gun) => {
@@ -248,9 +240,8 @@ export default function Game() {
     }
     // Save the gun and clear checkpoint for next level
     saveGunPreference(currentGun);
-    setStartingGun(currentGun);
-    setCheckpoint(null);
-  }, [sessionScraps, sessionCrystals, saveScraps, level, currentGun, saveGunPreference]);
+      setStartingGun(currentGun);
+    }, [sessionScraps, sessionCrystals, saveScraps, level, currentGun, saveGunPreference]);
 
   const handleScoreChange = useCallback((newScore) => {
     setScore(newScore);
@@ -357,8 +348,6 @@ export default function Game() {
                 startingGun={startingGun}
                 gameSettings={gameSettings}
                 onGunChange={handleGunChange}
-                onCheckpointReached={handleCheckpointReached}
-                checkpoint={checkpoint}
               />
             )}
 

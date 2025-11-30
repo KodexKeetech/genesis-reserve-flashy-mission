@@ -91,9 +91,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     cameraX: 0,
     goalX: 1900,
     biome: null,
-    checkpointX: 0,
-    checkpointY: 400,
-    checkpointReached: false
+
     });
 
   const generateLevel = useCallback((level) => {
@@ -645,24 +643,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     state.bossNoDamage = true;
     state.cameraX = 0;
 
-    // Set checkpoint position around 40% of level (skip for boss levels)
-    if (!isBoss) {
-      state.checkpointX = Math.floor(state.levelWidth * 0.4);
-    } else {
-      state.checkpointX = 0; // No checkpoint on boss levels
-    }
-    state.checkpointReached = false;
 
-    // If resuming from checkpoint, restore position (only for non-boss levels)
-    if (checkpoint && checkpoint.level === level && !isBoss) {
-      state.player.x = checkpoint.x;
-      state.player.y = checkpoint.y;
-      state.score = checkpoint.score;
-      state.player.health = checkpoint.health;
-      state.player.selectedProjectile = checkpoint.gun;
-      state.cameraX = Math.max(0, checkpoint.x - 400);
-      state.checkpointReached = true;
-    }
     }, [startingGun, checkpoint]);
 
   useEffect(() => {
@@ -1517,21 +1498,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                     onGunChange(player.selectedProjectile);
                   }
 
-                  // Check for checkpoint - save silently (no teleport, no visual)
-                  // Skip checkpoints on boss levels
-                  if (!state.checkpointReached && player.x >= state.checkpointX && state.checkpointX > 0 && !isBossLevel(currentLevel)) {
-                    state.checkpointReached = true;
-                    if (onCheckpointReached) {
-                      onCheckpointReached({
-                        level: currentLevel,
-                        x: player.x,
-                        y: player.y,
-                        score: state.score,
-                        health: player.health,
-                        gun: player.selectedProjectile
-                      });
-                    }
-                  }
+
       
       // Calculate effective speed (with power-up)
       const effectiveSpeed = player.powerUps.SPEED > 0 ? MOVE_SPEED * 1.8 : MOVE_SPEED;
