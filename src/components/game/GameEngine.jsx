@@ -214,14 +214,29 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                                  biome.key === 'ice' ? 'ice' : 
                                  biome.key === 'void' ? 'void' : 'magic';
       
+      // Create a shuffled array of section types for variety
+      const sectionTypes = [];
+      const numPatterns = 12; // Total number of different patterns
+      for (let i = 0; i < sectionCount; i++) {
+        sectionTypes.push(i % numPatterns);
+      }
+      // Shuffle using level as seed for consistency
+      for (let i = sectionTypes.length - 1; i > 0; i--) {
+        const j = Math.floor(((level * 7 + i * 13) % 100) / 100 * (i + 1));
+        [sectionTypes[i], sectionTypes[j]] = [sectionTypes[j], sectionTypes[i]];
+      }
+      
       for (let section = 0; section < sectionCount; section++) {
-        const sectionType = section % 5;
+        const sectionType = sectionTypes[section];
+        // Add slight random variation based on level and section
+        const variance = ((level * 3 + section * 7) % 30) - 15;
         
         if (sectionType === 0) {
-          const gapWidth = 120 + level * 20;
+          // Gap with floating platform
+          const gapWidth = 120 + level * 15 + variance;
           state.platforms.push({
             x: currentX + gapWidth / 2 - 40,
-            y: 380,
+            y: 380 + (variance / 2),
             width: 80,
             height: 20,
             type: biomePlatformType
@@ -233,29 +248,20 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             height: 100,
             type: 'ground'
           });
-          
-          // Add environmental hazard based on biome
           if (biome.key === 'volcano') {
             state.environmentalHazards.push({
-              x: currentX + 20,
-              y: 520,
-              width: gapWidth - 40,
-              height: 80,
-              type: 'lava',
-              damage: 25
+              x: currentX + 20, y: 520, width: gapWidth - 40, height: 80,
+              type: 'lava', damage: 25
             });
           } else if (biome.key === 'void') {
             state.environmentalHazards.push({
-              x: currentX + 30,
-              y: 480,
-              width: 60,
-              height: 60,
-              type: 'voidZone',
-              damage: 20
+              x: currentX + 30, y: 480, width: 60, height: 60,
+              type: 'voidZone', damage: 20
             });
           }
           currentX += gapWidth + 200;
         } else if (sectionType === 1) {
+          // Ascending stairs
           for (let step = 0; step < 4; step++) {
             state.platforms.push({
               x: currentX + step * 80,
@@ -265,46 +271,110 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
               type: step % 2 === 0 ? 'normal' : biomePlatformType
             });
           }
-          state.platforms.push({
-            x: currentX + 320,
-            y: 260,
-            width: 150,
-            height: 20,
-            type: 'normal'
-          });
-          
-          // Ice biome - add falling icicles
+          state.platforms.push({ x: currentX + 320, y: 260, width: 150, height: 20, type: 'normal' });
           if (biome.key === 'ice' && section % 2 === 0) {
             state.environmentalHazards.push({
-              x: currentX + 200,
-              y: 100,
-              width: 20,
-              height: 40,
-              type: 'icicle',
-              damage: 15,
-              falling: false,
-              fallSpeed: 0
+              x: currentX + 200, y: 100, width: 20, height: 40,
+              type: 'icicle', damage: 15, falling: false, fallSpeed: 0
             });
           }
           currentX += 500;
         } else if (sectionType === 2) {
+          // Zigzag platforms
           state.platforms.push({ x: currentX, y: 400, width: 100, height: 20, type: 'normal' });
           state.platforms.push({ x: currentX + 150, y: 350, width: 80, height: 20, type: biomePlatformType });
           state.platforms.push({ x: currentX + 280, y: 320, width: 100, height: 20, type: 'normal' });
           state.platforms.push({ x: currentX + 420, y: 380, width: 120, height: 20, type: 'normal' });
           currentX += 560;
         } else if (sectionType === 3) {
+          // Ground with obstacles
           state.platforms.push({ x: currentX, y: 500, width: 400, height: 100, type: 'ground' });
           state.platforms.push({ x: currentX + 100, y: 440, width: 60, height: 60, type: 'obstacle' });
           state.platforms.push({ x: currentX + 250, y: 420, width: 60, height: 80, type: 'obstacle' });
           currentX += 400;
-        } else {
+        } else if (sectionType === 4) {
+          // Vertical tower climb
           state.platforms.push({ x: currentX, y: 500, width: 150, height: 100, type: 'ground' });
           state.platforms.push({ x: currentX + 50, y: 380, width: 70, height: 20, type: biomePlatformType });
           state.platforms.push({ x: currentX + 130, y: 280, width: 70, height: 20, type: 'normal' });
           state.platforms.push({ x: currentX + 50, y: 180, width: 100, height: 20, type: biomePlatformType });
           state.platforms.push({ x: currentX + 200, y: 350, width: 100, height: 20, type: 'normal' });
           currentX += 320;
+        } else if (sectionType === 5) {
+          // Wide gap with multiple small platforms
+          const gapWidth = 200 + variance;
+          state.platforms.push({ x: currentX + 50, y: 420, width: 50, height: 20, type: biomePlatformType });
+          state.platforms.push({ x: currentX + 130, y: 360, width: 50, height: 20, type: 'normal' });
+          state.platforms.push({ x: currentX + 200, y: 400, width: 50, height: 20, type: biomePlatformType });
+          state.platforms.push({ x: currentX + gapWidth + 50, y: 500, width: 250, height: 100, type: 'ground' });
+          currentX += gapWidth + 300;
+        } else if (sectionType === 6) {
+          // Descending platforms
+          state.platforms.push({ x: currentX, y: 300, width: 120, height: 20, type: 'normal' });
+          state.platforms.push({ x: currentX + 140, y: 360, width: 100, height: 20, type: biomePlatformType });
+          state.platforms.push({ x: currentX + 260, y: 420, width: 100, height: 20, type: 'normal' });
+          state.platforms.push({ x: currentX + 380, y: 500, width: 200, height: 100, type: 'ground' });
+          currentX += 580;
+        } else if (sectionType === 7) {
+          // Floating island cluster
+          state.platforms.push({ x: currentX, y: 500, width: 100, height: 100, type: 'ground' });
+          state.platforms.push({ x: currentX + 150, y: 380, width: 80, height: 20, type: biomePlatformType });
+          state.platforms.push({ x: currentX + 250, y: 320, width: 100, height: 20, type: 'normal' });
+          state.platforms.push({ x: currentX + 180, y: 240, width: 70, height: 20, type: biomePlatformType });
+          state.platforms.push({ x: currentX + 350, y: 400, width: 80, height: 20, type: 'normal' });
+          state.platforms.push({ x: currentX + 450, y: 500, width: 150, height: 100, type: 'ground' });
+          currentX += 600;
+        } else if (sectionType === 8) {
+          // Long flat run with obstacles
+          state.platforms.push({ x: currentX, y: 500, width: 500, height: 100, type: 'ground' });
+          state.platforms.push({ x: currentX + 80, y: 440, width: 50, height: 60, type: 'obstacle' });
+          state.platforms.push({ x: currentX + 200, y: 430, width: 40, height: 70, type: 'obstacle' });
+          state.platforms.push({ x: currentX + 320, y: 420, width: 60, height: 80, type: 'obstacle' });
+          state.platforms.push({ x: currentX + 150, y: 350, width: 80, height: 20, type: biomePlatformType });
+          state.platforms.push({ x: currentX + 300, y: 300, width: 80, height: 20, type: 'normal' });
+          currentX += 500;
+        } else if (sectionType === 9) {
+          // Pit with rescue platform
+          const pitWidth = 180 + variance;
+          state.platforms.push({ x: currentX + pitWidth / 2 - 30, y: 480, width: 60, height: 20, type: biomePlatformType });
+          state.platforms.push({ x: currentX + pitWidth / 2 - 40, y: 350, width: 80, height: 20, type: 'normal' });
+          state.platforms.push({ x: currentX + pitWidth, y: 500, width: 200, height: 100, type: 'ground' });
+          if (biome.key === 'volcano') {
+            state.environmentalHazards.push({
+              x: currentX + 10, y: 540, width: pitWidth - 20, height: 60,
+              type: 'lava', damage: 25
+            });
+          }
+          currentX += pitWidth + 200;
+        } else if (sectionType === 10) {
+          // Alternating heights
+          for (let i = 0; i < 5; i++) {
+            const yPos = i % 2 === 0 ? 420 : 350;
+            state.platforms.push({
+              x: currentX + i * 90,
+              y: yPos + (variance / 3),
+              width: 70,
+              height: 20,
+              type: i % 2 === 0 ? 'normal' : biomePlatformType
+            });
+          }
+          state.platforms.push({ x: currentX + 450, y: 500, width: 150, height: 100, type: 'ground' });
+          currentX += 600;
+        } else if (sectionType === 11) {
+          // Canyon with ledges
+          state.platforms.push({ x: currentX, y: 500, width: 120, height: 100, type: 'ground' });
+          state.platforms.push({ x: currentX + 100, y: 380, width: 60, height: 20, type: 'normal' });
+          state.platforms.push({ x: currentX + 200, y: 450, width: 60, height: 20, type: biomePlatformType });
+          state.platforms.push({ x: currentX + 300, y: 350, width: 70, height: 20, type: 'normal' });
+          state.platforms.push({ x: currentX + 380, y: 420, width: 60, height: 20, type: biomePlatformType });
+          state.platforms.push({ x: currentX + 460, y: 500, width: 140, height: 100, type: 'ground' });
+          if (biome.key === 'ice') {
+            state.environmentalHazards.push({
+              x: currentX + 250, y: 80, width: 20, height: 40,
+              type: 'icicle', damage: 15, falling: false, fallSpeed: 0
+            });
+          }
+          currentX += 600;
         }
       }
       
