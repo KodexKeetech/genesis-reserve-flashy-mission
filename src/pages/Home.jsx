@@ -8,7 +8,6 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 
 export default function Home() {
-  const [hasSavedGame, setHasSavedGame] = useState(false);
   const [magicScraps, setMagicScraps] = useState(0);
   const [arcaneCrystals, setArcaneCrystals] = useState(0);
   const [highestLevel, setHighestLevel] = useState(1);
