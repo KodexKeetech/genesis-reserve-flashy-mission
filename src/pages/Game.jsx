@@ -187,6 +187,7 @@ export default function Game() {
   const handleStartTutorial = useCallback(() => {
     setGameState('playing');
     setLevel(0);
+    musicManager.play();
   }, []);
 
   const handleSkipTutorial = useCallback(() => {
