@@ -84,10 +84,20 @@ export default function AbilityShop() {
     const newUpgrades = { ...user.abilityUpgrades, [upgradeId]: currentLevel + 1 };
     const newCrystals = user.arcaneCrystals - cost;
 
-    await base44.auth.updateMe({
-      abilityUpgrades: newUpgrades,
-      arcaneCrystals: newCrystals
-    });
+    try {
+      await base44.auth.updateMe({
+        abilityUpgrades: newUpgrades,
+        arcaneCrystals: newCrystals
+      });
+    } catch (e) {
+      // Not logged in
+    }
+    
+    // Always save to localStorage as backup
+    localStorage.setItem('jeff_ability_upgrades', JSON.stringify(newUpgrades));
+    const localData = localStorage.getItem('jeff_player_data');
+    const data = localData ? JSON.parse(localData) : {};
+    localStorage.setItem('jeff_player_data', JSON.stringify({ ...data, arcaneCrystals: newCrystals }));
 
     setUser({ ...user, abilityUpgrades: newUpgrades, arcaneCrystals: newCrystals });
     setPurchasing(null);
