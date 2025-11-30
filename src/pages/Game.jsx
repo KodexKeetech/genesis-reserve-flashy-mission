@@ -176,7 +176,7 @@ export default function Game() {
           setSessionCrystals(0);
     // Keep using the same gun
     setStartingGun(currentGun);
-  }, [checkpoint, currentGun]);
+  }, [currentGun]);
 
   const handleNextLevel = useCallback(() => {
     // Reset touch input to prevent auto-movement
