@@ -111,7 +111,7 @@ export default function Home() {
       {/* Support Banner & Socials - Top Left */}
       <div className="fixed top-3 left-3 z-20 flex flex-col gap-2">
         <a 
-          href="https://globalcomix.com/a/jeff-the-robot-wizard" 
+          href="https://globalcomix.com/c/jefftherobotwizard" 
           target="_blank" 
           rel="noopener noreferrer"
           className="bg-gradient-to-r from-purple-600/90 to-blue-600/90 backdrop-blur-sm hover:from-purple-500 hover:to-blue-500 text-white text-xs md:text-sm px-4 py-2.5 rounded-lg border border-purple-400/50 hover:border-purple-300 transition-all flex items-center gap-2 shadow-lg shadow-purple-500/20"
@@ -207,7 +207,7 @@ export default function Home() {
                 className="w-full border-green-500 text-green-400 hover:bg-green-500/20 font-bold px-8 py-4 text-base md:text-lg rounded-xl"
               >
                 <Zap className="w-4 h-4 md:w-5 md:h-5 mr-2" />
-                Start from Level {highestLevel}
+                Continue from Level {highestLevel}
               </Button>
             </Link>
           )}
