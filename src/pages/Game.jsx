@@ -14,9 +14,10 @@ import { Sparkles, ShoppingBag, Gem, Zap, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function Game() {
-  // Check if continuing from saved game
+  // Check if continuing from saved game or starting from specific level
   const urlParams = new URLSearchParams(window.location.search);
   const shouldContinue = urlParams.get('continue') === 'true';
+  const startLevelParam = urlParams.get('startLevel');
   
   const [gameState, setGameState] = useState('tutorial'); // tutorial, playing, gameOver, levelComplete
   const [score, setScore] = useState(0);
