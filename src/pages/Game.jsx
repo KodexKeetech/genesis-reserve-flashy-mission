@@ -271,7 +271,7 @@ export default function Game() {
         )}
 
       {/* Shop Buttons - smaller on mobile */}
-      <div className={`${isMobile ? 'mt-1' : 'mt-4'} flex gap-2 md:gap-3 flex-wrap justify-center`}
+      <div className={`${isMobile ? 'mt-1' : 'mt-4'} flex gap-2 md:gap-3 flex-wrap justify-center`}>
         <Link to={createPageUrl('UpgradeShop')}>
           <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500">
             <ShoppingBag className="w-5 h-5 mr-2" />
