@@ -645,34 +645,16 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     state.bossNoDamage = true;
     state.cameraX = 0;
 
-    // Find a safe checkpoint position on a ground platform around 40% of level
-    const targetX = Math.floor(state.levelWidth * 0.4);
-    let checkpointPlatform = null;
-    let bestDist = Infinity;
-    
-    for (const platform of state.platforms) {
-      // Only use ground or large normal platforms as checkpoints
-      if (platform.type === 'ground' || (platform.type === 'normal' && platform.width >= 80)) {
-        const platformCenterX = platform.x + platform.width / 2;
-        const dist = Math.abs(platformCenterX - targetX);
-        if (dist < bestDist) {
-          bestDist = dist;
-          checkpointPlatform = platform;
-        }
-      }
-    }
-    
-    if (checkpointPlatform) {
-      state.checkpointX = checkpointPlatform.x + checkpointPlatform.width / 2;
-      state.checkpointY = checkpointPlatform.y - 70; // Above the platform
+    // Set checkpoint position around 40% of level (skip for boss levels)
+    if (!isBoss) {
+      state.checkpointX = Math.floor(state.levelWidth * 0.4);
     } else {
-      state.checkpointX = 0; // No checkpoint if no safe platform found
-      state.checkpointY = 400;
+      state.checkpointX = 0; // No checkpoint on boss levels
     }
     state.checkpointReached = false;
 
-    // If resuming from checkpoint, restore position
-    if (checkpoint && checkpoint.level === level) {
+    // If resuming from checkpoint, restore position (only for non-boss levels)
+    if (checkpoint && checkpoint.level === level && !isBoss) {
       state.player.x = checkpoint.x;
       state.player.y = checkpoint.y;
       state.score = checkpoint.score;
@@ -1535,29 +1517,18 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                     onGunChange(player.selectedProjectile);
                   }
 
-                  // Check for checkpoint - save at the safe platform position
-                  if (!state.checkpointReached && player.x >= state.checkpointX && state.checkpointX > 0) {
+                  // Check for checkpoint - save silently (no teleport, no visual)
+                  // Skip checkpoints on boss levels
+                  if (!state.checkpointReached && player.x >= state.checkpointX && state.checkpointX > 0 && !isBossLevel(currentLevel)) {
                     state.checkpointReached = true;
                     if (onCheckpointReached) {
                       onCheckpointReached({
                         level: currentLevel,
-                        x: state.checkpointX,
-                        y: state.checkpointY,
+                        x: player.x,
+                        y: player.y,
                         score: state.score,
                         health: player.health,
                         gun: player.selectedProjectile
-                      });
-                    }
-                    // Visual feedback for checkpoint
-                    soundManager.playPowerUp();
-                    for (let i = 0; i < 20; i++) {
-                      particles.push({
-                        x: player.x + player.width / 2,
-                        y: player.y + player.height / 2,
-                        velocityX: (Math.random() - 0.5) * 8,
-                        velocityY: (Math.random() - 0.5) * 8,
-                        life: 30,
-                        color: '#22C55E'
                       });
                     }
                   }
