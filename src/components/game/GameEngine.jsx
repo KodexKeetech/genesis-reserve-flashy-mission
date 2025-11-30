@@ -25,7 +25,7 @@ const POWERUP_TYPES = {
   SHIELD: { color: '#3B82F6', icon: '🛡️', duration: 400, name: 'Shield' }
 };
 
-export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel, onPowerUpChange, onAbilityCooldowns, onScrapsEarned, onCrystalsEarned, playerUpgrades, unlockedAbilities, abilityUpgrades, touchInput }) {
+export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel, onPowerUpChange, onAbilityCooldowns, onScrapsEarned, onCrystalsEarned, onCoinAmmoChange, savedCoinAmmo, playerUpgrades, unlockedAbilities, abilityUpgrades, touchInput }) {
   const canvasRef = useRef(null);
   const mouseRef = useRef({ x: 400, y: 300 }); // Track mouse position relative to canvas
   const gameStateRef = useRef({
@@ -156,7 +156,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           state.player.isDashing = false;
           state.player.powerUps = { SPEED: 0, INVINCIBILITY: 0, POWER_SHOT: 0, SHIELD: 0, shieldHealth: 0 };
           state.player.selectedProjectile = 0;
-          state.player.coinAmmo = 0;
+          state.player.coinAmmo = savedCoinAmmo || 0;
           state.player.specialAbilities = {
             aoeBlast: { cooldown: 0, active: false },
             reflectShield: { cooldown: 0, active: false, timer: 0 },
@@ -435,7 +435,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     state.player.isDashing = false;
     state.player.powerUps = { SPEED: 0, INVINCIBILITY: 0, POWER_SHOT: 0, SHIELD: 0, shieldHealth: 0 };
     state.player.selectedProjectile = 0;
-    state.player.coinAmmo = 0;
+    state.player.coinAmmo = savedCoinAmmo || 0;
     state.player.specialAbilities = {
       aoeBlast: { cooldown: 0, active: false },
       reflectShield: { cooldown: 0, active: false, timer: 0 },
