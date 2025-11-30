@@ -115,10 +115,20 @@ export default function UpgradeShop() {
     const newUpgrades = { ...user.upgrades, [upgrade.id]: currentLevel + 1 };
     const newScraps = user.magicScraps - cost;
 
-    await base44.auth.updateMe({
-      upgrades: newUpgrades,
-      magicScraps: newScraps
-    });
+    try {
+      await base44.auth.updateMe({
+        upgrades: newUpgrades,
+        magicScraps: newScraps
+      });
+    } catch (e) {
+      // Not logged in - save to localStorage
+    }
+    
+    // Always save to localStorage as backup
+    localStorage.setItem('jeff_upgrades', JSON.stringify(newUpgrades));
+    const localData = localStorage.getItem('jeff_player_data');
+    const data = localData ? JSON.parse(localData) : {};
+    localStorage.setItem('jeff_player_data', JSON.stringify({ ...data, magicScraps: newScraps }));
 
     setUser({ ...user, upgrades: newUpgrades, magicScraps: newScraps });
     setPurchasing(null);
