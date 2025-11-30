@@ -54,9 +54,10 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
           </Button>
           
           <div className="mt-8 text-slate-500 text-sm space-y-1">
-            <p>← → or A/D to move</p>
-            <p>↑ or W or SPACE to jump</p>
-            <p>CLICK to cast magic</p>
+            <p>← → or A/D to move | SPACE to jump</p>
+            <p>CLICK to cast magic | Q to switch spell</p>
+            <p>SHIFT to dash through enemies</p>
+            <p className="text-cyan-400 mt-2">Collect power-ups for buffs!</p>
           </div>
         </motion.div>
       </motion.div>

@@ -8,6 +8,12 @@ export default function Game() {
   const [score, setScore] = useState(0);
   const [health, setHealth] = useState(100);
   const [level, setLevel] = useState(1);
+  const [powerUps, setPowerUps] = useState({});
+  const [abilityCooldowns, setAbilityCooldowns] = useState({
+    dashCooldown: 0,
+    dashMaxCooldown: 60,
+    selectedProjectile: 0
+  });
 
   const handleStart = useCallback(() => {
     setGameState('playing');
@@ -44,6 +50,14 @@ export default function Game() {
     setHealth(newHealth);
   }, []);
 
+  const handlePowerUpChange = useCallback((newPowerUps) => {
+    setPowerUps(newPowerUps);
+  }, []);
+
+  const handleAbilityCooldowns = useCallback((cooldowns) => {
+    setAbilityCooldowns(cooldowns);
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex flex-col items-center justify-center p-4">
       {/* Ambient background effects */}
@@ -66,6 +80,8 @@ export default function Game() {
             onHealthChange={handleHealthChange}
             onLevelComplete={handleLevelComplete}
             onGameOver={handleGameOver}
+            onPowerUpChange={handlePowerUpChange}
+            onAbilityCooldowns={handleAbilityCooldowns}
           />
         )}
         
@@ -83,12 +99,18 @@ export default function Game() {
         )}
 
         {gameState === 'playing' && (
-          <GameUI score={score} health={health} level={level} />
+          <GameUI 
+            score={score} 
+            health={health} 
+            level={level} 
+            powerUps={powerUps}
+            abilityCooldowns={abilityCooldowns}
+          />
         )}
       </div>
 
       {/* Controls hint */}
-      <div className="mt-6 flex gap-6 text-slate-500 text-sm">
+      <div className="mt-6 flex flex-wrap justify-center gap-4 text-slate-500 text-sm">
         <span className="flex items-center gap-2">
           <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">←→</kbd>
           Move
@@ -100,6 +122,14 @@ export default function Game() {
         <span className="flex items-center gap-2">
           <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">CLICK</kbd>
           Cast Magic
+        </span>
+        <span className="flex items-center gap-2">
+          <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">SHIFT</kbd>
+          Dash
+        </span>
+        <span className="flex items-center gap-2">
+          <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">Q</kbd>
+          Switch Spell
         </span>
       </div>
     </div>
