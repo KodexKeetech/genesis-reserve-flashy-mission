@@ -186,27 +186,14 @@ export default function Home() {
             </Button>
           </Link>
           
-          {hasSavedGame && (
-            <Link to={createPageUrl('Game') + '?continue=true'}>
+          {highestLevel > 1 && (
+            <Link to={createPageUrl('Game') + `?startLevel=${highestLevel}`}>
               <Button
                 size="lg"
                 variant="outline"
                 className="w-full border-cyan-500 text-cyan-400 hover:bg-cyan-500/20 font-bold px-8 py-4 text-base md:text-lg rounded-xl"
               >
                 <FolderOpen className="w-4 h-4 md:w-5 md:h-5 mr-2" />
-                Continue (Level {JSON.parse(localStorage.getItem('jeff_save_game') || '{}').level || 1})
-              </Button>
-            </Link>
-          )}
-          
-          {highestLevel > 1 && (
-            <Link to={createPageUrl('Game') + `?startLevel=${highestLevel}`}>
-              <Button
-                size="lg"
-                variant="outline"
-                className="w-full border-green-500 text-green-400 hover:bg-green-500/20 font-bold px-8 py-4 text-base md:text-lg rounded-xl"
-              >
-                <Zap className="w-4 h-4 md:w-5 md:h-5 mr-2" />
                 Continue from Level {highestLevel}
               </Button>
             </Link>
