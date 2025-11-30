@@ -218,8 +218,8 @@ export default function Game() {
         </h1>
       )}
 
-      {/* Game Container - full height on mobile */}
-      <div className={`relative w-full ${isMobile ? 'h-[60vh]' : 'max-w-[800px]'}`} style={{ aspectRatio: isMobile ? 'auto' : '800/600' }}>
+      {/* Game Container */}
+      <div className="relative w-full max-w-[800px]" style={{ aspectRatio: '800/600' }}>
         <div className="absolute inset-0">
         {gameState === 'playing' && (
             <GameEngine
