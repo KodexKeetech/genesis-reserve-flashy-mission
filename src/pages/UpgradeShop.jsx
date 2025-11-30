@@ -87,7 +87,14 @@ export default function UpgradeShop() {
       }
       setUser(userData);
     } catch (e) {
-      console.error('Failed to load user', e);
+      // Not logged in - load from localStorage
+      const localData = localStorage.getItem('jeff_player_data');
+      const localUpgrades = localStorage.getItem('jeff_upgrades');
+      const data = localData ? JSON.parse(localData) : { magicScraps: 0 };
+      const upgrades = localUpgrades ? JSON.parse(localUpgrades) : {
+        maxHealth: 0, spellPower: 0, dashEfficiency: 0, magicRegen: 0, scrapMagnet: 0
+      };
+      setUser({ magicScraps: data.magicScraps || 0, upgrades });
     }
     setLoading(false);
   };
