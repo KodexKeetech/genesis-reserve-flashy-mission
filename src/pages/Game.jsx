@@ -54,6 +54,8 @@ export default function Game() {
   const [showSettings, setShowSettings] = useState(false);
   const [showLevelStart, setShowLevelStart] = useState(false);
   const [startingGun, setStartingGun] = useState(0);
+  const [currentGun, setCurrentGun] = useState(0);
+  const [checkpoint, setCheckpoint] = useState(null);
   const [gameSettings, setGameSettings] = useState(() => {
     const saved = localStorage.getItem('jeff_settings');
     return saved ? JSON.parse(saved) : { sound: true, graphics: 'high', particles: true };
@@ -86,6 +88,10 @@ export default function Game() {
         }
         if (user.arcaneCrystals) {
           setArcaneCrystals(user.arcaneCrystals);
+        }
+        if (user.lastGun !== undefined) {
+          setStartingGun(user.lastGun);
+          setCurrentGun(user.lastGun);
         }
       } catch (e) {
         // Not logged in or error, use defaults
@@ -162,11 +168,19 @@ export default function Game() {
       switch: false
     };
     setGameState('playing');
-    setScore(0);
-    setHealth(100);
-    setSessionScraps(0);
-    setSessionCrystals(0);
-    }, []);
+    // If we have a checkpoint, use it; otherwise restart from beginning
+    if (checkpoint) {
+      setScore(checkpoint.score);
+      setHealth(checkpoint.health);
+    } else {
+      setScore(0);
+      setHealth(100);
+      setSessionScraps(0);
+      setSessionCrystals(0);
+    }
+    // Keep using the same gun
+    setStartingGun(currentGun);
+  }, [checkpoint, currentGun]);
 
   const handleNextLevel = useCallback(() => {
     // Reset touch input to prevent auto-movement
@@ -197,12 +211,31 @@ export default function Game() {
     setGameState('playing');
   }, []);
 
+  const handleGunChange = useCallback((gun) => {
+    setCurrentGun(gun);
+  }, []);
+
+  const handleCheckpointReached = useCallback((checkpointData) => {
+    setCheckpoint(checkpointData);
+  }, []);
+
+  // Save gun preference
+  const saveGunPreference = useCallback(async (gun) => {
+    try {
+      await base44.auth.updateMe({ lastGun: gun });
+    } catch (e) {
+      // Not logged in
+    }
+  }, []);
+
   const handleGameOver = useCallback(() => {
     setGameState('gameOver');
     if (sessionScraps > 0 || sessionCrystals > 0) {
       saveScraps(sessionScraps, sessionCrystals);
     }
-  }, [sessionScraps, sessionCrystals, saveScraps]);
+    // Save the gun the player was using
+    saveGunPreference(currentGun);
+  }, [sessionScraps, sessionCrystals, saveScraps, currentGun, saveGunPreference]);
 
   const handleLevelComplete = useCallback(() => {
     setGameState('levelComplete');
@@ -214,7 +247,11 @@ export default function Game() {
       setSessionScraps(0);
       setSessionCrystals(0);
     }
-  }, [sessionScraps, sessionCrystals, saveScraps, level]);
+    // Save the gun and clear checkpoint for next level
+    saveGunPreference(currentGun);
+    setStartingGun(currentGun);
+    setCheckpoint(null);
+  }, [sessionScraps, sessionCrystals, saveScraps, level, currentGun, saveGunPreference]);
 
   const handleScoreChange = useCallback((newScore) => {
     setScore(newScore);
@@ -320,6 +357,9 @@ export default function Game() {
                 touchInput={touchInputRef}
                 startingGun={startingGun}
                 gameSettings={gameSettings}
+                onGunChange={handleGunChange}
+                onCheckpointReached={handleCheckpointReached}
+                checkpoint={checkpoint}
               />
             )}
 
