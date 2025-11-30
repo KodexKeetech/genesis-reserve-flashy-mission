@@ -1780,6 +1780,23 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           color = '#F97316';
           innerColor = '#FBBF24';
           size = 8;
+        } else if (proj.type === 'leaf') {
+          // Draw leaf projectile
+          ctx.save();
+          ctx.translate(px, proj.y);
+          ctx.rotate(time * 0.15);
+          ctx.fillStyle = '#22C55E';
+          ctx.beginPath();
+          ctx.ellipse(0, 0, 10, 5, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#166534';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(-8, 0);
+          ctx.lineTo(8, 0);
+          ctx.stroke();
+          ctx.restore();
+          continue; // Skip the normal projectile drawing
         }
         
         ctx.fillStyle = color;
