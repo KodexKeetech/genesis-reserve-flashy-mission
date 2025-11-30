@@ -127,6 +127,28 @@ export default function UpgradeShop() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 p-6">
+      {/* Comic Links - Top Left */}
+      <div className="fixed top-3 left-3 z-20 flex flex-col gap-2">
+        <a 
+          href="https://globalcomix.com/a/jeff-the-robot-wizard" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="bg-black/60 backdrop-blur-sm hover:bg-black/80 text-white text-xs px-3 py-2 rounded-lg border border-purple-500/50 hover:border-purple-400 transition-all flex items-center gap-2"
+        >
+          <span>📖</span>
+          <span>Read Jeff's Comic</span>
+        </a>
+        <a 
+          href="https://linktr.ee/JeffTheRobotWizard" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="bg-black/60 backdrop-blur-sm hover:bg-black/80 text-white text-xs px-3 py-2 rounded-lg border border-cyan-500/50 hover:border-cyan-400 transition-all flex items-center gap-2"
+        >
+          <span>🔗</span>
+          <span>Jeff's Socials</span>
+        </a>
+      </div>
+
       {/* Background effects */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl" />
