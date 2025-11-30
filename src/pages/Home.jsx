@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { Play, ShoppingBag, Zap, Sparkles, Gem, FolderOpen } from 'lucide-react';
+// Removed unused hasSavedGame state since we now only use highestLevel
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 
