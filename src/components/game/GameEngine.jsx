@@ -3,7 +3,7 @@ import soundManager from './SoundManager';
 import { getBiomeForLevel, isBossLevel, getEnemiesForLevel } from './BiomeConfig';
 import { drawBackground, drawPlatform, drawEnvironmentalHazard } from './BackgroundRenderer';
 import { drawEnemy, drawBoss } from './EnemyRenderer';
-import { createImpactEffect, createDamageEffect, createExplosionEffect, drawParticle, drawProjectileTrail, drawEnemyProjectileTrail } from './ParticleEffects';
+import { createImpactEffect, createDamageEffect, createExplosionEffect, createMagicCastEffect, createPowerUpCollectEffect, createCoinCollectEffect, createEnemyDeathEffect, createBossHitEffect, createBossDeathEffect, createAmbientParticle, drawParticle, drawAmbientParticle, drawProjectileTrail, drawEnemyProjectileTrail } from './ParticleEffects';
 import { getAbilityStats, SPECIAL_ABILITIES } from './AbilitySystem';
 
 const GRAVITY = 0.6;
