@@ -1,9 +1,14 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import GameEngine from '@/components/game/GameEngine';
 import GameUI from '@/components/game/GameUI';
 import GameOverlay from '@/components/game/GameOverlay';
 import TouchControls from '@/components/game/TouchControls';
 import soundManager from '@/components/game/SoundManager';
+import { Sparkles, ShoppingBag } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function Game() {
   const [gameState, setGameState] = useState('playing'); // start, playing, gameOver, levelComplete
@@ -16,6 +21,15 @@ export default function Game() {
     dashMaxCooldown: 60,
     selectedProjectile: 0
   });
+  const [magicScraps, setMagicScraps] = useState(0);
+  const [sessionScraps, setSessionScraps] = useState(0);
+  const [playerUpgrades, setPlayerUpgrades] = useState({
+    maxHealth: 0,
+    spellPower: 0,
+    dashEfficiency: 0,
+    magicRegen: 0,
+    scrapMagnet: 0
+  });
   
   const touchInputRef = useRef({
     move: { x: 0, y: 0 },
@@ -24,6 +38,45 @@ export default function Game() {
     cast: false,
     switch: false
   });
+
+  // Load player upgrades and scraps on mount
+  useEffect(() => {
+    const loadPlayerData = async () => {
+      try {
+        const user = await base44.auth.me();
+        if (user.upgrades) {
+          setPlayerUpgrades(user.upgrades);
+        }
+        if (user.magicScraps) {
+          setMagicScraps(user.magicScraps);
+        }
+      } catch (e) {
+        // Not logged in or error, use defaults
+      }
+    };
+    loadPlayerData();
+  }, []);
+
+  // Save scraps when level completes or game over
+  const saveScraps = useCallback(async (scrapsToAdd) => {
+    try {
+      const user = await base44.auth.me();
+      const newTotal = (user.magicScraps || 0) + scrapsToAdd;
+      const newLifetime = (user.totalScrapsEarned || 0) + scrapsToAdd;
+      await base44.auth.updateMe({ 
+        magicScraps: newTotal,
+        totalScrapsEarned: newLifetime,
+        highestLevel: Math.max(user.highestLevel || 1, level)
+      });
+      setMagicScraps(newTotal);
+    } catch (e) {
+      // Not logged in
+    }
+  }, [level]);
+
+  const handleScrapsEarned = useCallback((scraps) => {
+    setSessionScraps(prev => prev + scraps);
+  }, []);
 
   const handleTouchInput = useCallback((action, value) => {
     touchInputRef.current[action] = value;
@@ -46,6 +99,7 @@ export default function Game() {
     setGameState('playing');
     setScore(0);
     setHealth(100);
+    setSessionScraps(0);
   }, []);
 
   const handleNextLevel = useCallback(() => {
@@ -56,11 +110,18 @@ export default function Game() {
 
   const handleGameOver = useCallback(() => {
     setGameState('gameOver');
-  }, []);
+    if (sessionScraps > 0) {
+      saveScraps(sessionScraps);
+    }
+  }, [sessionScraps, saveScraps]);
 
   const handleLevelComplete = useCallback(() => {
     setGameState('levelComplete');
-  }, []);
+    if (sessionScraps > 0) {
+      saveScraps(sessionScraps);
+      setSessionScraps(0);
+    }
+  }, [sessionScraps, saveScraps]);
 
   const handleScoreChange = useCallback((newScore) => {
     setScore(newScore);
@@ -94,17 +155,19 @@ export default function Game() {
       {/* Game Container */}
       <div className="relative">
         {gameState === 'playing' && (
-          <GameEngine
-            currentLevel={level}
-            onScoreChange={handleScoreChange}
-            onHealthChange={handleHealthChange}
-            onLevelComplete={handleLevelComplete}
-            onGameOver={handleGameOver}
-            onPowerUpChange={handlePowerUpChange}
-            onAbilityCooldowns={handleAbilityCooldowns}
-            touchInput={touchInputRef}
-          />
-        )}
+            <GameEngine
+              currentLevel={level}
+              onScoreChange={handleScoreChange}
+              onHealthChange={handleHealthChange}
+              onLevelComplete={handleLevelComplete}
+              onGameOver={handleGameOver}
+              onPowerUpChange={handlePowerUpChange}
+              onAbilityCooldowns={handleAbilityCooldowns}
+              onScrapsEarned={handleScrapsEarned}
+              playerUpgrades={playerUpgrades}
+              touchInput={touchInputRef}
+            />
+          )}
         
         {gameState !== 'playing' && (
           <div className="w-[800px] h-[600px] bg-slate-900 rounded-xl relative">
@@ -126,6 +189,7 @@ export default function Game() {
             level={level} 
             powerUps={powerUps}
             abilityCooldowns={abilityCooldowns}
+            sessionScraps={sessionScraps}
           />
         )}
         </div>
@@ -134,6 +198,20 @@ export default function Game() {
         {gameState === 'playing' && (
         <TouchControls onInput={handleTouchInput} />
         )}
+
+      {/* Upgrade Shop Button */}
+      <div className="mt-4">
+        <Link to={createPageUrl('UpgradeShop')}>
+          <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500">
+            <ShoppingBag className="w-5 h-5 mr-2" />
+            Upgrade Shop
+            <div className="ml-3 flex items-center gap-1 bg-black/30 rounded px-2 py-0.5">
+              <Sparkles className="w-4 h-4 text-purple-300" />
+              <span className="text-purple-200">{magicScraps}</span>
+            </div>
+          </Button>
+        </Link>
+      </div>
 
       {/* Controls hint */}
       <div className="mt-6 flex flex-wrap justify-center gap-4 text-slate-500 text-sm">

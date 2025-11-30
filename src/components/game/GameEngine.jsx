@@ -12,7 +12,9 @@ const MOVE_SPEED = 5;
 const PROJECTILE_SPEED = 10;
 const DASH_SPEED = 25;
 const DASH_DURATION = 8;
-const DASH_COOLDOWN = 60;
+const BASE_DASH_COOLDOWN = 60;
+const BASE_CAST_TIMER = 15;
+const BASE_FREEZE_CAST_TIMER = 25;
 
 // Power-up types
 const POWERUP_TYPES = {
@@ -22,7 +24,7 @@ const POWERUP_TYPES = {
   SHIELD: { color: '#3B82F6', icon: '🛡️', duration: 400, name: 'Shield' }
 };
 
-export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel, onPowerUpChange, onAbilityCooldowns, touchInput }) {
+export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel, onPowerUpChange, onAbilityCooldowns, onScrapsEarned, playerUpgrades, touchInput }) {
   const canvasRef = useRef(null);
   const gameStateRef = useRef({
     player: {
@@ -346,12 +348,15 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       });
     }
     
-    // Reset player
+    // Reset player with upgrades applied
+    const upgrades = playerUpgrades || {};
+    const bonusHealth = (upgrades.maxHealth || 0) * 20;
     state.player.x = 100;
     state.player.y = 400;
     state.player.velocityX = 0;
     state.player.velocityY = 0;
-    state.player.health = 100;
+    state.player.health = 100 + bonusHealth;
+    state.player.maxHealth = 100 + bonusHealth;
     state.player.canDoubleJump = true;
     state.player.hasDoubleJumped = false;
     state.player.dashCooldown = 0;
@@ -363,7 +368,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
 
   useEffect(() => {
     generateLevel(currentLevel);
-  }, [currentLevel, generateLevel]);
+  }, [currentLevel, generateLevel, playerUpgrades]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -387,9 +392,13 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     const doCast = () => {
       const state = gameStateRef.current;
       const player = state.player;
+      const upgrades = playerUpgrades || {};
+      const castReduction = 1 - (upgrades.magicRegen || 0) * 0.1;
+
       if (player.castTimer <= 0) {
         const isPowerShot = player.powerUps.POWER_SHOT > 0;
         const isFreeze = player.selectedProjectile === 1;
+        const bonusDamage = upgrades.spellPower || 0;
 
         state.projectiles.push({
           x: player.x + (player.facingRight ? player.width : 0),
@@ -399,11 +408,11 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           height: isPowerShot ? 24 : 16,
           life: 100,
           type: isFreeze ? 'freeze' : 'normal',
-          damage: isPowerShot ? 3 : 1,
+          damage: (isPowerShot ? 3 : 1) + bonusDamage,
           isPowerShot
         });
         player.isCasting = true;
-        player.castTimer = isFreeze ? 25 : 15;
+        player.castTimer = Math.floor((isFreeze ? BASE_FREEZE_CAST_TIMER : BASE_CAST_TIMER) * castReduction);
 
         if (isFreeze) {
           soundManager.playFreezeCast();
@@ -478,11 +487,14 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     // Handle dash (Shift key)
     const handleDash = () => {
       const state = gameStateRef.current;
+      const upgrades = playerUpgrades || {};
+      const dashCooldown = Math.floor(BASE_DASH_COOLDOWN * (1 - (upgrades.dashEfficiency || 0) * 0.1));
+
       if (state.player.dashCooldown <= 0 && !state.player.isDashing) {
         state.player.isDashing = true;
         state.player.dashTimer = DASH_DURATION;
         state.player.dashDirection = state.player.facingRight ? 1 : -1;
-        state.player.dashCooldown = DASH_COOLDOWN;
+        state.player.dashCooldown = dashCooldown;
         
         // Play dash sound
         soundManager.playDash();
@@ -812,10 +824,12 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       }
       
       // Report cooldowns
+      const upgrades = playerUpgrades || {};
+      const dashCooldown = Math.floor(BASE_DASH_COOLDOWN * (1 - (upgrades.dashEfficiency || 0) * 0.1));
       if (onAbilityCooldowns) {
         onAbilityCooldowns({
           dashCooldown: player.dashCooldown,
-          dashMaxCooldown: DASH_COOLDOWN,
+          dashMaxCooldown: dashCooldown,
           selectedProjectile: player.selectedProjectile
         });
       }
@@ -827,11 +841,12 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       const touch = touchInput?.current || { move: { x: 0, y: 0 }, jump: false, dash: false, cast: false, switch: false };
 
       // Handle dashing (keyboard or touch)
+      const touchDashCooldown = Math.floor(BASE_DASH_COOLDOWN * (1 - ((playerUpgrades || {}).dashEfficiency || 0) * 0.1));
       if (touch.dash && !player.isDashing && player.dashCooldown <= 0) {
-        player.isDashing = true;
-        player.dashTimer = DASH_DURATION;
-        player.dashDirection = player.facingRight ? 1 : -1;
-        player.dashCooldown = DASH_COOLDOWN;
+      player.isDashing = true;
+      player.dashTimer = DASH_DURATION;
+      player.dashDirection = player.facingRight ? 1 : -1;
+      player.dashCooldown = touchDashCooldown;
         soundManager.playDash();
         for (let i = 0; i < 15; i++) {
           state.particles.push({
@@ -1614,6 +1629,12 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
               }
               state.score += 500;
               onScoreChange(state.score);
+
+              // Award bonus scraps for boss
+              const scrapBonus = 1 + ((playerUpgrades || {}).scrapMagnet || 0) * 0.2;
+              const bossScrap = Math.floor(50 * scrapBonus);
+              if (onScrapsEarned) onScrapsEarned(bossScrap);
+
               state.boss = null;
             }
           }

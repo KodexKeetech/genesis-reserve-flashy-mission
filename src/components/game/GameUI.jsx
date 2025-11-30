@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heart, Star, Zap, Wind, Shield, Flame, Snowflake, Map } from 'lucide-react';
+import { Heart, Star, Zap, Wind, Shield, Flame, Snowflake, Map, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getBiomeForLevel, isBossLevel } from './BiomeConfig';
 
@@ -10,7 +10,7 @@ const POWERUP_INFO = {
   SHIELD: { color: '#3B82F6', icon: Shield, name: 'Shield', maxDuration: 400 }
 };
 
-export default function GameUI({ score, health, level, powerUps, abilityCooldowns }) {
+export default function GameUI({ score, health, level, powerUps, abilityCooldowns, sessionScraps = 0 }) {
   const activePowerUps = powerUps ? Object.entries(powerUps).filter(
     ([key, value]) => key !== 'shieldHealth' && value > 0
   ) : [];
@@ -115,6 +115,13 @@ export default function GameUI({ score, health, level, powerUps, abilityCooldown
               <div className="flex items-center gap-2">
                 <Star className="w-5 h-5 text-yellow-400" fill="currentColor" />
                 <span className="text-yellow-400 font-bold text-lg">{score.toLocaleString()}</span>
+              </div>
+            </div>
+
+            <div className="bg-slate-900/80 backdrop-blur-sm rounded-xl px-4 py-3 border border-purple-500/30">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-purple-400" />
+                <span className="text-purple-400 font-bold text-lg">+{sessionScraps}</span>
               </div>
             </div>
 
