@@ -524,29 +524,18 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         player.castTimer = Math.floor((isCoin ? BASE_CAST_TIMER * 0.8 : (isFreeze ? BASE_FREEZE_CAST_TIMER : BASE_CAST_TIMER)) * castReduction);
 
         if (isCoin) {
-          soundManager.playCollect(); // Coin sound for coin gun
-        } else if (isFreeze) {
-          soundManager.playFreezeCast();
-        } else {
-          soundManager.playCast();
-        }
+                        soundManager.playCollect();
+                      } else if (isFreeze) {
+                        soundManager.playFreezeCast();
+                      } else {
+                        soundManager.playCast();
+                      }
 
-        const particleColor = isCoin ? `hsl(${45 + Math.random() * 15}, 100%, 60%)` :
-                             isFreeze ? `hsl(${180 + Math.random() * 20}, 100%, 70%)` : 
-                             isPowerShot ? `hsl(${0 + Math.random() * 30}, 100%, 60%)` :
-                             `hsl(${260 + Math.random() * 40}, 100%, 70%)`;
-        for (let i = 0; i < (isCoin ? 8 : (isPowerShot ? 10 : 5)); i++) {
-          state.particles.push({
-            x: player.x + player.width / 2,
-            y: player.y + player.height / 2,
-            velocityX: (Math.random() - 0.5) * 4,
-            velocityY: (Math.random() - 0.5) * 4,
-            life: 20,
-            color: particleColor
-          });
-        }
-      }
-    };
+                      // Enhanced casting particles
+                      const castColor = isCoin ? '#FBBF24' : isFreeze ? '#22D3EE' : isPowerShot ? '#F97316' : '#A855F7';
+                      createMagicCastEffect(state.particles, player.x + player.width / 2, player.y + player.height / 2, castColor, dirX);
+                    }
+                  };
 
     const handleClick = (e) => {
       const rect = canvas.getBoundingClientRect();
