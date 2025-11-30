@@ -203,6 +203,7 @@ export default function Game() {
 
   const handleGameOver = useCallback(() => {
     setGameState('gameOver');
+    musicManager.pause();
     if (sessionScraps > 0 || sessionCrystals > 0) {
       saveScraps(sessionScraps, sessionCrystals);
     }
