@@ -180,7 +180,19 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-orange-400 to-yellow-300 mb-2 drop-shadow-lg"
+              className="text-5xl font-black text-yellow-300 mb-2"
+              style={{
+                textShadow: `
+                  0 1px 0 #d97706,
+                  0 2px 0 #c2410c,
+                  0 3px 0 #b45309,
+                  0 4px 0 #a16207,
+                  0 5px 0 #854d0e,
+                  0 6px 0 #713f12,
+                  0 7px 10px rgba(0,0,0,0.5),
+                  0 10px 20px rgba(0,0,0,0.4)
+                `
+              }}
             >
               LEVEL {level} COMPLETE!
             </motion.h2>
