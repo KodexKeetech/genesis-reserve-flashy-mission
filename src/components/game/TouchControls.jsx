@@ -66,17 +66,17 @@ export default function TouchControls({ onInput }) {
   }, [onInput]);
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 h-40 pointer-events-none z-50 md:hidden">
+    <div className="fixed bottom-0 left-0 right-0 pointer-events-none z-50 md:hidden" style={{ height: '35vh' }}>
       {/* Left side - Joystick */}
       <div
         ref={joystickRef}
-        className="absolute left-6 bottom-6 w-28 h-28 rounded-full bg-slate-800/60 border-2 border-slate-600/50 pointer-events-auto"
+        className="absolute left-4 bottom-4 w-24 h-24 rounded-full bg-slate-900/80 border-3 border-purple-500/60 pointer-events-auto shadow-lg shadow-purple-500/20"
         onTouchStart={handleJoystickStart}
         onTouchMove={handleJoystickMove}
         onTouchEnd={handleJoystickEnd}
       >
         <div
-          className="absolute w-14 h-14 rounded-full bg-slate-600/80 border-2 border-slate-400/50 transition-transform duration-75"
+          className="absolute w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 border-2 border-white/30 shadow-md transition-transform duration-50"
           style={{
             left: '50%',
             top: '50%',
@@ -85,43 +85,43 @@ export default function TouchControls({ onInput }) {
         />
       </div>
 
-      {/* Right side - Action buttons */}
-      <div className="absolute right-4 bottom-4 flex flex-col gap-2 pointer-events-auto">
-        {/* Top row - Jump and Dash */}
-        <div className="flex gap-2">
-          <button
-            className="w-14 h-14 rounded-full bg-cyan-600/70 border-2 border-cyan-400/50 flex items-center justify-center text-white text-xs font-bold active:bg-cyan-500/90"
-            onTouchStart={handleButtonStart('dash')}
-            onTouchEnd={handleButtonEnd('dash')}
-          >
-            DASH
-          </button>
-          <button
-            className="w-16 h-16 rounded-full bg-green-600/70 border-2 border-green-400/50 flex items-center justify-center text-white text-sm font-bold active:bg-green-500/90"
-            onTouchStart={handleButtonStart('jump')}
-            onTouchEnd={handleButtonEnd('jump')}
-          >
-            JUMP
-          </button>
-        </div>
+      {/* Right side - Action buttons in arc layout */}
+      <div className="absolute right-2 bottom-2 pointer-events-auto">
+        {/* Main action - CAST (large, bottom right) */}
+        <button
+          className="absolute right-0 bottom-0 w-20 h-20 rounded-full bg-gradient-to-br from-purple-600 to-purple-800 border-3 border-purple-400/70 flex items-center justify-center text-white font-bold shadow-lg shadow-purple-500/30 active:scale-95 active:brightness-125 transition-all"
+          onTouchStart={handleButtonStart('cast')}
+          onTouchEnd={handleButtonEnd('cast')}
+        >
+          <span className="text-2xl">✨</span>
+        </button>
         
-        {/* Bottom row - Cast and Switch */}
-        <div className="flex gap-2 justify-end">
-          <button
-            className="w-12 h-12 rounded-full bg-purple-600/70 border-2 border-purple-400/50 flex items-center justify-center text-white text-xs font-bold active:bg-purple-500/90"
-            onTouchStart={handleButtonStart('switch')}
-            onTouchEnd={handleButtonEnd('switch')}
-          >
-            Q
-          </button>
-          <button
-            className="w-16 h-16 rounded-full bg-purple-600/70 border-2 border-purple-400/50 flex items-center justify-center text-white text-sm font-bold active:bg-purple-500/90"
-            onTouchStart={handleButtonStart('cast')}
-            onTouchEnd={handleButtonEnd('cast')}
-          >
-            CAST
-          </button>
-        </div>
+        {/* JUMP (large, above cast) */}
+        <button
+          className="absolute right-2 bottom-24 w-16 h-16 rounded-full bg-gradient-to-br from-green-500 to-green-700 border-2 border-green-400/70 flex items-center justify-center text-white font-bold shadow-lg shadow-green-500/30 active:scale-95 active:brightness-125 transition-all"
+          onTouchStart={handleButtonStart('jump')}
+          onTouchEnd={handleButtonEnd('jump')}
+        >
+          <span className="text-xl">⬆</span>
+        </button>
+        
+        {/* DASH (medium, left of cast) */}
+        <button
+          className="absolute right-24 bottom-2 w-14 h-14 rounded-full bg-gradient-to-br from-cyan-500 to-cyan-700 border-2 border-cyan-400/70 flex items-center justify-center text-white font-bold shadow-lg shadow-cyan-500/30 active:scale-95 active:brightness-125 transition-all"
+          onTouchStart={handleButtonStart('dash')}
+          onTouchEnd={handleButtonEnd('dash')}
+        >
+          <span className="text-lg">💨</span>
+        </button>
+        
+        {/* SWITCH SPELL (small, top left of group) */}
+        <button
+          className="absolute right-24 bottom-20 w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-700 border-2 border-indigo-400/70 flex items-center justify-center text-white text-xs font-bold shadow-lg shadow-indigo-500/30 active:scale-95 active:brightness-125 transition-all"
+          onTouchStart={handleButtonStart('switch')}
+          onTouchEnd={handleButtonEnd('switch')}
+        >
+          <span className="text-base">🔄</span>
+        </button>
       </div>
     </div>
   );
