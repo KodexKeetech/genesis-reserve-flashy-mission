@@ -95,8 +95,20 @@ export default function Game() {
           setStartingGun(user.lastGun);
           setCurrentGun(user.lastGun);
         }
+        // Also sync to localStorage
+        localStorage.setItem('jeff_player_data', JSON.stringify({
+          magicScraps: user.magicScraps || 0,
+          arcaneCrystals: user.arcaneCrystals || 0,
+          highestLevel: user.highestLevel || 1
+        }));
       } catch (e) {
-        // Not logged in or error, use defaults
+        // Not logged in - load from localStorage
+        const localData = localStorage.getItem('jeff_player_data');
+        if (localData) {
+          const data = JSON.parse(localData);
+          setMagicScraps(data.magicScraps || 0);
+          setArcaneCrystals(data.arcaneCrystals || 0);
+        }
       }
     };
     loadPlayerData();
