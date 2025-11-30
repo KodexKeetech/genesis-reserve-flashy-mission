@@ -239,7 +239,7 @@ export default function Game() {
       )}
 
       {/* Game Container */}
-      <div className="relative w-[80vw] md:w-full md:max-w-[800px]" style={{ aspectRatio: '800/600' }}>
+      <div className="relative w-[65vw] md:w-full md:max-w-[800px]" style={{ aspectRatio: '800/600' }}>
         <div className="absolute inset-0">
         {gameState === 'tutorial' && (
           <div className="w-full h-full bg-slate-900 rounded-xl relative">
