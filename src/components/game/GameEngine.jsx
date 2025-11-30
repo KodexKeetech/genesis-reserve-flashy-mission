@@ -4,6 +4,7 @@ import { getBiomeForLevel, isBossLevel, getEnemiesForLevel } from './BiomeConfig
 import { drawBackground, drawPlatform, drawEnvironmentalHazard } from './BackgroundRenderer';
 import { drawEnemy, drawBoss } from './EnemyRenderer';
 import { createImpactEffect, createDamageEffect, createExplosionEffect, drawParticle, drawProjectileTrail, drawEnemyProjectileTrail } from './ParticleEffects';
+import { getAbilityStats, SPECIAL_ABILITIES } from './AbilitySystem';
 
 const GRAVITY = 0.6;
 const JUMP_FORCE = -13;
@@ -24,7 +25,7 @@ const POWERUP_TYPES = {
   SHIELD: { color: '#3B82F6', icon: '🛡️', duration: 400, name: 'Shield' }
 };
 
-export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel, onPowerUpChange, onAbilityCooldowns, onScrapsEarned, playerUpgrades, touchInput }) {
+export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel, onPowerUpChange, onAbilityCooldowns, onScrapsEarned, onCrystalsEarned, playerUpgrades, unlockedAbilities, abilityUpgrades, touchInput }) {
   const canvasRef = useRef(null);
   const gameStateRef = useRef({
     player: {
@@ -60,8 +61,16 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         shieldHealth: 0
       },
       // Projectile type (0 = normal, 1 = freeze)
-      selectedProjectile: 0
+      selectedProjectile: 0,
+      // Special abilities
+      specialAbilities: {
+        aoeBlast: { cooldown: 0, active: false },
+        reflectShield: { cooldown: 0, active: false, timer: 0 },
+        hover: { cooldown: 0, active: false, timer: 0 }
+      }
     },
+    // Track if player took damage in boss fight (for no-hit bonus)
+    bossNoDamage: true,
     platforms: [],
     enemies: [],
     projectiles: [],
@@ -363,6 +372,12 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     state.player.isDashing = false;
     state.player.powerUps = { SPEED: 0, INVINCIBILITY: 0, POWER_SHOT: 0, SHIELD: 0, shieldHealth: 0 };
     state.player.selectedProjectile = 0;
+    state.player.specialAbilities = {
+      aoeBlast: { cooldown: 0, active: false },
+      reflectShield: { cooldown: 0, active: false, timer: 0 },
+      hover: { cooldown: 0, active: false, timer: 0 }
+    };
+    state.bossNoDamage = true;
     state.cameraX = 0;
   }, []);
 
@@ -519,6 +534,102 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       state.player.selectedProjectile = (state.player.selectedProjectile + 1) % 2;
     };
 
+    // Handle special abilities
+    const handleAoeBlast = () => {
+      const state = gameStateRef.current;
+      const player = state.player;
+      if (!unlockedAbilities?.aoeBlast) return;
+      if (player.specialAbilities.aoeBlast.cooldown > 0) return;
+
+      const stats = getAbilityStats('aoeBlast', abilityUpgrades);
+      
+      // Deal damage to all enemies in radius
+      const centerX = player.x + player.width / 2;
+      const centerY = player.y + player.height / 2;
+      
+      for (let i = state.enemies.length - 1; i >= 0; i--) {
+        const enemy = state.enemies[i];
+        const dx = (enemy.x + enemy.width / 2) - centerX;
+        const dy = (enemy.y + enemy.height / 2) - centerY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        
+        if (dist < stats.radius) {
+          enemy.health -= stats.damage;
+          if (enemy.health <= 0) {
+            soundManager.playEnemyDefeat();
+            createExplosionEffect(state.particles, enemy.x + enemy.width / 2, enemy.y + enemy.height / 2, '#A855F7', 1);
+            state.enemies.splice(i, 1);
+            state.score += 100;
+            onScoreChange(state.score);
+            const scrapBonus = 1 + ((playerUpgrades || {}).scrapMagnet || 0) * 0.2;
+            const scrapsEarned = Math.floor((5 + Math.random() * 5) * scrapBonus);
+            if (onScrapsEarned) onScrapsEarned(scrapsEarned);
+          }
+        }
+      }
+      
+      // Damage boss if in range
+      if (state.boss) {
+        const dx = (state.boss.x + state.boss.width / 2) - centerX;
+        const dy = (state.boss.y + state.boss.height / 2) - centerY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < stats.radius) {
+          state.boss.health -= stats.damage;
+          soundManager.playEnemyHit();
+        }
+      }
+      
+      // Visual effect - expanding ring
+      for (let i = 0; i < 30; i++) {
+        const angle = (i / 30) * Math.PI * 2;
+        state.particles.push({
+          x: centerX,
+          y: centerY,
+          velocityX: Math.cos(angle) * 8,
+          velocityY: Math.sin(angle) * 8,
+          life: 30,
+          color: '#A855F7'
+        });
+      }
+      
+      player.specialAbilities.aoeBlast.cooldown = stats.baseCooldown;
+      soundManager.createOscillator('sine', 200, 0.3, 0.4);
+      soundManager.createOscillator('sawtooth', 100, 0.2, 0.3);
+    };
+
+    const handleReflectShield = () => {
+      const state = gameStateRef.current;
+      const player = state.player;
+      if (!unlockedAbilities?.reflectShield) return;
+      if (player.specialAbilities.reflectShield.cooldown > 0) return;
+      if (player.specialAbilities.reflectShield.active) return;
+
+      const stats = getAbilityStats('reflectShield', abilityUpgrades);
+      
+      player.specialAbilities.reflectShield.active = true;
+      player.specialAbilities.reflectShield.timer = stats.duration;
+      player.specialAbilities.reflectShield.cooldown = stats.baseCooldown;
+      
+      soundManager.createOscillator('sine', 600, 0.2, 0.3);
+    };
+
+    const handleHover = () => {
+      const state = gameStateRef.current;
+      const player = state.player;
+      if (!unlockedAbilities?.hover) return;
+      if (player.specialAbilities.hover.cooldown > 0) return;
+      if (player.specialAbilities.hover.active) return;
+
+      const stats = getAbilityStats('hover', abilityUpgrades);
+      
+      player.specialAbilities.hover.active = true;
+      player.specialAbilities.hover.timer = stats.duration;
+      player.specialAbilities.hover.cooldown = stats.baseCooldown;
+      player.velocityY = -2; // Small upward boost
+      
+      soundManager.createOscillator('sine', 400, 0.15, 0.2);
+    };
+
     const handleKeyDownWithDash = (e) => {
       handleKeyDown(e);
       if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
@@ -526,6 +637,15 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       }
       if (e.code === 'KeyQ') {
         handleSwitchProjectile();
+      }
+      if (e.code === 'KeyE') {
+        handleAoeBlast();
+      }
+      if (e.code === 'KeyR') {
+        handleReflectShield();
+      }
+      if (e.code === 'KeyF') {
+        handleHover();
       }
     };
 
@@ -823,6 +943,19 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         });
       }
       
+      // Update special ability cooldowns and timers
+      Object.keys(player.specialAbilities).forEach(key => {
+        if (player.specialAbilities[key].cooldown > 0) {
+          player.specialAbilities[key].cooldown--;
+        }
+        if (player.specialAbilities[key].timer > 0) {
+          player.specialAbilities[key].timer--;
+          if (player.specialAbilities[key].timer <= 0) {
+            player.specialAbilities[key].active = false;
+          }
+        }
+      });
+      
       // Report cooldowns
       const upgrades = playerUpgrades || {};
       const dashCooldown = Math.floor(BASE_DASH_COOLDOWN * (1 - (upgrades.dashEfficiency || 0) * 0.1));
@@ -830,7 +963,9 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         onAbilityCooldowns({
           dashCooldown: player.dashCooldown,
           dashMaxCooldown: dashCooldown,
-          selectedProjectile: player.selectedProjectile
+          selectedProjectile: player.selectedProjectile,
+          specialAbilities: player.specialAbilities,
+          unlockedAbilities: unlockedAbilities
         });
       }
       
@@ -946,9 +1081,36 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       // Track landing for squash effect
       const wasOnGround = player.onGround;
 
-      // Physics (skip gravity during dash)
+      // Physics (skip gravity during dash and hover)
       if (!player.isDashing) {
-        player.velocityY += GRAVITY;
+        if (player.specialAbilities.hover.active) {
+          // Hover - reduced gravity and can move up/down
+          player.velocityY *= 0.9; // Slow down vertical movement
+          player.velocityY += GRAVITY * 0.1; // Very light gravity
+          
+          // Allow vertical control while hovering
+          if (keys['ArrowUp'] || keys['KeyW'] || keys['Space']) {
+            player.velocityY -= 0.5;
+          }
+          if (keys['ArrowDown'] || keys['KeyS']) {
+            player.velocityY += 0.5;
+          }
+          player.velocityY = Math.max(-4, Math.min(4, player.velocityY));
+          
+          // Hover particles
+          if (Math.random() < 0.3) {
+            particles.push({
+              x: player.x + player.width / 2 + (Math.random() - 0.5) * 20,
+              y: player.y + player.height,
+              velocityX: (Math.random() - 0.5) * 2,
+              velocityY: 2,
+              life: 15,
+              color: '#22D3EE'
+            });
+          }
+        } else {
+          player.velocityY += GRAVITY;
+        }
       }
       player.x += player.velocityX;
       player.y += player.velocityY;
@@ -1330,6 +1492,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             player.velocityX = player.x < enemy.x ? -5 : 5;
             onHealthChange(player.health);
             createDamageEffect(particles, player.x + player.width / 2, player.y + player.height / 2);
+            state.bossNoDamage = false;
             }
         }
       }
@@ -1412,6 +1575,36 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         
         // Check player collision
         const isInvincible = player.invincible || player.powerUps.INVINCIBILITY > 0 || player.isDashing;
+        
+        // Reflect shield reflects projectiles
+        if (player.specialAbilities.reflectShield.active && checkCollision(proj, player)) {
+          proj.velocityX *= -1.5;
+          proj.velocityY *= -1;
+          proj.reflected = true;
+          soundManager.playShieldHit();
+          // Reflected projectile can now hit enemies
+          continue;
+        }
+        
+        // Check if reflected projectile hits enemies
+        if (proj.reflected) {
+          for (let j = state.enemies.length - 1; j >= 0; j--) {
+            if (checkCollision(proj, state.enemies[j])) {
+              state.enemies[j].health -= 2;
+              if (state.enemies[j].health <= 0) {
+                soundManager.playEnemyDefeat();
+                createExplosionEffect(particles, state.enemies[j].x + state.enemies[j].width / 2, state.enemies[j].y + state.enemies[j].height / 2, '#3B82F6', 1);
+                state.enemies.splice(j, 1);
+                state.score += 100;
+                onScoreChange(state.score);
+              }
+              state.enemyProjectiles.splice(i, 1);
+              break;
+            }
+          }
+          continue;
+        }
+        
         if (!isInvincible && checkCollision(proj, player)) {
           if (player.powerUps.SHIELD > 0 && player.powerUps.shieldHealth > 0) {
             player.powerUps.shieldHealth--;
@@ -1423,6 +1616,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             player.invincible = true;
             player.invincibleTimer = 40;
             onHealthChange(player.health);
+            state.bossNoDamage = false; // Player took damage
           }
           state.enemyProjectiles.splice(i, 1);
           continue;
@@ -1639,6 +1833,11 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
               const scrapBonus = 1 + ((playerUpgrades || {}).scrapMagnet || 0) * 0.2;
               const bossScrap = Math.floor(50 * scrapBonus);
               if (onScrapsEarned) onScrapsEarned(bossScrap);
+              
+              // Award arcane crystals for boss kill
+              let crystals = 2;
+              if (state.bossNoDamage) crystals += 1; // Bonus for no-hit
+              if (onCrystalsEarned) onCrystalsEarned(crystals);
 
               state.boss = null;
             }
@@ -1661,6 +1860,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
               player.velocityY = -10;
               player.velocityX = player.x < boss.x ? -8 : 8;
               onHealthChange(player.health);
+              state.bossNoDamage = false;
             }
           }
         }
@@ -2011,6 +2211,62 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.fill();
         }
         ctx.globalAlpha = 1;
+      }
+      
+      // Draw reflect shield effect
+      if (player.specialAbilities.reflectShield.active) {
+        const shieldPulse = Math.sin(time * 0.15) * 0.2 + 0.7;
+        ctx.strokeStyle = `rgba(59, 130, 246, ${shieldPulse})`;
+        ctx.shadowColor = '#3B82F6';
+        ctx.shadowBlur = 25;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(
+          player.x - state.cameraX + player.width / 2,
+          player.y + player.height / 2,
+          player.width / 2 + 20 + Math.sin(time * 0.2) * 3,
+          0, Math.PI * 2
+        );
+        ctx.stroke();
+        
+        // Inner rotating hexagon
+        ctx.save();
+        ctx.translate(player.x - state.cameraX + player.width / 2, player.y + player.height / 2);
+        ctx.rotate(time * 0.03);
+        ctx.strokeStyle = '#93C5FD';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+          const angle = (i / 6) * Math.PI * 2;
+          const r = player.width / 2 + 15;
+          if (i === 0) ctx.moveTo(Math.cos(angle) * r, Math.sin(angle) * r);
+          else ctx.lineTo(Math.cos(angle) * r, Math.sin(angle) * r);
+        }
+        ctx.closePath();
+        ctx.stroke();
+        ctx.restore();
+        ctx.shadowBlur = 0;
+      }
+      
+      // Draw hover effect
+      if (player.specialAbilities.hover.active) {
+        ctx.strokeStyle = `rgba(34, 211, 238, ${0.5 + Math.sin(time * 0.2) * 0.2})`;
+        ctx.shadowColor = '#22D3EE';
+        ctx.shadowBlur = 20;
+        ctx.lineWidth = 2;
+        
+        // Swirling rings below player
+        for (let ring = 0; ring < 3; ring++) {
+          ctx.save();
+          ctx.translate(player.x - state.cameraX + player.width / 2, player.y + player.height + 5 + ring * 8);
+          ctx.rotate(time * 0.1 * (ring % 2 === 0 ? 1 : -1));
+          ctx.scale(1, 0.4);
+          ctx.beginPath();
+          ctx.arc(0, 0, 20 - ring * 4, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+        ctx.shadowBlur = 0;
       }
       
       // Draw Jeff
