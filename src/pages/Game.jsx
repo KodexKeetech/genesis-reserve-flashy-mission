@@ -119,6 +119,18 @@ export default function Game() {
     setLevel(1);
   }, []);
 
+  const handleLoadGame = useCallback(() => {
+    soundManager.init();
+    const saved = localStorage.getItem('jeff_save_game');
+    if (saved) {
+      const saveData = JSON.parse(saved);
+      setLevel(saveData.level || 1);
+      setScore(saveData.score || 0);
+    }
+    setHealth(100);
+    setGameState('playing');
+  }, []);
+
   // Initialize sound on first load
   React.useEffect(() => {
     soundManager.init();
@@ -248,6 +260,7 @@ export default function Game() {
               onStart={handleStart}
               onRestart={handleRestart}
               onNextLevel={handleNextLevel}
+              onLoadGame={handleLoadGame}
             />
           </div>
         )}
