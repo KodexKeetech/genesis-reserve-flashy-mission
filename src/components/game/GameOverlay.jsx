@@ -65,62 +65,60 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="absolute inset-0 bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center rounded-xl p-6"
+        className="absolute inset-0 bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center rounded-xl p-2 md:p-6 overflow-y-auto"
       >
         <motion.div
           initial={{ scale: 0.8, y: 20 }}
           animate={{ scale: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 100 }}
-          className="text-center max-w-lg"
+          className="text-center max-w-lg w-full"
         >
-          <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400 mb-6">
+          <h2 className="text-xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400 mb-2 md:mb-6">
             Welcome, Wizard!
           </h2>
           
-          <div className="bg-slate-800/80 rounded-xl p-5 mb-6 text-left space-y-3">
-            <div className="flex items-center gap-3">
-              <kbd className="px-2 py-1 bg-slate-700 rounded text-cyan-400 text-sm">← →</kbd>
-              <span className="text-slate-300">Move left and right</span>
+          <div className="bg-slate-800/80 rounded-lg md:rounded-xl p-2 md:p-5 mb-2 md:mb-6 text-left grid grid-cols-2 md:grid-cols-1 gap-1 md:gap-3">
+            <div className="flex items-center gap-2 md:gap-3">
+              <kbd className="px-1 md:px-2 py-0.5 md:py-1 bg-slate-700 rounded text-cyan-400 text-xs md:text-sm">←→</kbd>
+              <span className="text-slate-300 text-xs md:text-base">Move</span>
             </div>
-            <div className="flex items-center gap-3">
-              <kbd className="px-2 py-1 bg-slate-700 rounded text-green-400 text-sm">SPACE</kbd>
-              <span className="text-slate-300">Jump (press again to double jump!)</span>
+            <div className="flex items-center gap-2 md:gap-3">
+              <kbd className="px-1 md:px-2 py-0.5 md:py-1 bg-slate-700 rounded text-green-400 text-xs md:text-sm">SPACE</kbd>
+              <span className="text-slate-300 text-xs md:text-base">Jump/Double jump</span>
             </div>
-            <div className="flex items-center gap-3">
-              <kbd className="px-2 py-1 bg-slate-700 rounded text-purple-400 text-sm">CLICK</kbd>
-              <span className="text-slate-300">Cast magic toward cursor</span>
+            <div className="flex items-center gap-2 md:gap-3">
+              <kbd className="px-1 md:px-2 py-0.5 md:py-1 bg-slate-700 rounded text-purple-400 text-xs md:text-sm">CLICK</kbd>
+              <span className="text-slate-300 text-xs md:text-base">Cast magic</span>
             </div>
-            <div className="flex items-center gap-3">
-              <kbd className="px-2 py-1 bg-slate-700 rounded text-cyan-400 text-sm">SHIFT</kbd>
-              <span className="text-slate-300">Dash through enemies</span>
+            <div className="flex items-center gap-2 md:gap-3">
+              <kbd className="px-1 md:px-2 py-0.5 md:py-1 bg-slate-700 rounded text-cyan-400 text-xs md:text-sm">SHIFT</kbd>
+              <span className="text-slate-300 text-xs md:text-base">Dash</span>
             </div>
-            <div className="flex items-center gap-3">
-              <kbd className="px-2 py-1 bg-slate-700 rounded text-yellow-400 text-sm">Q</kbd>
-              <span className="text-slate-300">Switch between spells</span>
+            <div className="flex items-center gap-2 md:gap-3">
+              <kbd className="px-1 md:px-2 py-0.5 md:py-1 bg-slate-700 rounded text-yellow-400 text-xs md:text-sm">Q</kbd>
+              <span className="text-slate-300 text-xs md:text-base">Switch spell</span>
             </div>
           </div>
 
-          <p className="text-slate-400 mb-6 text-sm">
-            Collect coins 🪙 and reach the purple portal to complete each level!
+          <p className="text-slate-400 mb-2 md:mb-6 text-xs md:text-sm">
+            Collect coins 🪙 and reach the portal!
           </p>
           
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2 md:gap-3">
             <Button
               onClick={onStart}
-              size="lg"
-              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold px-8 py-5 text-lg rounded-xl shadow-lg shadow-purple-500/30"
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold px-4 md:px-8 py-2 md:py-5 text-sm md:text-lg rounded-lg md:rounded-xl shadow-lg shadow-purple-500/30"
             >
-              <Play className="w-5 h-5 mr-2" />
-              Start Tutorial Level
+              <Play className="w-4 h-4 md:w-5 md:h-5 mr-2" />
+              Start Tutorial
             </Button>
             
             <Button
               onClick={onNextLevel}
-              size="lg"
               variant="outline"
-              className="border-slate-600 text-slate-400 hover:text-white hover:bg-slate-800 font-medium px-6 py-4 rounded-xl"
+              className="border-slate-600 text-slate-400 hover:text-white hover:bg-slate-800 font-medium px-4 md:px-6 py-2 md:py-4 text-sm rounded-lg md:rounded-xl"
             >
-              Skip Tutorial →
+              Skip →
             </Button>
           </div>
         </motion.div>
