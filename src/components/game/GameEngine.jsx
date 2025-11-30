@@ -1534,14 +1534,14 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                     onGunChange(player.selectedProjectile);
                   }
 
-                  // Check for checkpoint
+                  // Check for checkpoint - save at the safe platform position
                   if (!state.checkpointReached && player.x >= state.checkpointX && state.checkpointX > 0) {
                     state.checkpointReached = true;
                     if (onCheckpointReached) {
                       onCheckpointReached({
                         level: currentLevel,
-                        x: player.x,
-                        y: player.y,
+                        x: state.checkpointX,
+                        y: state.checkpointY,
                         score: state.score,
                         health: player.health,
                         gun: player.selectedProjectile
