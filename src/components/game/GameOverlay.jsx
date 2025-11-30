@@ -230,12 +230,12 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
   }
 
   if (type === 'levelComplete') {
-    return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="absolute inset-0 rounded-xl overflow-hidden"
-      >
+        return (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="absolute inset-0 rounded-xl overflow-hidden w-full h-full"
+          >
         {/* Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center"
