@@ -1864,16 +1864,25 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                         }
                       }
       
-      // Update particles
-      for (let i = particles.length - 1; i >= 0; i--) {
-        const particle = particles[i];
-        particle.x += particle.velocityX;
-        particle.y += particle.velocityY;
-        particle.life--;
-        if (particle.life <= 0) {
-          particles.splice(i, 1);
-        }
-      }
+      // Spawn ambient particles based on biome
+                  if (state.biome && Math.random() < 0.05) {
+                    createAmbientParticle(particles, state.biome.key, state.cameraX, state.levelWidth);
+                  }
+
+                  // Update particles
+                  for (let i = particles.length - 1; i >= 0; i--) {
+                    const particle = particles[i];
+                    particle.x += particle.velocityX;
+                    particle.y += particle.velocityY;
+                    // Apply gravity if particle has it
+                    if (particle.gravity) {
+                      particle.velocityY += particle.gravity;
+                    }
+                    particle.life--;
+                    if (particle.life <= 0 || particle.y > 650) {
+                      particles.splice(i, 1);
+                    }
+                  }
       
       // Update enemy projectiles
       for (let i = state.enemyProjectiles.length - 1; i >= 0; i--) {
