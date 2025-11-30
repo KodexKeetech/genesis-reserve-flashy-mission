@@ -1070,6 +1070,11 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
               enemies.splice(j, 1);
               state.score += 100;
               onScoreChange(state.score);
+              
+              // Award magic scraps
+              const scrapBonus = 1 + ((playerUpgrades || {}).scrapMagnet || 0) * 0.2;
+              const scrapsEarned = Math.floor((5 + Math.random() * 5) * scrapBonus);
+              if (onScrapsEarned) onScrapsEarned(scrapsEarned);
             } else {
               soundManager.playEnemyHit();
               createImpactEffect(particles, enemies[j].x + enemies[j].width / 2, enemies[j].y + enemies[j].height / 2, '#FFFFFF', 6);
