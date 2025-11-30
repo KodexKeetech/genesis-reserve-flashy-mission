@@ -1513,6 +1513,22 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                   type: 'root'
                 });
               }
+              // Throw leaves at player
+              const leafCount = boss.health < boss.maxHealth / 2 ? 5 : 3;
+              for (let i = 0; i < leafCount; i++) {
+                const angle = (Math.PI / 4) + (i * Math.PI / (leafCount * 2));
+                state.enemyProjectiles.push({
+                  x: boss.x + boss.width / 2,
+                  y: boss.y + 20,
+                  velocityX: Math.cos(angle) * dirToPlayer * 5,
+                  velocityY: -Math.sin(angle) * 4 + 2,
+                  width: 20,
+                  height: 12,
+                  life: 150,
+                  type: 'leaf'
+                });
+              }
+              soundManager.createOscillator('sine', 300, 0.2, 0.3);
             } else if (boss.type === 'magmaGolem') {
               // Fire projectiles in spread
               for (let i = -1; i <= 1; i++) {
