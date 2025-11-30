@@ -584,13 +584,9 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     // Handle projectile switch (Q key)
     const handleSwitchProjectile = () => {
       const state = gameStateRef.current;
-      // Cycle through: 0 (purple), 1 (freeze), 2 (coin if has ammo)
-      let next = (state.player.selectedProjectile + 1) % 3;
-      // Skip coin gun if no ammo
-      if (next === 2 && state.player.coinAmmo <= 0) {
-        next = 0;
-      }
-      state.player.selectedProjectile = next;
+      // Cycle through: 0 (purple), 1 (freeze), 2 (coin)
+      // Allow switching to coin gun even with 0 ammo (shows it's available but empty)
+      state.player.selectedProjectile = (state.player.selectedProjectile + 1) % 3;
     };
 
     // Handle special abilities
