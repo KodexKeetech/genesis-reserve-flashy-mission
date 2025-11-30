@@ -52,10 +52,20 @@ export default function AbilityShop() {
     const newUnlocked = { ...user.unlockedAbilities, [abilityId]: true };
     const newCrystals = user.arcaneCrystals - ability.unlockCost;
 
-    await base44.auth.updateMe({
-      unlockedAbilities: newUnlocked,
-      arcaneCrystals: newCrystals
-    });
+    try {
+      await base44.auth.updateMe({
+        unlockedAbilities: newUnlocked,
+        arcaneCrystals: newCrystals
+      });
+    } catch (e) {
+      // Not logged in
+    }
+    
+    // Always save to localStorage as backup
+    localStorage.setItem('jeff_unlocked_abilities', JSON.stringify(newUnlocked));
+    const localData = localStorage.getItem('jeff_player_data');
+    const data = localData ? JSON.parse(localData) : {};
+    localStorage.setItem('jeff_player_data', JSON.stringify({ ...data, arcaneCrystals: newCrystals }));
 
     setUser({ ...user, unlockedAbilities: newUnlocked, arcaneCrystals: newCrystals });
     setPurchasing(null);
