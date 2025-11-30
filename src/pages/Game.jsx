@@ -47,6 +47,7 @@ export default function Game() {
   });
   const [arcaneCrystals, setArcaneCrystals] = useState(0);
   const [sessionCrystals, setSessionCrystals] = useState(0);
+  const [coinAmmo, setCoinAmmo] = useState(0);
   
   const touchInputRef = useRef({
     move: { x: 0, y: 0 },
@@ -279,6 +280,8 @@ export default function Game() {
               onAbilityCooldowns={handleAbilityCooldowns}
               onScrapsEarned={handleScrapsEarned}
               onCrystalsEarned={handleCrystalsEarned}
+              onCoinAmmoChange={setCoinAmmo}
+              savedCoinAmmo={coinAmmo}
               playerUpgrades={playerUpgrades}
               unlockedAbilities={unlockedAbilities}
               abilityUpgrades={abilityUpgrades}
