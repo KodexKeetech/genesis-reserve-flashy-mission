@@ -173,8 +173,35 @@ export default function Game() {
     setAbilityCooldowns(cooldowns);
   }, []);
 
+  // Check if in portrait mode on mobile
+  const [isPortrait, setIsPortrait] = useState(false);
+  
+  useEffect(() => {
+    const checkOrientation = () => {
+      setIsPortrait(window.innerHeight > window.innerWidth && window.innerWidth < 900);
+    };
+    checkOrientation();
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('orientationchange', checkOrientation);
+    return () => {
+      window.removeEventListener('resize', checkOrientation);
+      window.removeEventListener('orientationchange', checkOrientation);
+    };
+  }, []);
+
+  // Show rotate prompt on portrait mobile
+  if (isPortrait) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex flex-col items-center justify-center p-6 text-center">
+        <div className="text-6xl mb-6 animate-pulse">📱↻</div>
+        <h2 className="text-2xl font-bold text-white mb-2">Rotate Your Device</h2>
+        <p className="text-slate-400">Please rotate to landscape mode for the best experience</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex flex-col items-center justify-center p-2 md:p-4 overflow-hidden">
       {/* Ambient background effects */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl" />
@@ -182,12 +209,13 @@ export default function Game() {
       </div>
 
       {/* Title */}
-      <h1 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400 mb-6 tracking-tight">
+      <h1 className="text-xl sm:text-2xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400 mb-2 md:mb-6 tracking-tight">
         JEFF: The Robot Wizard
       </h1>
 
       {/* Game Container */}
-      <div className="relative">
+      <div className="relative w-full max-w-[800px]" style={{ aspectRatio: '800/600' }}>
+        <div className="absolute inset-0">
         {gameState === 'playing' && (
             <GameEngine
               currentLevel={level}
@@ -230,6 +258,7 @@ export default function Game() {
           />
         )}
         </div>
+      </div>
 
         {/* Touch controls for mobile */}
         {gameState === 'playing' && (
@@ -260,8 +289,8 @@ export default function Game() {
         </Link>
       </div>
 
-      {/* Controls hint */}
-      <div className="mt-6 flex flex-wrap justify-center gap-4 text-slate-500 text-sm">
+      {/* Controls hint - hide on small screens */}
+      <div className="hidden md:flex mt-6 flex-wrap justify-center gap-4 text-slate-500 text-sm">
         <span className="flex items-center gap-2">
           <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">←→</kbd>
           Move

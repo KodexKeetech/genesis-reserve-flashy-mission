@@ -2318,7 +2318,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       ref={canvasRef}
       width={800}
       height={600}
-      className="rounded-xl shadow-2xl cursor-crosshair"
+      className="rounded-xl shadow-2xl cursor-crosshair w-full h-full"
       style={{ imageRendering: 'pixelated' }}
     />
   );
