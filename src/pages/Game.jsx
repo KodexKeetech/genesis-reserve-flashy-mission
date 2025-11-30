@@ -139,7 +139,7 @@ export default function Game() {
     soundManager.setMuted(!gameSettings.sound);
   }, [gameSettings]);
 
-  // Load saved game on mount if continuing
+  // Load saved game on mount if continuing or start from specific level
   useEffect(() => {
     soundManager.init();
     soundManager.setMuted(!gameSettings.sound);
@@ -151,8 +151,14 @@ export default function Game() {
         setScore(saveData.score || 0);
         setShowLevelStart(true);
       }
+    } else if (startLevelParam) {
+      const startLevel = parseInt(startLevelParam, 10);
+      if (startLevel > 0) {
+        setLevel(startLevel);
+        setGameState('playing');
+      }
     }
-  }, [shouldContinue]);
+  }, [shouldContinue, startLevelParam]);
 
   // Initialize sound on first load
   React.useEffect(() => {
