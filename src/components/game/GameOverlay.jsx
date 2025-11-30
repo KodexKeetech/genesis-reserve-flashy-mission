@@ -17,25 +17,25 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
           transition={{ type: 'spring', stiffness: 100 }}
           className="text-center"
         >
-          {/* Jeff ASCII-style art */}
+          {/* Jeff character preview */}
           <div className="mb-6 relative">
-            <div className="w-32 h-32 mx-auto relative">
-              <div className="absolute inset-0 bg-gradient-to-b from-purple-600 to-purple-800 rounded-full" />
-              <div className="absolute top-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[30px] border-r-[30px] border-b-[50px] border-l-transparent border-r-transparent border-b-purple-700" />
-              <div className="absolute top-8 left-1/2 -translate-x-1/2 w-4 h-4 bg-yellow-400 rounded-full animate-pulse" />
-              <div className="absolute top-16 left-1/2 -translate-x-1/2 w-20 h-8 bg-blue-500 rounded-lg opacity-80" />
-              <div className="absolute top-14 left-1/2 -translate-x-1/2 flex gap-3">
-                <div className="w-3 h-3 bg-white rounded-full" />
-                <div className="w-3 h-3 bg-white rounded-full" />
-              </div>
-              <motion.div
-                className="absolute -right-4 top-20 w-8 h-8 bg-purple-500 rounded-full opacity-70"
-                animate={{ scale: [1, 1.2, 1], opacity: [0.7, 1, 0.7] }}
-                transition={{ repeat: Infinity, duration: 1.5 }}
-              />
-            </div>
-            <Sparkles className="absolute -top-2 -right-2 w-8 h-8 text-yellow-400 animate-pulse" />
-            <Sparkles className="absolute -bottom-2 -left-2 w-6 h-6 text-purple-400 animate-pulse" />
+            <img 
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692c28c6355507b7b2161062/7af5ab7fc_GeneratedImageSeptember302025-6_44PM.png"
+              alt="Jeff the Robot Wizard"
+              className="w-40 h-40 mx-auto object-contain drop-shadow-2xl"
+            />
+            <motion.div
+              className="absolute -right-2 top-1/2 w-6 h-6 bg-cyan-400 rounded-full opacity-70"
+              animate={{ scale: [1, 1.3, 1], opacity: [0.5, 1, 0.5] }}
+              transition={{ repeat: Infinity, duration: 1.5 }}
+            />
+            <motion.div
+              className="absolute -left-2 top-1/3 w-4 h-4 bg-blue-400 rounded-full opacity-70"
+              animate={{ scale: [1, 1.2, 1], opacity: [0.7, 1, 0.7] }}
+              transition={{ repeat: Infinity, duration: 2, delay: 0.5 }}
+            />
+            <Sparkles className="absolute -top-2 -right-2 w-8 h-8 text-cyan-400 animate-pulse" />
+            <Sparkles className="absolute -bottom-2 -left-2 w-6 h-6 text-blue-400 animate-pulse" />
           </div>
           
           <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 mb-2">
