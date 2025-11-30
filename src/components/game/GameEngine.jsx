@@ -1146,10 +1146,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       // Two small black dot eyes
       ctx.fillStyle = '#1A1A1A';
       ctx.beginPath();
-      ctx.arc(centerX - 4 + eyeOffsetX, y + 5 - bodyBob + breathe, 2.5, 0, Math.PI * 2);
+      ctx.arc(centerX - 4 + eyeOffsetX, y + 5 - bodyBob + breathe, 1.25, 0, Math.PI * 2);
       ctx.fill();
       ctx.beginPath();
-      ctx.arc(centerX + 4 + eyeOffsetX, y + 5 - bodyBob + breathe, 2.5, 0, Math.PI * 2);
+      ctx.arc(centerX + 4 + eyeOffsetX, y + 5 - bodyBob + breathe, 1.25, 0, Math.PI * 2);
       ctx.fill();
       
       // Neutral expression mouth - simple horizontal line
