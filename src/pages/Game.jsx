@@ -130,7 +130,6 @@ export default function Game() {
   useEffect(() => {
     localStorage.setItem('jeff_settings', JSON.stringify(gameSettings));
     soundManager.setMuted(!gameSettings.sound);
-    musicManager.setMuted(!gameSettings.sound);
   }, [gameSettings]);
 
   // Load saved game on mount if continuing
@@ -148,10 +147,9 @@ export default function Game() {
     }
   }, [shouldContinue]);
 
-  // Initialize sound and music on first load
+  // Initialize sound on first load
   React.useEffect(() => {
     soundManager.init();
-    musicManager.init();
   }, []);
 
   const handleRestart = useCallback(() => {
@@ -168,8 +166,7 @@ export default function Game() {
     setHealth(100);
     setSessionScraps(0);
     setSessionCrystals(0);
-    musicManager.play();
-  }, []);
+    }, []);
 
   const handleNextLevel = useCallback(() => {
     // Reset touch input to prevent auto-movement
@@ -188,13 +185,11 @@ export default function Game() {
   const handleStartTutorial = useCallback(() => {
     setGameState('playing');
     setLevel(0);
-    musicManager.play();
   }, []);
 
   const handleSkipTutorial = useCallback(() => {
     setLevel(1);
     setGameState('playing');
-    musicManager.play();
   }, []);
 
   const handleLevelStartConfirm = useCallback(() => {
@@ -204,7 +199,6 @@ export default function Game() {
 
   const handleGameOver = useCallback(() => {
     setGameState('gameOver');
-    musicManager.pause();
     if (sessionScraps > 0 || sessionCrystals > 0) {
       saveScraps(sessionScraps, sessionCrystals);
     }
