@@ -15,10 +15,10 @@ export default function Game() {
   const urlParams = new URLSearchParams(window.location.search);
   const shouldContinue = urlParams.get('continue') === 'true';
   
-  const [gameState, setGameState] = useState('playing'); // playing, gameOver, levelComplete
+  const [gameState, setGameState] = useState('tutorial'); // tutorial, playing, gameOver, levelComplete
   const [score, setScore] = useState(0);
   const [health, setHealth] = useState(100);
-  const [level, setLevel] = useState(1);
+  const [level, setLevel] = useState(0); // Start at 0 for tutorial
   const [powerUps, setPowerUps] = useState({});
   const [abilityCooldowns, setAbilityCooldowns] = useState({
     dashCooldown: 0,
