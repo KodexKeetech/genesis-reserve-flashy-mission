@@ -62,6 +62,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     particles: [],
     collectibles: [],
     powerUpItems: [],
+    hazards: [],
+    enemyProjectiles: [],
     keys: {},
     score: 0,
     gameRunning: true,
@@ -78,6 +80,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     state.projectiles = [];
     state.particles = [];
     state.powerUpItems = [];
+    state.hazards = [];
+    state.enemyProjectiles = [];
     
     const levelWidth = 2400 + level * 600;
     let currentX = 0;
@@ -240,25 +244,52 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     state.goalX = currentX + 300;
     
     // Generate enemies on platforms and ground
-    const enemyCount = 4 + level * 2;
+    const enemyCount = 5 + level * 2;
+    const enemyTypes = ['slime', 'bat', 'shooter', 'diver', 'bomber'];
+    
     for (let i = 0; i < enemyCount; i++) {
       const enemyX = 350 + (i * (state.levelWidth - 500) / enemyCount);
       // Find a platform near this x position
       const nearbyPlatform = state.platforms.find(p => 
         p.x <= enemyX && p.x + p.width >= enemyX && p.type !== 'obstacle'
       );
-      const enemyY = nearbyPlatform ? nearbyPlatform.y - 40 : 460;
+      
+      // Determine enemy type based on position and level
+      let enemyType;
+      if (i < 2) {
+        enemyType = i % 2 === 0 ? 'slime' : 'bat';
+      } else {
+        enemyType = enemyTypes[i % enemyTypes.length];
+      }
+      
+      let enemyY = nearbyPlatform ? nearbyPlatform.y - 40 : 460;
+      
+      // Divers and bats fly higher
+      if (enemyType === 'diver' || enemyType === 'bat') {
+        enemyY = 150 + Math.random() * 100;
+      }
+      
+      // Shooters prefer platforms
+      if (enemyType === 'shooter' && nearbyPlatform) {
+        enemyY = nearbyPlatform.y - 45;
+      }
       
       state.enemies.push({
         x: enemyX,
         y: enemyY,
-        width: 40,
-        height: 40,
-        velocityX: (Math.random() > 0.5 ? 1 : -1) * (1.5 + level * 0.3),
-        type: i % 3 === 0 ? 'bat' : 'slime',
-        health: 2,
+        width: enemyType === 'bomber' ? 45 : 40,
+        height: enemyType === 'bomber' ? 45 : 40,
+        velocityX: (Math.random() > 0.5 ? 1 : -1) * (enemyType === 'shooter' ? 0.8 : 1.5 + level * 0.3),
+        velocityY: 0,
+        type: enemyType,
+        health: enemyType === 'bomber' ? 3 : 2,
         patrolStart: enemyX - 80,
-        patrolEnd: enemyX + 80
+        patrolEnd: enemyX + 80,
+        // Type-specific properties
+        shootCooldown: 0,
+        diveState: 'patrol', // patrol, diving, returning
+        originalY: enemyY,
+        bombCooldown: 0
       });
     }
     
@@ -845,7 +876,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             if (proj.type === 'freeze') {
               enemies[j].frozen = 120; // Freeze for 2 seconds
               enemies[j].originalVelocityX = enemies[j].velocityX;
+              enemies[j].originalVelocityY = enemies[j].velocityY || 0;
               enemies[j].velocityX = 0;
+              enemies[j].velocityY = 0;
+              if (enemies[j].diveState) enemies[j].diveState = 'patrol';
               
               // Freeze particles
               for (let k = 0; k < 8; k++) {
@@ -899,12 +933,95 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           enemy.frozen--;
           if (enemy.frozen <= 0 && enemy.originalVelocityX !== undefined) {
             enemy.velocityX = enemy.originalVelocityX;
+            if (enemy.originalVelocityY !== undefined) {
+              enemy.velocityY = enemy.originalVelocityY;
+            }
+          }
+          continue; // Skip AI while frozen
+        }
+        
+        // Type-specific AI
+        if (enemy.type === 'shooter') {
+          // Shooter - moves slowly and fires projectiles at player
+          enemy.x += enemy.velocityX;
+          enemy.shootCooldown--;
+          
+          const distToPlayer = Math.abs(enemy.x - player.x);
+          if (distToPlayer < 400 && enemy.shootCooldown <= 0) {
+            // Fire at player
+            const dirX = player.x > enemy.x ? 1 : -1;
+            state.enemyProjectiles.push({
+              x: enemy.x + enemy.width / 2,
+              y: enemy.y + enemy.height / 2,
+              velocityX: dirX * 5,
+              velocityY: 0,
+              width: 12,
+              height: 12,
+              life: 120,
+              type: 'energy'
+            });
+            enemy.shootCooldown = 90; // 1.5 seconds between shots
+            
+            // Shoot sound
+            soundManager.createOscillator('square', 400, 0.1, 0.2);
+          }
+        } else if (enemy.type === 'diver') {
+          // Diver - flies and dive-bombs player
+          if (enemy.diveState === 'patrol') {
+            enemy.x += enemy.velocityX;
+            enemy.y = enemy.originalY + Math.sin(time * 0.05) * 20;
+            
+            // Check if player is below and close
+            const distX = Math.abs(enemy.x - player.x);
+            if (distX < 80 && player.y > enemy.y) {
+              enemy.diveState = 'diving';
+              enemy.velocityY = 8;
+              enemy.originalVelocityY = enemy.velocityY;
+            }
+          } else if (enemy.diveState === 'diving') {
+            enemy.y += enemy.velocityY;
+            
+            // Hit ground or reached target
+            if (enemy.y > 480 || enemy.y > player.y + 50) {
+              enemy.diveState = 'returning';
+              enemy.velocityY = -3;
+            }
+          } else if (enemy.diveState === 'returning') {
+            enemy.y += enemy.velocityY;
+            enemy.x += enemy.velocityX * 0.5;
+            
+            if (enemy.y <= enemy.originalY) {
+              enemy.y = enemy.originalY;
+              enemy.diveState = 'patrol';
+              enemy.velocityY = 0;
+            }
+          }
+        } else if (enemy.type === 'bomber') {
+          // Bomber - moves and drops hazards
+          enemy.x += enemy.velocityX;
+          enemy.bombCooldown--;
+          
+          if (enemy.bombCooldown <= 0) {
+            // Drop a hazard
+            state.hazards.push({
+              x: enemy.x + enemy.width / 2 - 15,
+              y: enemy.y + enemy.height,
+              width: 30,
+              height: 20,
+              life: 300, // 5 seconds
+              damage: 15
+            });
+            enemy.bombCooldown = 120; // 2 seconds between drops
+            
+            // Drop sound
+            soundManager.createOscillator('sine', 200, 0.15, 0.2);
           }
         } else {
+          // Default movement for slime and bat
           enemy.x += enemy.velocityX;
         }
         
-        // Simple AI - reverse at edges
+        // Simple AI - reverse at edges (for ground enemies)
         if (enemy.x < 50 || enemy.x > state.levelWidth - 50) {
           enemy.velocityX *= -1;
           if (enemy.originalVelocityX !== undefined) {
@@ -1016,6 +1133,63 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         particle.life--;
         if (particle.life <= 0) {
           particles.splice(i, 1);
+        }
+      }
+      
+      // Update enemy projectiles
+      for (let i = state.enemyProjectiles.length - 1; i >= 0; i--) {
+        const proj = state.enemyProjectiles[i];
+        proj.x += proj.velocityX;
+        proj.y += proj.velocityY;
+        proj.life--;
+        
+        // Check player collision
+        const isInvincible = player.invincible || player.powerUps.INVINCIBILITY > 0 || player.isDashing;
+        if (!isInvincible && checkCollision(proj, player)) {
+          if (player.powerUps.SHIELD > 0 && player.powerUps.shieldHealth > 0) {
+            player.powerUps.shieldHealth--;
+            if (player.powerUps.shieldHealth <= 0) player.powerUps.SHIELD = 0;
+            soundManager.playShieldHit();
+          } else {
+            soundManager.playDamage();
+            player.health -= 15;
+            player.invincible = true;
+            player.invincibleTimer = 40;
+            onHealthChange(player.health);
+          }
+          state.enemyProjectiles.splice(i, 1);
+          continue;
+        }
+        
+        if (proj.life <= 0) {
+          state.enemyProjectiles.splice(i, 1);
+        }
+      }
+      
+      // Update hazards
+      for (let i = state.hazards.length - 1; i >= 0; i--) {
+        const hazard = state.hazards[i];
+        hazard.life--;
+        
+        // Check player collision
+        const isInvincible = player.invincible || player.powerUps.INVINCIBILITY > 0 || player.isDashing;
+        if (!isInvincible && checkCollision(player, hazard)) {
+          if (player.powerUps.SHIELD > 0 && player.powerUps.shieldHealth > 0) {
+            player.powerUps.shieldHealth--;
+            if (player.powerUps.shieldHealth <= 0) player.powerUps.SHIELD = 0;
+            soundManager.playShieldHit();
+          } else {
+            soundManager.playDamage();
+            player.health -= hazard.damage;
+            player.invincible = true;
+            player.invincibleTimer = 30;
+            player.velocityY = -5;
+            onHealthChange(player.health);
+          }
+        }
+        
+        if (hazard.life <= 0) {
+          state.hazards.splice(i, 1);
         }
       }
       
@@ -1203,24 +1377,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.arc(ex + 29, enemy.y + 26, 2, 0, Math.PI * 2);
           ctx.fill();
           
-          // Frozen ice crystals
-          if (isFrozen) {
-            ctx.fillStyle = '#A5F3FC';
-            ctx.beginPath();
-            ctx.moveTo(ex + 5, enemy.y + 15);
-            ctx.lineTo(ex + 10, enemy.y + 25);
-            ctx.lineTo(ex + 0, enemy.y + 25);
-            ctx.closePath();
-            ctx.fill();
-            ctx.beginPath();
-            ctx.moveTo(ex + 35, enemy.y + 15);
-            ctx.lineTo(ex + 40, enemy.y + 25);
-            ctx.lineTo(ex + 30, enemy.y + 25);
-            ctx.closePath();
-            ctx.fill();
-          }
-        } else {
-          // Bat
+        } else if (enemy.type === 'bat') {
           ctx.fillStyle = isFrozen ? '#67E8F9' : '#7C3AED';
           ctx.shadowColor = isFrozen ? '#67E8F9' : '#A855F7';
           ctx.shadowBlur = 10;
@@ -1244,9 +1401,165 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.arc(ex + 15, enemy.y + 18, 3, 0, Math.PI * 2);
           ctx.arc(ex + 25, enemy.y + 18, 3, 0, Math.PI * 2);
           ctx.fill();
+          
+        } else if (enemy.type === 'shooter') {
+          // Shooter - turret-like enemy
+          ctx.fillStyle = isFrozen ? '#67E8F9' : '#DC2626';
+          ctx.shadowColor = isFrozen ? '#67E8F9' : '#EF4444';
+          ctx.shadowBlur = 8;
+          
+          // Body
+          ctx.beginPath();
+          ctx.roundRect(ex + 5, enemy.y + 15, 30, 25, 4);
+          ctx.fill();
+          
+          // Cannon
+          const cannonDir = player.x > enemy.x ? 1 : -1;
+          ctx.fillStyle = isFrozen ? '#A5F3FC' : '#991B1B';
+          ctx.beginPath();
+          ctx.roundRect(ex + 15 + cannonDir * 10, enemy.y + 22, 18, 10, 2);
+          ctx.fill();
+          
+          // Eye
+          ctx.fillStyle = isFrozen ? '#fff' : '#FBBF24';
+          ctx.beginPath();
+          ctx.arc(ex + 20, enemy.y + 25, 6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = isFrozen ? '#67E8F9' : '#000';
+          ctx.beginPath();
+          ctx.arc(ex + 20 + cannonDir * 2, enemy.y + 25, 3, 0, Math.PI * 2);
+          ctx.fill();
+          
+        } else if (enemy.type === 'diver') {
+          // Diver - hawk-like enemy
+          ctx.fillStyle = isFrozen ? '#67E8F9' : '#F59E0B';
+          ctx.shadowColor = isFrozen ? '#67E8F9' : '#FBBF24';
+          ctx.shadowBlur = 10;
+          
+          // Body
+          ctx.beginPath();
+          ctx.ellipse(ex + 20, enemy.y + 20, 15, 10, 0, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Wings
+          const diveAngle = enemy.diveState === 'diving' ? 0.3 : (isFrozen ? 0 : Math.sin(time * 0.4) * 0.4);
+          ctx.fillStyle = isFrozen ? '#A5F3FC' : '#D97706';
+          ctx.beginPath();
+          ctx.moveTo(ex + 5, enemy.y + 20);
+          ctx.lineTo(ex - 15, enemy.y + 10 + diveAngle * 20);
+          ctx.lineTo(ex - 10, enemy.y + 25);
+          ctx.closePath();
+          ctx.fill();
+          ctx.beginPath();
+          ctx.moveTo(ex + 35, enemy.y + 20);
+          ctx.lineTo(ex + 55, enemy.y + 10 - diveAngle * 20);
+          ctx.lineTo(ex + 50, enemy.y + 25);
+          ctx.closePath();
+          ctx.fill();
+          
+          // Beak
+          ctx.fillStyle = isFrozen ? '#fff' : '#78350F';
+          const beakDir = enemy.velocityX > 0 ? 1 : -1;
+          ctx.beginPath();
+          ctx.moveTo(ex + 20 + beakDir * 15, enemy.y + 20);
+          ctx.lineTo(ex + 20 + beakDir * 25, enemy.y + 22);
+          ctx.lineTo(ex + 20 + beakDir * 15, enemy.y + 24);
+          ctx.closePath();
+          ctx.fill();
+          
+          // Eyes
+          ctx.fillStyle = isFrozen ? '#fff' : '#000';
+          ctx.beginPath();
+          ctx.arc(ex + 15, enemy.y + 18, 3, 0, Math.PI * 2);
+          ctx.arc(ex + 25, enemy.y + 18, 3, 0, Math.PI * 2);
+          ctx.fill();
+          
+        } else if (enemy.type === 'bomber') {
+          // Bomber - bulky enemy that drops hazards
+          ctx.fillStyle = isFrozen ? '#67E8F9' : '#581C87';
+          ctx.shadowColor = isFrozen ? '#67E8F9' : '#7C3AED';
+          ctx.shadowBlur = 10;
+          
+          // Body
+          ctx.beginPath();
+          ctx.ellipse(ex + 22, enemy.y + 25, 22, 18, 0, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Pattern
+          ctx.fillStyle = isFrozen ? '#A5F3FC' : '#7C3AED';
+          ctx.beginPath();
+          ctx.arc(ex + 15, enemy.y + 20, 5, 0, Math.PI * 2);
+          ctx.arc(ex + 30, enemy.y + 20, 5, 0, Math.PI * 2);
+          ctx.arc(ex + 22, enemy.y + 32, 4, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Eyes
+          ctx.fillStyle = '#fff';
+          ctx.beginPath();
+          ctx.arc(ex + 15, enemy.y + 18, 6, 0, Math.PI * 2);
+          ctx.arc(ex + 30, enemy.y + 18, 6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = isFrozen ? '#67E8F9' : '#EF4444';
+          ctx.beginPath();
+          ctx.arc(ex + 15, enemy.y + 18, 3, 0, Math.PI * 2);
+          ctx.arc(ex + 30, enemy.y + 18, 3, 0, Math.PI * 2);
+          ctx.fill();
         }
+        
+        // Frozen ice crystals for all enemies
+        if (isFrozen) {
+          ctx.fillStyle = '#A5F3FC';
+          ctx.beginPath();
+          ctx.moveTo(ex + 5, enemy.y + 5);
+          ctx.lineTo(ex + 10, enemy.y + 15);
+          ctx.lineTo(ex + 0, enemy.y + 15);
+          ctx.closePath();
+          ctx.fill();
+          ctx.beginPath();
+          ctx.moveTo(ex + 35, enemy.y + 5);
+          ctx.lineTo(ex + 40, enemy.y + 15);
+          ctx.lineTo(ex + 30, enemy.y + 15);
+          ctx.closePath();
+          ctx.fill();
+        }
+        
         ctx.shadowBlur = 0;
         ctx.restore();
+      }
+      
+      // Draw enemy projectiles
+      for (const proj of state.enemyProjectiles) {
+        const px = proj.x - state.cameraX;
+        ctx.fillStyle = '#EF4444';
+        ctx.shadowColor = '#EF4444';
+        ctx.shadowBlur = 15;
+        ctx.beginPath();
+        ctx.arc(px, proj.y, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#FCA5A5';
+        ctx.beginPath();
+        ctx.arc(px, proj.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+      
+      // Draw hazards
+      for (const hazard of state.hazards) {
+        const hx = hazard.x - state.cameraX;
+        const pulse = Math.sin(time * 0.2) * 0.3 + 0.7;
+        ctx.fillStyle = `rgba(124, 58, 237, ${pulse})`;
+        ctx.shadowColor = '#A855F7';
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.ellipse(hx + 15, hazard.y + 10, 15, 8, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Toxic bubbles
+        ctx.fillStyle = '#C084FC';
+        ctx.beginPath();
+        ctx.arc(hx + 10 + Math.sin(time * 0.3) * 3, hazard.y + 5, 3, 0, Math.PI * 2);
+        ctx.arc(hx + 20 + Math.cos(time * 0.25) * 2, hazard.y + 3, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
       }
       
       // Draw projectiles
