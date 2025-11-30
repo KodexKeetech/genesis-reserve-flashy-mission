@@ -29,6 +29,7 @@ export default function GameUI({ score, health, level, powerUps, abilityCooldown
             <span><kbd className="px-1 bg-slate-700 rounded text-green-400">SPACE</kbd> Jump</span>
             <span><kbd className="px-1 bg-slate-700 rounded text-purple-400">CLICK</kbd> Cast</span>
             <span><kbd className="px-1 bg-slate-700 rounded text-cyan-400">SHIFT</kbd> Dash</span>
+            <span><kbd className="px-1 bg-slate-700 rounded text-yellow-400">Q</kbd> Switch</span>
           </div>
         </div>
       )}
