@@ -21,7 +21,7 @@ const POWERUP_TYPES = {
   SHIELD: { color: '#3B82F6', icon: '🛡️', duration: 400, name: 'Shield' }
 };
 
-export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel, onPowerUpChange, onAbilityCooldowns }) {
+export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel, onPowerUpChange, onAbilityCooldowns, touchInput }) {
   const canvasRef = useRef(null);
   const gameStateRef = useRef({
     player: {
@@ -379,7 +379,58 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       gameStateRef.current.keys[e.code] = false;
     };
 
+    // Track touch cast state to prevent spam
+    let lastTouchCast = false;
+    let lastTouchSwitch = false;
+
+    const doCast = () => {
+      const state = gameStateRef.current;
+      const player = state.player;
+      if (player.castTimer <= 0) {
+        const isPowerShot = player.powerUps.POWER_SHOT > 0;
+        const isFreeze = player.selectedProjectile === 1;
+
+        state.projectiles.push({
+          x: player.x + (player.facingRight ? player.width : 0),
+          y: player.y + player.height / 2,
+          velocityX: player.facingRight ? PROJECTILE_SPEED : -PROJECTILE_SPEED,
+          width: isPowerShot ? 24 : 16,
+          height: isPowerShot ? 24 : 16,
+          life: 100,
+          type: isFreeze ? 'freeze' : 'normal',
+          damage: isPowerShot ? 3 : 1,
+          isPowerShot
+        });
+        player.isCasting = true;
+        player.castTimer = isFreeze ? 25 : 15;
+
+        if (isFreeze) {
+          soundManager.playFreezeCast();
+        } else {
+          soundManager.playCast();
+        }
+
+        const particleColor = isFreeze ? `hsl(${180 + Math.random() * 20}, 100%, 70%)` : 
+                             isPowerShot ? `hsl(${0 + Math.random() * 30}, 100%, 60%)` :
+                             `hsl(${260 + Math.random() * 40}, 100%, 70%)`;
+        for (let i = 0; i < (isPowerShot ? 10 : 5); i++) {
+          state.particles.push({
+            x: player.x + player.width / 2,
+            y: player.y + player.height / 2,
+            velocityX: (Math.random() - 0.5) * 4,
+            velocityY: (Math.random() - 0.5) * 4,
+            life: 20,
+            color: particleColor
+          });
+        }
+      }
+    };
+
     const handleClick = (e) => {
+      doCast();
+    };
+
+    const handleClickOld = (e) => {
       const state = gameStateRef.current;
       if (state.player.castTimer <= 0) {
         const isPowerShot = state.player.powerUps.POWER_SHOT > 0;
@@ -735,20 +786,42 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       // Calculate effective speed (with power-up)
       const effectiveSpeed = player.powerUps.SPEED > 0 ? MOVE_SPEED * 1.8 : MOVE_SPEED;
       
-      // Handle dashing
+      // Get touch input
+      const touch = touchInput?.current || { move: { x: 0, y: 0 }, jump: false, dash: false, cast: false, switch: false };
+
+      // Handle dashing (keyboard or touch)
+      if (touch.dash && !player.isDashing && player.dashCooldown <= 0) {
+        player.isDashing = true;
+        player.dashTimer = DASH_DURATION;
+        player.dashDirection = player.facingRight ? 1 : -1;
+        player.dashCooldown = DASH_COOLDOWN;
+        soundManager.playDash();
+        for (let i = 0; i < 15; i++) {
+          state.particles.push({
+            x: player.x + player.width / 2,
+            y: player.y + player.height / 2,
+            velocityX: -player.dashDirection * (Math.random() * 3 + 2),
+            velocityY: (Math.random() - 0.5) * 2,
+            life: 15,
+            color: `hsl(${190 + Math.random() * 20}, 100%, 70%)`
+          });
+        }
+      }
+
       if (player.isDashing) {
         player.dashTimer--;
         player.velocityX = player.dashDirection * DASH_SPEED;
-        player.velocityY = 0; // Freeze vertical movement during dash
+        player.velocityY = 0;
         if (player.dashTimer <= 0) {
           player.isDashing = false;
         }
       } else {
-        // Normal player input
-        if (keys['ArrowLeft'] || keys['KeyA']) {
+        // Normal player input (keyboard or touch)
+        const touchMoveX = touch.move?.x || 0;
+        if (keys['ArrowLeft'] || keys['KeyA'] || touchMoveX < -0.3) {
           player.velocityX = -effectiveSpeed;
           player.facingRight = false;
-        } else if (keys['ArrowRight'] || keys['KeyD']) {
+        } else if (keys['ArrowRight'] || keys['KeyD'] || touchMoveX > 0.3) {
           player.velocityX = effectiveSpeed;
           player.facingRight = true;
         } else {
@@ -761,8 +834,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         player.dashCooldown--;
       }
       
-      // Jump and double jump
-      const jumpKeyPressed = keys['ArrowUp'] || keys['KeyW'] || keys['Space'];
+      // Jump and double jump (keyboard or touch)
+      const jumpKeyPressed = keys['ArrowUp'] || keys['KeyW'] || keys['Space'] || touch.jump;
       if (jumpKeyPressed && !player.jumpKeyHeld) {
         if (player.onGround) {
           player.velocityY = JUMP_FORCE;
@@ -805,6 +878,18 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         }
       }
       player.jumpKeyHeld = jumpKeyPressed;
+
+      // Handle touch cast
+      if (touch.cast && !lastTouchCast) {
+        doCast();
+      }
+      lastTouchCast = touch.cast;
+
+      // Handle touch switch spell
+      if (touch.switch && !lastTouchSwitch) {
+        player.selectedProjectile = (player.selectedProjectile + 1) % 2;
+      }
+      lastTouchSwitch = touch.switch;
       
       // Physics (skip gravity during dash)
       if (!player.isDashing) {

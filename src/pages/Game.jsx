@@ -1,7 +1,8 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import GameEngine from '@/components/game/GameEngine';
 import GameUI from '@/components/game/GameUI';
 import GameOverlay from '@/components/game/GameOverlay';
+import TouchControls from '@/components/game/TouchControls';
 import soundManager from '@/components/game/SoundManager';
 
 export default function Game() {
@@ -15,6 +16,18 @@ export default function Game() {
     dashMaxCooldown: 60,
     selectedProjectile: 0
   });
+  
+  const touchInputRef = useRef({
+    move: { x: 0, y: 0 },
+    jump: false,
+    dash: false,
+    cast: false,
+    switch: false
+  });
+
+  const handleTouchInput = useCallback((action, value) => {
+    touchInputRef.current[action] = value;
+  }, []);
 
   const handleStart = useCallback(() => {
     soundManager.init();
@@ -84,6 +97,7 @@ export default function Game() {
             onGameOver={handleGameOver}
             onPowerUpChange={handlePowerUpChange}
             onAbilityCooldowns={handleAbilityCooldowns}
+            touchInput={touchInputRef}
           />
         )}
         
@@ -109,7 +123,12 @@ export default function Game() {
             abilityCooldowns={abilityCooldowns}
           />
         )}
-      </div>
+        </div>
+
+        {/* Touch controls for mobile */}
+        {gameState === 'playing' && (
+        <TouchControls onInput={handleTouchInput} />
+        )}
 
       {/* Controls hint */}
       <div className="mt-6 flex flex-wrap justify-center gap-4 text-slate-500 text-sm">
