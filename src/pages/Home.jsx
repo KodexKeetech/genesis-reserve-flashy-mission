@@ -14,9 +14,6 @@ export default function Home() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    const saved = localStorage.getItem('jeff_save_game');
-    setHasSavedGame(!!saved);
-
     const loadUserData = async () => {
       try {
         const user = await base44.auth.me();
