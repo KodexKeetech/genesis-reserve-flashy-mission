@@ -293,6 +293,10 @@ class SoundManager {
     this.masterVolume = Math.max(0, Math.min(1, volume));
   }
 
+  setMuted(muted) {
+    this.enabled = !muted;
+  }
+
   toggle() {
     this.enabled = !this.enabled;
     return this.enabled;
