@@ -1,5 +1,6 @@
 import React from 'react';
-import { Heart, Star, Zap, Wind, Shield, Flame, Snowflake, Map, Sparkles } from 'lucide-react';
+import { Heart, Star, Zap, Wind, Shield, Flame, Snowflake, Map, Sparkles, Circle } from 'lucide-react';
+import { SPECIAL_ABILITIES } from './AbilitySystem';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getBiomeForLevel, isBossLevel } from './BiomeConfig';
 
@@ -137,45 +138,110 @@ export default function GameUI({ score, health, level, powerUps, abilityCooldown
         {abilityCooldowns && (
           <div className="bg-slate-900/80 backdrop-blur-sm rounded-xl p-3 border border-slate-500/30">
             <p className="text-xs text-slate-400 mb-2">ABILITIES</p>
-            <div className="flex gap-3">
+            <div className="flex gap-2 flex-wrap">
               {/* Dash ability */}
               <div className="text-center">
-                <div className={`relative w-10 h-10 rounded-lg flex items-center justify-center ${
+                <div className={`relative w-9 h-9 rounded-lg flex items-center justify-center ${
                   abilityCooldowns.dashCooldown <= 0 
                     ? 'bg-cyan-500/30 border border-cyan-400' 
                     : 'bg-slate-700/50 border border-slate-600'
                 }`}>
-                  <Wind className={`w-5 h-5 ${
+                  <Wind className={`w-4 h-4 ${
                     abilityCooldowns.dashCooldown <= 0 ? 'text-cyan-400' : 'text-slate-500'
                   }`} />
                   {abilityCooldowns.dashCooldown > 0 && (
-                    <div 
-                      className="absolute inset-0 bg-slate-900/70 rounded-lg flex items-center justify-center"
-                    >
-                      <span className="text-xs text-slate-400">
-                        {Math.ceil(abilityCooldowns.dashCooldown / 60 * 10) / 10}s
+                    <div className="absolute inset-0 bg-slate-900/70 rounded-lg flex items-center justify-center">
+                      <span className="text-[10px] text-slate-400">
+                        {Math.ceil(abilityCooldowns.dashCooldown / 60)}
                       </span>
                     </div>
                   )}
                 </div>
-                <p className="text-[10px] text-slate-500 mt-1">SHIFT</p>
+                <p className="text-[8px] text-slate-500 mt-0.5">SHIFT</p>
               </div>
 
               {/* Projectile type selector */}
               <div className="text-center">
-                <div className={`relative w-10 h-10 rounded-lg flex items-center justify-center border ${
+                <div className={`relative w-9 h-9 rounded-lg flex items-center justify-center border ${
                   abilityCooldowns.selectedProjectile === 0 
                     ? 'bg-purple-500/30 border-purple-400' 
                     : 'bg-cyan-500/30 border-cyan-400'
                 }`}>
                   {abilityCooldowns.selectedProjectile === 0 ? (
-                    <Flame className="w-5 h-5 text-purple-400" />
+                    <Flame className="w-4 h-4 text-purple-400" />
                   ) : (
-                    <Snowflake className="w-5 h-5 text-cyan-400" />
+                    <Snowflake className="w-4 h-4 text-cyan-400" />
                   )}
                 </div>
-                <p className="text-[10px] text-slate-500 mt-1">Q</p>
+                <p className="text-[8px] text-slate-500 mt-0.5">Q</p>
               </div>
+
+              {/* Special Abilities */}
+              {abilityCooldowns.unlockedAbilities?.aoeBlast && (
+                <div className="text-center">
+                  <div className={`relative w-9 h-9 rounded-lg flex items-center justify-center ${
+                    abilityCooldowns.specialAbilities?.aoeBlast?.cooldown <= 0 
+                      ? 'bg-purple-500/30 border border-purple-400' 
+                      : 'bg-slate-700/50 border border-slate-600'
+                  }`}>
+                    <span className="text-sm">💥</span>
+                    {abilityCooldowns.specialAbilities?.aoeBlast?.cooldown > 0 && (
+                      <div className="absolute inset-0 bg-slate-900/70 rounded-lg flex items-center justify-center">
+                        <span className="text-[10px] text-slate-400">
+                          {Math.ceil(abilityCooldowns.specialAbilities.aoeBlast.cooldown / 60)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-[8px] text-slate-500 mt-0.5">E</p>
+                </div>
+              )}
+
+              {abilityCooldowns.unlockedAbilities?.reflectShield && (
+                <div className="text-center">
+                  <div className={`relative w-9 h-9 rounded-lg flex items-center justify-center ${
+                    abilityCooldowns.specialAbilities?.reflectShield?.active
+                      ? 'bg-blue-500/50 border-2 border-blue-400 animate-pulse'
+                      : abilityCooldowns.specialAbilities?.reflectShield?.cooldown <= 0 
+                        ? 'bg-blue-500/30 border border-blue-400' 
+                        : 'bg-slate-700/50 border border-slate-600'
+                  }`}>
+                    <span className="text-sm">🔮</span>
+                    {!abilityCooldowns.specialAbilities?.reflectShield?.active && 
+                     abilityCooldowns.specialAbilities?.reflectShield?.cooldown > 0 && (
+                      <div className="absolute inset-0 bg-slate-900/70 rounded-lg flex items-center justify-center">
+                        <span className="text-[10px] text-slate-400">
+                          {Math.ceil(abilityCooldowns.specialAbilities.reflectShield.cooldown / 60)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-[8px] text-slate-500 mt-0.5">R</p>
+                </div>
+              )}
+
+              {abilityCooldowns.unlockedAbilities?.hover && (
+                <div className="text-center">
+                  <div className={`relative w-9 h-9 rounded-lg flex items-center justify-center ${
+                    abilityCooldowns.specialAbilities?.hover?.active
+                      ? 'bg-cyan-500/50 border-2 border-cyan-400 animate-pulse'
+                      : abilityCooldowns.specialAbilities?.hover?.cooldown <= 0 
+                        ? 'bg-cyan-500/30 border border-cyan-400' 
+                        : 'bg-slate-700/50 border border-slate-600'
+                  }`}>
+                    <span className="text-sm">🌀</span>
+                    {!abilityCooldowns.specialAbilities?.hover?.active && 
+                     abilityCooldowns.specialAbilities?.hover?.cooldown > 0 && (
+                      <div className="absolute inset-0 bg-slate-900/70 rounded-lg flex items-center justify-center">
+                        <span className="text-[10px] text-slate-400">
+                          {Math.ceil(abilityCooldowns.specialAbilities.hover.cooldown / 60)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-[8px] text-slate-500 mt-0.5">F</p>
+                </div>
+              )}
             </div>
           </div>
         )}
