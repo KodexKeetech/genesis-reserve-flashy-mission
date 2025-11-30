@@ -4,8 +4,19 @@ const GRAVITY = 0.6;
 const JUMP_FORCE = -14;
 const MOVE_SPEED = 5;
 const PROJECTILE_SPEED = 10;
+const DASH_SPEED = 25;
+const DASH_DURATION = 8;
+const DASH_COOLDOWN = 60;
 
-export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel }) {
+// Power-up types
+const POWERUP_TYPES = {
+  SPEED: { color: '#22D3EE', icon: '⚡', duration: 300, name: 'Speed Boost' },
+  INVINCIBILITY: { color: '#FBBF24', icon: '⭐', duration: 200, name: 'Invincibility' },
+  POWER_SHOT: { color: '#EF4444', icon: '🔥', duration: 250, name: 'Power Shot' },
+  SHIELD: { color: '#3B82F6', icon: '🛡️', duration: 400, name: 'Shield' }
+};
+
+export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel, onPowerUpChange, onAbilityCooldowns }) {
   const canvasRef = useRef(null);
   const gameStateRef = useRef({
     player: {
@@ -23,13 +34,29 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       health: 100,
       maxHealth: 100,
       invincible: false,
-      invincibleTimer: 0
+      invincibleTimer: 0,
+      // New abilities
+      dashCooldown: 0,
+      isDashing: false,
+      dashTimer: 0,
+      dashDirection: 1,
+      // Active power-ups
+      powerUps: {
+        SPEED: 0,
+        INVINCIBILITY: 0,
+        POWER_SHOT: 0,
+        SHIELD: 0,
+        shieldHealth: 0
+      },
+      // Projectile type (0 = normal, 1 = freeze)
+      selectedProjectile: 0
     },
     platforms: [],
     enemies: [],
     projectiles: [],
     particles: [],
     collectibles: [],
+    powerUpItems: [],
     keys: {},
     score: 0,
     gameRunning: true,
@@ -45,6 +72,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     state.collectibles = [];
     state.projectiles = [];
     state.particles = [];
+    state.powerUpItems = [];
     
     // Ground platform
     state.platforms.push({ x: 0, y: 500, width: 2000, height: 100, type: 'ground' });
@@ -87,12 +115,31 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       });
     }
     
+    // Generate power-ups
+    const powerUpTypes = Object.keys(POWERUP_TYPES);
+    const powerUpCount = 3 + level;
+    for (let i = 0; i < powerUpCount; i++) {
+      state.powerUpItems.push({
+        x: 300 + i * 350 + Math.random() * 100,
+        y: 280 - Math.random() * 180,
+        width: 28,
+        height: 28,
+        collected: false,
+        type: powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)],
+        bobOffset: Math.random() * Math.PI * 2
+      });
+    }
+    
     // Reset player
     state.player.x = 100;
     state.player.y = 300;
     state.player.velocityX = 0;
     state.player.velocityY = 0;
     state.player.health = 100;
+    state.player.dashCooldown = 0;
+    state.player.isDashing = false;
+    state.player.powerUps = { SPEED: 0, INVINCIBILITY: 0, POWER_SHOT: 0, SHIELD: 0, shieldHealth: 0 };
+    state.player.selectedProjectile = 0;
     state.cameraX = 0;
     state.levelWidth = 2000 + level * 500;
     state.goalX = state.levelWidth - 100;
@@ -120,32 +167,80 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     const handleClick = (e) => {
       const state = gameStateRef.current;
       if (state.player.castTimer <= 0) {
+        const isPowerShot = state.player.powerUps.POWER_SHOT > 0;
+        const isFreeze = state.player.selectedProjectile === 1;
+        
         state.projectiles.push({
           x: state.player.x + (state.player.facingRight ? state.player.width : 0),
           y: state.player.y + state.player.height / 2,
           velocityX: state.player.facingRight ? PROJECTILE_SPEED : -PROJECTILE_SPEED,
-          width: 16,
-          height: 16,
-          life: 100
+          width: isPowerShot ? 24 : 16,
+          height: isPowerShot ? 24 : 16,
+          life: 100,
+          type: isFreeze ? 'freeze' : 'normal',
+          damage: isPowerShot ? 3 : (isFreeze ? 1 : 1),
+          isPowerShot
         });
         state.player.isCasting = true;
-        state.player.castTimer = 15;
+        state.player.castTimer = isFreeze ? 25 : 15;
         
         // Add casting particles
-        for (let i = 0; i < 5; i++) {
+        const particleColor = isFreeze ? `hsl(${180 + Math.random() * 20}, 100%, 70%)` : 
+                             isPowerShot ? `hsl(${0 + Math.random() * 30}, 100%, 60%)` :
+                             `hsl(${260 + Math.random() * 40}, 100%, 70%)`;
+        for (let i = 0; i < (isPowerShot ? 10 : 5); i++) {
           state.particles.push({
             x: state.player.x + state.player.width / 2,
             y: state.player.y + state.player.height / 2,
             velocityX: (Math.random() - 0.5) * 4,
             velocityY: (Math.random() - 0.5) * 4,
             life: 20,
-            color: `hsl(${260 + Math.random() * 40}, 100%, 70%)`
+            color: particleColor
           });
         }
       }
     };
+    
+    // Handle dash (Shift key)
+    const handleDash = () => {
+      const state = gameStateRef.current;
+      if (state.player.dashCooldown <= 0 && !state.player.isDashing) {
+        state.player.isDashing = true;
+        state.player.dashTimer = DASH_DURATION;
+        state.player.dashDirection = state.player.facingRight ? 1 : -1;
+        state.player.dashCooldown = DASH_COOLDOWN;
+        
+        // Dash particles
+        for (let i = 0; i < 15; i++) {
+          state.particles.push({
+            x: state.player.x + state.player.width / 2,
+            y: state.player.y + state.player.height / 2,
+            velocityX: -state.player.dashDirection * (Math.random() * 3 + 2),
+            velocityY: (Math.random() - 0.5) * 2,
+            life: 15,
+            color: `hsl(${190 + Math.random() * 20}, 100%, 70%)`
+          });
+        }
+      }
+    };
+    
+    // Handle projectile switch (Q key)
+    const handleSwitchProjectile = () => {
+      const state = gameStateRef.current;
+      state.player.selectedProjectile = (state.player.selectedProjectile + 1) % 2;
+    };
 
-    window.addEventListener('keydown', handleKeyDown);
+    const handleKeyDownWithDash = (e) => {
+      handleKeyDown(e);
+      if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+        handleDash();
+      }
+      if (e.code === 'KeyQ') {
+        handleSwitchProjectile();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDownWithDash);
     window.addEventListener('keyup', handleKeyUp);
     canvas.addEventListener('click', handleClick);
 
@@ -385,15 +480,60 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       time++;
       const { player, platforms, enemies, projectiles, particles, collectibles, keys } = state;
       
-      // Player input
-      if (keys['ArrowLeft'] || keys['KeyA']) {
-        player.velocityX = -MOVE_SPEED;
-        player.facingRight = false;
-      } else if (keys['ArrowRight'] || keys['KeyD']) {
-        player.velocityX = MOVE_SPEED;
-        player.facingRight = true;
+      // Update power-up timers
+      Object.keys(player.powerUps).forEach(key => {
+        if (key !== 'shieldHealth' && player.powerUps[key] > 0) {
+          player.powerUps[key]--;
+        }
+      });
+      
+      // Report power-up status
+      if (onPowerUpChange) {
+        onPowerUpChange({
+          SPEED: player.powerUps.SPEED,
+          INVINCIBILITY: player.powerUps.INVINCIBILITY,
+          POWER_SHOT: player.powerUps.POWER_SHOT,
+          SHIELD: player.powerUps.SHIELD,
+          shieldHealth: player.powerUps.shieldHealth
+        });
+      }
+      
+      // Report cooldowns
+      if (onAbilityCooldowns) {
+        onAbilityCooldowns({
+          dashCooldown: player.dashCooldown,
+          dashMaxCooldown: DASH_COOLDOWN,
+          selectedProjectile: player.selectedProjectile
+        });
+      }
+      
+      // Calculate effective speed (with power-up)
+      const effectiveSpeed = player.powerUps.SPEED > 0 ? MOVE_SPEED * 1.8 : MOVE_SPEED;
+      
+      // Handle dashing
+      if (player.isDashing) {
+        player.dashTimer--;
+        player.velocityX = player.dashDirection * DASH_SPEED;
+        player.velocityY = 0; // Freeze vertical movement during dash
+        if (player.dashTimer <= 0) {
+          player.isDashing = false;
+        }
       } else {
-        player.velocityX *= 0.8;
+        // Normal player input
+        if (keys['ArrowLeft'] || keys['KeyA']) {
+          player.velocityX = -effectiveSpeed;
+          player.facingRight = false;
+        } else if (keys['ArrowRight'] || keys['KeyD']) {
+          player.velocityX = effectiveSpeed;
+          player.facingRight = true;
+        } else {
+          player.velocityX *= 0.8;
+        }
+      }
+      
+      // Update dash cooldown
+      if (player.dashCooldown > 0) {
+        player.dashCooldown--;
       }
       
       if ((keys['ArrowUp'] || keys['KeyW'] || keys['Space']) && player.onGround) {
@@ -402,8 +542,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         player.isJumping = true;
       }
       
-      // Physics
-      player.velocityY += GRAVITY;
+      // Physics (skip gravity during dash)
+      if (!player.isDashing) {
+        player.velocityY += GRAVITY;
+      }
       player.x += player.velocityX;
       player.y += player.velocityY;
       
@@ -452,7 +594,28 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         // Check enemy collision
         for (let j = enemies.length - 1; j >= 0; j--) {
           if (checkCollision(proj, enemies[j])) {
-            enemies[j].health--;
+            const damage = proj.damage || 1;
+            enemies[j].health -= damage;
+            
+            // Apply freeze effect
+            if (proj.type === 'freeze') {
+              enemies[j].frozen = 120; // Freeze for 2 seconds
+              enemies[j].originalVelocityX = enemies[j].velocityX;
+              enemies[j].velocityX = 0;
+              
+              // Freeze particles
+              for (let k = 0; k < 8; k++) {
+                particles.push({
+                  x: enemies[j].x + enemies[j].width / 2,
+                  y: enemies[j].y + enemies[j].height / 2,
+                  velocityX: (Math.random() - 0.5) * 3,
+                  velocityY: (Math.random() - 0.5) * 3,
+                  life: 25,
+                  color: '#67E8F9'
+                });
+              }
+            }
+            
             if (enemies[j].health <= 0) {
               // Spawn particles
               for (let k = 0; k < 10; k++) {
@@ -481,21 +644,86 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       
       // Update enemies
       for (const enemy of enemies) {
-        enemy.x += enemy.velocityX;
+        // Handle frozen state
+        if (enemy.frozen && enemy.frozen > 0) {
+          enemy.frozen--;
+          if (enemy.frozen <= 0 && enemy.originalVelocityX !== undefined) {
+            enemy.velocityX = enemy.originalVelocityX;
+          }
+        } else {
+          enemy.x += enemy.velocityX;
+        }
         
         // Simple AI - reverse at edges
         if (enemy.x < 50 || enemy.x > state.levelWidth - 50) {
           enemy.velocityX *= -1;
+          if (enemy.originalVelocityX !== undefined) {
+            enemy.originalVelocityX *= -1;
+          }
         }
         
-        // Player collision
-        if (!player.invincible && checkCollision(player, enemy)) {
-          player.health -= 20;
-          player.invincible = true;
-          player.invincibleTimer = 60;
-          player.velocityY = -8;
-          player.velocityX = player.x < enemy.x ? -5 : 5;
-          onHealthChange(player.health);
+        // Player collision - check for invincibility power-up, shield, or dash
+        const isInvincible = player.invincible || player.powerUps.INVINCIBILITY > 0 || player.isDashing;
+        if (!isInvincible && checkCollision(player, enemy)) {
+          // Check shield first
+          if (player.powerUps.SHIELD > 0 && player.powerUps.shieldHealth > 0) {
+            player.powerUps.shieldHealth--;
+            if (player.powerUps.shieldHealth <= 0) {
+              player.powerUps.SHIELD = 0;
+            }
+            // Shield absorbs hit but knocks back
+            player.velocityY = -6;
+            player.velocityX = player.x < enemy.x ? -4 : 4;
+            // Shield hit particles
+            for (let i = 0; i < 8; i++) {
+              particles.push({
+                x: player.x + player.width / 2,
+                y: player.y + player.height / 2,
+                velocityX: (Math.random() - 0.5) * 6,
+                velocityY: (Math.random() - 0.5) * 6,
+                life: 20,
+                color: '#3B82F6'
+              });
+            }
+          } else {
+            player.health -= 20;
+            player.invincible = true;
+            player.invincibleTimer = 60;
+            player.velocityY = -8;
+            player.velocityX = player.x < enemy.x ? -5 : 5;
+            onHealthChange(player.health);
+          }
+        }
+      }
+      
+      // Update power-up items
+      for (const powerUp of state.powerUpItems) {
+        if (!powerUp.collected && checkCollision(player, powerUp)) {
+          powerUp.collected = true;
+          
+          // Apply power-up effect
+          const duration = POWERUP_TYPES[powerUp.type].duration;
+          player.powerUps[powerUp.type] = duration;
+          
+          // Special handling for shield
+          if (powerUp.type === 'SHIELD') {
+            player.powerUps.shieldHealth = 3; // Shield can take 3 hits
+          }
+          
+          state.score += 75;
+          onScoreChange(state.score);
+          
+          // Power-up collect particles
+          for (let i = 0; i < 12; i++) {
+            particles.push({
+              x: powerUp.x + powerUp.width / 2,
+              y: powerUp.y + powerUp.height / 2,
+              velocityX: (Math.random() - 0.5) * 6,
+              velocityY: (Math.random() - 0.5) * 6,
+              life: 30,
+              color: POWERUP_TYPES[powerUp.type].color
+            });
+          }
         }
       }
       
@@ -605,15 +833,60 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         ctx.fill();
       }
       
+      // Draw power-up items
+      for (const powerUp of state.powerUpItems) {
+        if (powerUp.collected) continue;
+        const px = powerUp.x - state.cameraX;
+        const bobY = powerUp.y + Math.sin(time * 0.12 + powerUp.bobOffset) * 6;
+        const powerUpInfo = POWERUP_TYPES[powerUp.type];
+        
+        // Outer glow ring
+        ctx.strokeStyle = powerUpInfo.color;
+        ctx.shadowColor = powerUpInfo.color;
+        ctx.shadowBlur = 20;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(px + 14, bobY + 14, 16 + Math.sin(time * 0.15) * 2, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        // Power-up body
+        ctx.fillStyle = powerUpInfo.color;
+        ctx.beginPath();
+        ctx.arc(px + 14, bobY + 14, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        
+        // Inner highlight
+        ctx.fillStyle = '#fff';
+        ctx.globalAlpha = 0.6;
+        ctx.beginPath();
+        ctx.arc(px + 11, bobY + 11, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        
+        // Icon
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(powerUpInfo.icon, px + 14, bobY + 15);
+      }
+      
       // Draw enemies
       for (const enemy of enemies) {
         const ex = enemy.x - state.cameraX;
+        const isFrozen = enemy.frozen && enemy.frozen > 0;
+        
+        ctx.save();
+        if (isFrozen) {
+          ctx.globalAlpha = 0.8;
+        }
+        
         if (enemy.type === 'slime') {
-          ctx.fillStyle = '#22C55E';
-          ctx.shadowColor = '#22C55E';
+          ctx.fillStyle = isFrozen ? '#67E8F9' : '#22C55E';
+          ctx.shadowColor = isFrozen ? '#67E8F9' : '#22C55E';
           ctx.shadowBlur = 8;
           ctx.beginPath();
-          ctx.ellipse(ex + 20, enemy.y + 30, 20, 15 + Math.sin(time * 0.2) * 3, 0, 0, Math.PI * 2);
+          ctx.ellipse(ex + 20, enemy.y + 30, 20, 15 + (isFrozen ? 0 : Math.sin(time * 0.2) * 3), 0, 0, Math.PI * 2);
           ctx.fill();
           
           // Eyes
@@ -622,22 +895,39 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.arc(ex + 12, enemy.y + 25, 5, 0, Math.PI * 2);
           ctx.arc(ex + 28, enemy.y + 25, 5, 0, Math.PI * 2);
           ctx.fill();
-          ctx.fillStyle = '#000';
+          ctx.fillStyle = isFrozen ? '#67E8F9' : '#000';
           ctx.beginPath();
           ctx.arc(ex + 13, enemy.y + 26, 2, 0, Math.PI * 2);
           ctx.arc(ex + 29, enemy.y + 26, 2, 0, Math.PI * 2);
           ctx.fill();
+          
+          // Frozen ice crystals
+          if (isFrozen) {
+            ctx.fillStyle = '#A5F3FC';
+            ctx.beginPath();
+            ctx.moveTo(ex + 5, enemy.y + 15);
+            ctx.lineTo(ex + 10, enemy.y + 25);
+            ctx.lineTo(ex + 0, enemy.y + 25);
+            ctx.closePath();
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(ex + 35, enemy.y + 15);
+            ctx.lineTo(ex + 40, enemy.y + 25);
+            ctx.lineTo(ex + 30, enemy.y + 25);
+            ctx.closePath();
+            ctx.fill();
+          }
         } else {
           // Bat
-          ctx.fillStyle = '#7C3AED';
-          ctx.shadowColor = '#A855F7';
+          ctx.fillStyle = isFrozen ? '#67E8F9' : '#7C3AED';
+          ctx.shadowColor = isFrozen ? '#67E8F9' : '#A855F7';
           ctx.shadowBlur = 10;
           ctx.beginPath();
-          ctx.ellipse(ex + 20, enemy.y + 20 + Math.sin(time * 0.3) * 5, 12, 10, 0, 0, Math.PI * 2);
+          ctx.ellipse(ex + 20, enemy.y + 20 + (isFrozen ? 0 : Math.sin(time * 0.3) * 5), 12, 10, 0, 0, Math.PI * 2);
           ctx.fill();
           
           // Wings
-          const wingFlap = Math.sin(time * 0.5) * 10;
+          const wingFlap = isFrozen ? 0 : Math.sin(time * 0.5) * 10;
           ctx.beginPath();
           ctx.moveTo(ex + 8, enemy.y + 20);
           ctx.quadraticCurveTo(ex - 10, enemy.y + 10 + wingFlap, ex - 5, enemy.y + 25);
@@ -647,29 +937,66 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.fill();
           
           // Eyes
-          ctx.fillStyle = '#EF4444';
+          ctx.fillStyle = isFrozen ? '#A5F3FC' : '#EF4444';
           ctx.beginPath();
           ctx.arc(ex + 15, enemy.y + 18, 3, 0, Math.PI * 2);
           ctx.arc(ex + 25, enemy.y + 18, 3, 0, Math.PI * 2);
           ctx.fill();
         }
         ctx.shadowBlur = 0;
+        ctx.restore();
       }
       
       // Draw projectiles
       for (const proj of projectiles) {
         const projX = proj.x - state.cameraX;
-        ctx.fillStyle = '#A855F7';
-        ctx.shadowColor = '#A855F7';
-        ctx.shadowBlur = 20;
-        ctx.beginPath();
-        ctx.arc(projX + 8, proj.y + 8, 8, 0, Math.PI * 2);
-        ctx.fill();
+        const size = proj.isPowerShot ? 12 : 8;
         
-        ctx.fillStyle = '#E9D5FF';
-        ctx.beginPath();
-        ctx.arc(projX + 8, proj.y + 8, 4, 0, Math.PI * 2);
-        ctx.fill();
+        if (proj.type === 'freeze') {
+          // Freeze projectile - cyan/ice colored
+          ctx.fillStyle = '#22D3EE';
+          ctx.shadowColor = '#22D3EE';
+          ctx.shadowBlur = 25;
+          ctx.beginPath();
+          ctx.arc(projX + 8, proj.y + 8, size, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Ice crystal effect
+          ctx.fillStyle = '#A5F3FC';
+          ctx.beginPath();
+          ctx.moveTo(projX + 8, proj.y);
+          ctx.lineTo(projX + 12, proj.y + 8);
+          ctx.lineTo(projX + 8, proj.y + 16);
+          ctx.lineTo(projX + 4, proj.y + 8);
+          ctx.closePath();
+          ctx.fill();
+        } else if (proj.isPowerShot) {
+          // Power shot - red/orange fire
+          ctx.fillStyle = '#EF4444';
+          ctx.shadowColor = '#F97316';
+          ctx.shadowBlur = 30;
+          ctx.beginPath();
+          ctx.arc(projX + 8, proj.y + 8, size, 0, Math.PI * 2);
+          ctx.fill();
+          
+          ctx.fillStyle = '#FBBF24';
+          ctx.beginPath();
+          ctx.arc(projX + 8, proj.y + 8, size * 0.5, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          // Normal projectile - purple
+          ctx.fillStyle = '#A855F7';
+          ctx.shadowColor = '#A855F7';
+          ctx.shadowBlur = 20;
+          ctx.beginPath();
+          ctx.arc(projX + 8, proj.y + 8, size, 0, Math.PI * 2);
+          ctx.fill();
+          
+          ctx.fillStyle = '#E9D5FF';
+          ctx.beginPath();
+          ctx.arc(projX + 8, proj.y + 8, size * 0.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
         ctx.shadowBlur = 0;
       }
       
@@ -683,6 +1010,91 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         ctx.fill();
       }
       ctx.globalAlpha = 1;
+      
+      // Draw shield effect around Jeff if active
+      if (player.powerUps.SHIELD > 0) {
+        const shieldPulse = Math.sin(time * 0.1) * 0.2 + 0.6;
+        ctx.strokeStyle = `rgba(59, 130, 246, ${shieldPulse})`;
+        ctx.shadowColor = '#3B82F6';
+        ctx.shadowBlur = 15;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.ellipse(
+          player.x - state.cameraX + player.width / 2, 
+          player.y + player.height / 2, 
+          player.width / 2 + 12, 
+          player.height / 2 + 8, 
+          0, 0, Math.PI * 2
+        );
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+        
+        // Shield health indicators
+        for (let i = 0; i < player.powerUps.shieldHealth; i++) {
+          ctx.fillStyle = '#3B82F6';
+          ctx.beginPath();
+          ctx.arc(
+            player.x - state.cameraX + player.width / 2 - 10 + i * 10,
+            player.y - 15,
+            4, 0, Math.PI * 2
+          );
+          ctx.fill();
+        }
+      }
+      
+      // Draw speed boost trail if active
+      if (player.powerUps.SPEED > 0 && Math.abs(player.velocityX) > 1) {
+        for (let i = 0; i < 3; i++) {
+          ctx.globalAlpha = 0.3 - i * 0.1;
+          ctx.fillStyle = '#22D3EE';
+          ctx.beginPath();
+          ctx.ellipse(
+            player.x - state.cameraX + player.width / 2 - player.velocityX * (i + 1) * 2,
+            player.y + player.height / 2,
+            8 - i * 2,
+            12 - i * 3,
+            0, 0, Math.PI * 2
+          );
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+      }
+      
+      // Draw invincibility glow if active
+      if (player.powerUps.INVINCIBILITY > 0) {
+        const glowIntensity = Math.sin(time * 0.2) * 0.3 + 0.7;
+        ctx.shadowColor = '#FBBF24';
+        ctx.shadowBlur = 30 * glowIntensity;
+        ctx.fillStyle = `rgba(251, 191, 36, ${glowIntensity * 0.3})`;
+        ctx.beginPath();
+        ctx.ellipse(
+          player.x - state.cameraX + player.width / 2,
+          player.y + player.height / 2,
+          player.width / 2 + 15,
+          player.height / 2 + 10,
+          0, 0, Math.PI * 2
+        );
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+      
+      // Draw dash effect
+      if (player.isDashing) {
+        for (let i = 0; i < 5; i++) {
+          ctx.globalAlpha = 0.5 - i * 0.1;
+          ctx.fillStyle = '#67E8F9';
+          ctx.beginPath();
+          ctx.ellipse(
+            player.x - state.cameraX + player.width / 2 - player.dashDirection * (i + 1) * 12,
+            player.y + player.height / 2,
+            6,
+            player.height / 3,
+            0, 0, Math.PI * 2
+          );
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+      }
       
       // Draw Jeff
       drawJeff(ctx, player, time, state.cameraX);
@@ -713,11 +1125,11 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
 
     return () => {
       cancelAnimationFrame(animationId);
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keydown', handleKeyDownWithDash);
       window.removeEventListener('keyup', handleKeyUp);
       canvas.removeEventListener('click', handleClick);
     };
-  }, [currentLevel, onScoreChange, onHealthChange, onLevelComplete, onGameOver, generateLevel]);
+  }, [currentLevel, onScoreChange, onHealthChange, onLevelComplete, onGameOver, generateLevel, onPowerUpChange, onAbilityCooldowns]);
 
   const restartGame = () => {
     const state = gameStateRef.current;
