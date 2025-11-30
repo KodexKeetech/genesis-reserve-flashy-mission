@@ -323,12 +323,14 @@ export default function Game() {
             )}
 
           {showLevelStart && (
-            <LevelStartMenu
-              level={level}
-              coinAmmo={coinAmmo}
-              onSelectGun={setStartingGun}
-              onStart={handleLevelStartConfirm}
-            />
+            <div className="w-full h-full bg-slate-900 rounded-xl relative">
+              <LevelStartMenu
+                level={level}
+                coinAmmo={coinAmmo}
+                onSelectGun={setStartingGun}
+                onStart={handleLevelStartConfirm}
+              />
+            </div>
           )}
 
           {showSettings && (
