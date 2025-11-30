@@ -148,9 +148,10 @@ export default function Game() {
     }
   }, [shouldContinue]);
 
-  // Initialize sound on first load
+  // Initialize sound and music on first load
   React.useEffect(() => {
     soundManager.init();
+    musicManager.init();
   }, []);
 
   const handleRestart = useCallback(() => {
