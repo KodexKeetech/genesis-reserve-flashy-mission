@@ -1,5 +1,8 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import soundManager from './SoundManager';
+import { getBiomeForLevel, isBossLevel } from './BiomeConfig';
+import { drawBackground, drawPlatform, drawEnvironmentalHazard } from './BackgroundRenderer';
+import { drawEnemy, drawBoss } from './EnemyRenderer';
 
 const GRAVITY = 0.6;
 const JUMP_FORCE = -13;
@@ -64,12 +67,15 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     powerUpItems: [],
     hazards: [],
     enemyProjectiles: [],
+    environmentalHazards: [],
+    boss: null,
     keys: {},
     score: 0,
     gameRunning: true,
     levelWidth: 2000,
     cameraX: 0,
-    goalX: 1900
+    goalX: 1900,
+    biome: null
   });
 
   const generateLevel = useCallback((level) => {
@@ -82,215 +88,200 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     state.powerUpItems = [];
     state.hazards = [];
     state.enemyProjectiles = [];
+    state.environmentalHazards = [];
+    state.boss = null;
     
-    const levelWidth = 2400 + level * 600;
+    // Get biome for this level
+    const biome = getBiomeForLevel(level);
+    state.biome = biome;
+    const isBoss = isBossLevel(level);
+    
+    const levelWidth = isBoss ? 1200 : 2400 + level * 600;
     let currentX = 0;
     
     // Starting safe zone
     state.platforms.push({ x: 0, y: 500, width: 300, height: 100, type: 'ground' });
     currentX = 300;
     
-    // Generate varied terrain sections
-    const sectionCount = 6 + level;
-    for (let section = 0; section < sectionCount; section++) {
-      const sectionType = section % 5;
+    // Generate terrain based on whether it's a boss level
+    if (isBoss) {
+      // Boss arena - flat with some platforms
+      state.platforms.push({ x: 300, y: 500, width: 600, height: 100, type: 'ground' });
+      state.platforms.push({ x: 350, y: 380, width: 100, height: 20, type: 'magic' });
+      state.platforms.push({ x: 650, y: 380, width: 100, height: 20, type: 'magic' });
+      state.platforms.push({ x: 500, y: 280, width: 120, height: 20, type: 'normal' });
       
-      if (sectionType === 0) {
-        // Gap section with floating platforms
-        const gapWidth = 120 + level * 20;
-        state.platforms.push({
-          x: currentX + gapWidth / 2 - 40,
-          y: 380,
-          width: 80,
-          height: 20,
-          type: 'magic'
-        });
-        state.platforms.push({
-          x: currentX + gapWidth,
-          y: 500,
-          width: 200,
-          height: 100,
-          type: 'ground'
-        });
-        currentX += gapWidth + 200;
-      } else if (sectionType === 1) {
-        // Staircase up
-        for (let step = 0; step < 4; step++) {
+      // Spawn boss
+      state.boss = {
+        x: 650,
+        y: 400,
+        width: 100,
+        height: 100,
+        health: biome.boss.health,
+        maxHealth: biome.boss.health,
+        type: biome.boss.type,
+        name: biome.boss.name,
+        phase: 1,
+        attackCooldown: 0,
+        isAttacking: false,
+        velocityX: 0,
+        velocityY: 0,
+        frozen: 0
+      };
+      
+      state.levelWidth = 1200;
+      state.goalX = 1100;
+      currentX = 900;
+    } else {
+      // Normal level generation with biome-specific platform types
+      const sectionCount = 6 + level;
+      const biomePlatformType = biome.key === 'volcano' ? 'lava' : 
+                                 biome.key === 'ice' ? 'ice' : 
+                                 biome.key === 'void' ? 'void' : 'magic';
+      
+      for (let section = 0; section < sectionCount; section++) {
+        const sectionType = section % 5;
+        
+        if (sectionType === 0) {
+          const gapWidth = 120 + level * 20;
           state.platforms.push({
-            x: currentX + step * 80,
-            y: 460 - step * 50,
-            width: 100,
+            x: currentX + gapWidth / 2 - 40,
+            y: 380,
+            width: 80,
             height: 20,
-            type: step % 2 === 0 ? 'normal' : 'magic'
+            type: biomePlatformType
           });
+          state.platforms.push({
+            x: currentX + gapWidth,
+            y: 500,
+            width: 200,
+            height: 100,
+            type: 'ground'
+          });
+          
+          // Add environmental hazard based on biome
+          if (biome.key === 'volcano') {
+            state.environmentalHazards.push({
+              x: currentX + 20,
+              y: 520,
+              width: gapWidth - 40,
+              height: 80,
+              type: 'lava',
+              damage: 25
+            });
+          } else if (biome.key === 'void') {
+            state.environmentalHazards.push({
+              x: currentX + 30,
+              y: 480,
+              width: 60,
+              height: 60,
+              type: 'voidZone',
+              damage: 20
+            });
+          }
+          currentX += gapWidth + 200;
+        } else if (sectionType === 1) {
+          for (let step = 0; step < 4; step++) {
+            state.platforms.push({
+              x: currentX + step * 80,
+              y: 460 - step * 50,
+              width: 100,
+              height: 20,
+              type: step % 2 === 0 ? 'normal' : biomePlatformType
+            });
+          }
+          state.platforms.push({
+            x: currentX + 320,
+            y: 260,
+            width: 150,
+            height: 20,
+            type: 'normal'
+          });
+          
+          // Ice biome - add falling icicles
+          if (biome.key === 'ice' && section % 2 === 0) {
+            state.environmentalHazards.push({
+              x: currentX + 200,
+              y: 100,
+              width: 20,
+              height: 40,
+              type: 'icicle',
+              damage: 15,
+              falling: false,
+              fallSpeed: 0
+            });
+          }
+          currentX += 500;
+        } else if (sectionType === 2) {
+          state.platforms.push({ x: currentX, y: 400, width: 100, height: 20, type: 'normal' });
+          state.platforms.push({ x: currentX + 150, y: 350, width: 80, height: 20, type: biomePlatformType });
+          state.platforms.push({ x: currentX + 280, y: 320, width: 100, height: 20, type: 'normal' });
+          state.platforms.push({ x: currentX + 420, y: 380, width: 120, height: 20, type: 'normal' });
+          currentX += 560;
+        } else if (sectionType === 3) {
+          state.platforms.push({ x: currentX, y: 500, width: 400, height: 100, type: 'ground' });
+          state.platforms.push({ x: currentX + 100, y: 440, width: 60, height: 60, type: 'obstacle' });
+          state.platforms.push({ x: currentX + 250, y: 420, width: 60, height: 80, type: 'obstacle' });
+          currentX += 400;
+        } else {
+          state.platforms.push({ x: currentX, y: 500, width: 150, height: 100, type: 'ground' });
+          state.platforms.push({ x: currentX + 50, y: 380, width: 70, height: 20, type: biomePlatformType });
+          state.platforms.push({ x: currentX + 130, y: 280, width: 70, height: 20, type: 'normal' });
+          state.platforms.push({ x: currentX + 50, y: 180, width: 100, height: 20, type: biomePlatformType });
+          state.platforms.push({ x: currentX + 200, y: 350, width: 100, height: 20, type: 'normal' });
+          currentX += 320;
         }
-        // High platform
-        state.platforms.push({
-          x: currentX + 320,
-          y: 260,
-          width: 150,
-          height: 20,
-          type: 'normal'
-        });
-        currentX += 500;
-      } else if (sectionType === 2) {
-        // Floating island chain
-        state.platforms.push({
-          x: currentX,
-          y: 400,
-          width: 100,
-          height: 20,
-          type: 'normal'
-        });
-        state.platforms.push({
-          x: currentX + 150,
-          y: 350,
-          width: 80,
-          height: 20,
-          type: 'magic'
-        });
-        state.platforms.push({
-          x: currentX + 280,
-          y: 320,
-          width: 100,
-          height: 20,
-          type: 'normal'
-        });
-        state.platforms.push({
-          x: currentX + 420,
-          y: 380,
-          width: 120,
-          height: 20,
-          type: 'normal'
-        });
-        currentX += 560;
-      } else if (sectionType === 3) {
-        // Ground with obstacles
-        state.platforms.push({
-          x: currentX,
-          y: 500,
-          width: 400,
-          height: 100,
-          type: 'ground'
-        });
-        // Obstacle platforms to jump over
-        state.platforms.push({
-          x: currentX + 100,
-          y: 440,
-          width: 60,
-          height: 60,
-          type: 'obstacle'
-        });
-        state.platforms.push({
-          x: currentX + 250,
-          y: 420,
-          width: 60,
-          height: 80,
-          type: 'obstacle'
-        });
-        currentX += 400;
-      } else {
-        // Vertical challenge
-        state.platforms.push({
-          x: currentX,
-          y: 500,
-          width: 150,
-          height: 100,
-          type: 'ground'
-        });
-        state.platforms.push({
-          x: currentX + 50,
-          y: 380,
-          width: 70,
-          height: 20,
-          type: 'magic'
-        });
-        state.platforms.push({
-          x: currentX + 130,
-          y: 280,
-          width: 70,
-          height: 20,
-          type: 'normal'
-        });
-        state.platforms.push({
-          x: currentX + 50,
-          y: 180,
-          width: 100,
-          height: 20,
-          type: 'magic'
-        });
-        // Drop down platform
-        state.platforms.push({
-          x: currentX + 200,
-          y: 350,
-          width: 100,
-          height: 20,
-          type: 'normal'
-        });
-        currentX += 320;
       }
+      
+      state.platforms.push({ x: currentX, y: 500, width: 400, height: 100, type: 'ground' });
+      state.levelWidth = currentX + 400;
+      state.goalX = currentX + 300;
     }
     
-    // Final stretch to goal
-    state.platforms.push({
-      x: currentX,
-      y: 500,
-      width: 400,
-      height: 100,
-      type: 'ground'
-    });
-    
-    state.levelWidth = currentX + 400;
-    state.goalX = currentX + 300;
-    
-    // Generate enemies on platforms and ground
-    const enemyCount = 5 + level * 2;
-    const enemyTypes = ['slime', 'bat', 'shooter', 'diver', 'bomber'];
-    
-    for (let i = 0; i < enemyCount; i++) {
-      const enemyX = 350 + (i * (state.levelWidth - 500) / enemyCount);
-      // Find a platform near this x position
-      const nearbyPlatform = state.platforms.find(p => 
-        p.x <= enemyX && p.x + p.width >= enemyX && p.type !== 'obstacle'
-      );
+    // Generate enemies based on biome (skip for boss levels - boss is the only enemy)
+    if (!isBoss) {
+      const enemyCount = 5 + level * 2;
+      const biomeEnemies = biome.enemies;
       
-      // Determine enemy type based on position and level
-      let enemyType;
-      if (i < 2) {
-        enemyType = i % 2 === 0 ? 'slime' : 'bat';
-      } else {
-        enemyType = enemyTypes[i % enemyTypes.length];
+      for (let i = 0; i < enemyCount; i++) {
+        const enemyX = 350 + (i * (state.levelWidth - 500) / enemyCount);
+        const nearbyPlatform = state.platforms.find(p => 
+          p.x <= enemyX && p.x + p.width >= enemyX && p.type !== 'obstacle'
+        );
+        
+        // Pick enemy type from biome's available enemies
+        const enemyType = biomeEnemies[i % biomeEnemies.length];
+        
+        let enemyY = nearbyPlatform ? nearbyPlatform.y - 40 : 460;
+        
+        // Flying enemies
+        if (['diver', 'bat', 'lavaBat', 'snowOwl', 'shadowBat'].includes(enemyType)) {
+          enemyY = 150 + Math.random() * 100;
+        }
+        
+        // Shooters prefer platforms
+        if (['shooter', 'frostShooter'].includes(enemyType) && nearbyPlatform) {
+          enemyY = nearbyPlatform.y - 45;
+        }
+        
+        state.enemies.push({
+          x: enemyX,
+          y: enemyY,
+          width: enemyType === 'bomber' ? 45 : (enemyType === 'voidWalker' ? 50 : 40),
+          height: enemyType === 'bomber' ? 45 : (enemyType === 'voidWalker' ? 50 : 40),
+          velocityX: (Math.random() > 0.5 ? 1 : -1) * (['shooter', 'frostShooter'].includes(enemyType) ? 0.8 : 1.5 + level * 0.3),
+          velocityY: 0,
+          type: enemyType,
+          health: enemyType === 'bomber' ? 3 : (enemyType === 'voidWalker' ? 4 : 2),
+          patrolStart: enemyX - 80,
+          patrolEnd: enemyX + 80,
+          shootCooldown: 0,
+          diveState: 'patrol',
+          originalY: enemyY,
+          bombCooldown: 0,
+          facingRight: Math.random() > 0.5
+        });
       }
-      
-      let enemyY = nearbyPlatform ? nearbyPlatform.y - 40 : 460;
-      
-      // Divers and bats fly higher
-      if (enemyType === 'diver' || enemyType === 'bat') {
-        enemyY = 150 + Math.random() * 100;
-      }
-      
-      // Shooters prefer platforms
-      if (enemyType === 'shooter' && nearbyPlatform) {
-        enemyY = nearbyPlatform.y - 45;
-      }
-      
-      state.enemies.push({
-        x: enemyX,
-        y: enemyY,
-        width: enemyType === 'bomber' ? 45 : 40,
-        height: enemyType === 'bomber' ? 45 : 40,
-        velocityX: (Math.random() > 0.5 ? 1 : -1) * (enemyType === 'shooter' ? 0.8 : 1.5 + level * 0.3),
-        velocityY: 0,
-        type: enemyType,
-        health: enemyType === 'bomber' ? 3 : 2,
-        patrolStart: enemyX - 80,
-        patrolEnd: enemyX + 80,
-        // Type-specific properties
-        shootCooldown: 0,
-        diveState: 'patrol', // patrol, diving, returning
-        originalY: enemyY,
-        bombCooldown: 0
-      });
     }
     
     // Generate collectibles spread across level
@@ -1166,12 +1157,11 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         }
       }
       
-      // Update hazards
+      // Update hazards (dropped by enemies)
       for (let i = state.hazards.length - 1; i >= 0; i--) {
         const hazard = state.hazards[i];
         hazard.life--;
         
-        // Check player collision
         const isInvincible = player.invincible || player.powerUps.INVINCIBILITY > 0 || player.isDashing;
         if (!isInvincible && checkCollision(player, hazard)) {
           if (player.powerUps.SHIELD > 0 && player.powerUps.shieldHealth > 0) {
@@ -1193,8 +1183,194 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         }
       }
       
-      // Check win condition
-      if (player.x > state.goalX) {
+      // Update environmental hazards (biome-specific)
+      for (const envHazard of state.environmentalHazards) {
+        // Icicles fall when player is near
+        if (envHazard.type === 'icicle' && !envHazard.falling) {
+          if (Math.abs(player.x - envHazard.x) < 60) {
+            envHazard.falling = true;
+            envHazard.fallSpeed = 2;
+          }
+        }
+        if (envHazard.falling) {
+          envHazard.y += envHazard.fallSpeed;
+          envHazard.fallSpeed += 0.3;
+          if (envHazard.y > 600) {
+            envHazard.y = 100;
+            envHazard.falling = false;
+            envHazard.fallSpeed = 0;
+          }
+        }
+        
+        // Check collision with player
+        const isInvincible = player.invincible || player.powerUps.INVINCIBILITY > 0 || player.isDashing;
+        if (!isInvincible && checkCollision(player, envHazard)) {
+          if (player.powerUps.SHIELD > 0 && player.powerUps.shieldHealth > 0) {
+            player.powerUps.shieldHealth--;
+            if (player.powerUps.shieldHealth <= 0) player.powerUps.SHIELD = 0;
+            soundManager.playShieldHit();
+          } else {
+            soundManager.playDamage();
+            player.health -= envHazard.damage;
+            player.invincible = true;
+            player.invincibleTimer = 40;
+            player.velocityY = -6;
+            onHealthChange(player.health);
+          }
+        }
+      }
+      
+      // Update boss
+      if (state.boss) {
+        const boss = state.boss;
+        
+        // Handle frozen state
+        if (boss.frozen > 0) {
+          boss.frozen--;
+        } else {
+          // Boss AI based on type
+          boss.attackCooldown--;
+          
+          // Move towards player slowly
+          const dirToPlayer = player.x > boss.x ? 1 : -1;
+          boss.velocityX = dirToPlayer * 1.5;
+          boss.x += boss.velocityX;
+          
+          // Keep boss in arena
+          boss.x = Math.max(350, Math.min(boss.x, 750));
+          
+          // Boss attacks
+          if (boss.attackCooldown <= 0) {
+            boss.isAttacking = true;
+            
+            // Different attacks based on boss type
+            if (boss.type === 'treant') {
+              // Spawn root hazards
+              for (let i = 0; i < 3; i++) {
+                state.hazards.push({
+                  x: 350 + i * 150,
+                  y: 480,
+                  width: 40,
+                  height: 30,
+                  life: 120,
+                  damage: 20,
+                  type: 'root'
+                });
+              }
+            } else if (boss.type === 'magmaGolem') {
+              // Fire projectiles in spread
+              for (let i = -1; i <= 1; i++) {
+                state.enemyProjectiles.push({
+                  x: boss.x + boss.width / 2,
+                  y: boss.y + 30,
+                  velocityX: dirToPlayer * 4,
+                  velocityY: i * 2,
+                  width: 16,
+                  height: 16,
+                  life: 100,
+                  type: 'fireball'
+                });
+              }
+            } else if (boss.type === 'frostWyrm') {
+              // Ice breath - wide projectile
+              state.enemyProjectiles.push({
+                x: boss.x + boss.width / 2,
+                y: boss.y + 50,
+                velocityX: dirToPlayer * 6,
+                velocityY: 0,
+                width: 60,
+                height: 30,
+                life: 60,
+                type: 'iceBreath'
+              });
+            } else if (boss.type === 'voidLord') {
+              // Teleport and spawn void zones
+              boss.x = player.x + (Math.random() > 0.5 ? 100 : -100);
+              boss.x = Math.max(350, Math.min(boss.x, 750));
+              state.environmentalHazards.push({
+                x: player.x - 30,
+                y: player.y,
+                width: 60,
+                height: 60,
+                type: 'voidZone',
+                damage: 25,
+                life: 180
+              });
+            }
+            
+            boss.attackCooldown = boss.health < boss.maxHealth / 2 ? 60 : 90;
+            setTimeout(() => { if (state.boss) state.boss.isAttacking = false; }, 500);
+          }
+        }
+        
+        // Check player projectile collision with boss
+        for (let i = projectiles.length - 1; i >= 0; i--) {
+          if (checkCollision(projectiles[i], boss)) {
+            boss.health -= projectiles[i].damage || 1;
+            
+            if (projectiles[i].type === 'freeze') {
+              boss.frozen = 60;
+            }
+            
+            // Boss hit particles
+            for (let k = 0; k < 8; k++) {
+              particles.push({
+                x: boss.x + boss.width / 2,
+                y: boss.y + boss.height / 2,
+                velocityX: (Math.random() - 0.5) * 6,
+                velocityY: (Math.random() - 0.5) * 6,
+                life: 20,
+                color: state.biome.boss.color
+              });
+            }
+            
+            soundManager.playEnemyHit();
+            projectiles.splice(i, 1);
+            
+            if (boss.health <= 0) {
+              soundManager.playEnemyDefeat();
+              // Big explosion
+              for (let k = 0; k < 30; k++) {
+                particles.push({
+                  x: boss.x + boss.width / 2,
+                  y: boss.y + boss.height / 2,
+                  velocityX: (Math.random() - 0.5) * 10,
+                  velocityY: (Math.random() - 0.5) * 10,
+                  life: 40,
+                  color: state.biome.boss.color
+                });
+              }
+              state.score += 500;
+              onScoreChange(state.score);
+              state.boss = null;
+            }
+          }
+        }
+        
+        // Boss collision with player
+        if (boss) {
+          const isInvincible = player.invincible || player.powerUps.INVINCIBILITY > 0 || player.isDashing;
+          if (!isInvincible && checkCollision(player, boss)) {
+            if (player.powerUps.SHIELD > 0 && player.powerUps.shieldHealth > 0) {
+              player.powerUps.shieldHealth--;
+              if (player.powerUps.shieldHealth <= 0) player.powerUps.SHIELD = 0;
+              soundManager.playShieldHit();
+            } else {
+              soundManager.playDamage();
+              player.health -= 25;
+              player.invincible = true;
+              player.invincibleTimer = 60;
+              player.velocityY = -10;
+              player.velocityX = player.x < boss.x ? -8 : 8;
+              onHealthChange(player.health);
+            }
+          }
+        }
+      }
+      
+      // Check win condition (boss must be defeated on boss levels)
+      const bossDefeated = !isBossLevel(currentLevel) || state.boss === null;
+      if (player.x > state.goalX && bossDefeated) {
         soundManager.playLevelComplete();
         onLevelComplete();
         return;
@@ -1208,83 +1384,29 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         return;
       }
       
-      // RENDER
-      ctx.fillStyle = '#0F172A';
-      ctx.fillRect(0, 0, 800, 600);
-      
-      // Stars background
-      ctx.fillStyle = '#fff';
-      for (let i = 0; i < 50; i++) {
-        const starX = ((i * 137) % 800 + time * 0.1 * ((i % 3) + 1)) % 800;
-        const starY = (i * 73) % 400;
-        const size = (i % 3) + 1;
-        ctx.globalAlpha = 0.3 + (Math.sin(time * 0.05 + i) + 1) * 0.3;
-        ctx.beginPath();
-        ctx.arc(starX, starY, size, 0, Math.PI * 2);
-        ctx.fill();
+      // RENDER - Use biome-specific background
+      if (state.biome) {
+        drawBackground(ctx, state.biome, time, state.cameraX);
+      } else {
+        ctx.fillStyle = '#0F172A';
+        ctx.fillRect(0, 0, 800, 600);
       }
-      ctx.globalAlpha = 1;
       
-      // Draw platforms
+      // Draw platforms using biome renderer
       for (const platform of platforms) {
         const px = platform.x - state.cameraX;
         if (px > -platform.width && px < 800) {
-          if (platform.type === 'ground') {
-            const groundGrad = ctx.createLinearGradient(px, platform.y, px, platform.y + platform.height);
-            groundGrad.addColorStop(0, '#1E293B');
-            groundGrad.addColorStop(1, '#0F172A');
-            ctx.fillStyle = groundGrad;
-            ctx.beginPath();
-            ctx.roundRect(px, platform.y, platform.width, platform.height, 4);
-            ctx.fill();
-            // Grass on top
-            ctx.fillStyle = '#166534';
-            ctx.fillRect(px, platform.y, platform.width, 6);
-          } else if (platform.type === 'magic') {
-            ctx.fillStyle = '#6B21A8';
-            ctx.shadowColor = '#A855F7';
-            ctx.shadowBlur = 10;
-            ctx.beginPath();
-            ctx.roundRect(px, platform.y, platform.width, platform.height, 4);
-            ctx.fill();
-            // Magic runes
-            ctx.fillStyle = '#C084FC';
-            ctx.globalAlpha = 0.5 + Math.sin(time * 0.1) * 0.3;
-            for (let r = 0; r < platform.width / 20; r++) {
-              ctx.beginPath();
-              ctx.arc(px + 10 + r * 20, platform.y + 10, 3, 0, Math.PI * 2);
-              ctx.fill();
-            }
-            ctx.globalAlpha = 1;
-            ctx.shadowBlur = 0;
-          } else if (platform.type === 'obstacle') {
-            // Stone obstacle
-            const obstGrad = ctx.createLinearGradient(px, platform.y, px + platform.width, platform.y + platform.height);
-            obstGrad.addColorStop(0, '#475569');
-            obstGrad.addColorStop(0.5, '#334155');
-            obstGrad.addColorStop(1, '#1E293B');
-            ctx.fillStyle = obstGrad;
-            ctx.beginPath();
-            ctx.roundRect(px, platform.y, platform.width, platform.height, 2);
-            ctx.fill();
-            // Cracks
-            ctx.strokeStyle = '#1E293B';
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(px + platform.width * 0.3, platform.y);
-            ctx.lineTo(px + platform.width * 0.4, platform.y + platform.height * 0.5);
-            ctx.lineTo(px + platform.width * 0.2, platform.y + platform.height);
-            ctx.stroke();
-          } else {
-            // Normal floating platform
-            ctx.fillStyle = '#334155';
-            ctx.beginPath();
-            ctx.roundRect(px, platform.y, platform.width, platform.height, 4);
-            ctx.fill();
-            // Top highlight
-            ctx.fillStyle = '#475569';
-            ctx.fillRect(px + 2, platform.y + 2, platform.width - 4, 4);
+          if (state.biome) {
+            drawPlatform(ctx, platform, px, time, state.biome);
           }
+        }
+      }
+      
+      // Draw environmental hazards
+      for (const envHazard of state.environmentalHazards) {
+        const hx = envHazard.x - state.cameraX;
+        if (hx > -envHazard.width && hx < 800) {
+          drawEnvironmentalHazard(ctx, envHazard, hx, time, state.biome?.key);
         }
       }
       
@@ -1347,184 +1469,20 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         ctx.fillText(powerUpInfo.icon, px + 14, bobY + 15);
       }
       
-      // Draw enemies
+      // Draw enemies using the enemy renderer
       for (const enemy of enemies) {
         const ex = enemy.x - state.cameraX;
-        const isFrozen = enemy.frozen && enemy.frozen > 0;
-        
-        ctx.save();
-        if (isFrozen) {
-          ctx.globalAlpha = 0.8;
+        if (ex > -50 && ex < 850) {
+          const isFrozen = enemy.frozen && enemy.frozen > 0;
+          drawEnemy(ctx, enemy, ex, time, isFrozen, state.biome?.key);
         }
-        
-        if (enemy.type === 'slime') {
-          ctx.fillStyle = isFrozen ? '#67E8F9' : '#22C55E';
-          ctx.shadowColor = isFrozen ? '#67E8F9' : '#22C55E';
-          ctx.shadowBlur = 8;
-          ctx.beginPath();
-          ctx.ellipse(ex + 20, enemy.y + 30, 20, 15 + (isFrozen ? 0 : Math.sin(time * 0.2) * 3), 0, 0, Math.PI * 2);
-          ctx.fill();
-          
-          // Eyes
-          ctx.fillStyle = '#fff';
-          ctx.beginPath();
-          ctx.arc(ex + 12, enemy.y + 25, 5, 0, Math.PI * 2);
-          ctx.arc(ex + 28, enemy.y + 25, 5, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.fillStyle = isFrozen ? '#67E8F9' : '#000';
-          ctx.beginPath();
-          ctx.arc(ex + 13, enemy.y + 26, 2, 0, Math.PI * 2);
-          ctx.arc(ex + 29, enemy.y + 26, 2, 0, Math.PI * 2);
-          ctx.fill();
-          
-        } else if (enemy.type === 'bat') {
-          ctx.fillStyle = isFrozen ? '#67E8F9' : '#7C3AED';
-          ctx.shadowColor = isFrozen ? '#67E8F9' : '#A855F7';
-          ctx.shadowBlur = 10;
-          ctx.beginPath();
-          ctx.ellipse(ex + 20, enemy.y + 20 + (isFrozen ? 0 : Math.sin(time * 0.3) * 5), 12, 10, 0, 0, Math.PI * 2);
-          ctx.fill();
-          
-          // Wings
-          const wingFlap = isFrozen ? 0 : Math.sin(time * 0.5) * 10;
-          ctx.beginPath();
-          ctx.moveTo(ex + 8, enemy.y + 20);
-          ctx.quadraticCurveTo(ex - 10, enemy.y + 10 + wingFlap, ex - 5, enemy.y + 25);
-          ctx.moveTo(ex + 32, enemy.y + 20);
-          ctx.quadraticCurveTo(ex + 50, enemy.y + 10 - wingFlap, ex + 45, enemy.y + 25);
-          ctx.stroke();
-          ctx.fill();
-          
-          // Eyes
-          ctx.fillStyle = isFrozen ? '#A5F3FC' : '#EF4444';
-          ctx.beginPath();
-          ctx.arc(ex + 15, enemy.y + 18, 3, 0, Math.PI * 2);
-          ctx.arc(ex + 25, enemy.y + 18, 3, 0, Math.PI * 2);
-          ctx.fill();
-          
-        } else if (enemy.type === 'shooter') {
-          // Shooter - turret-like enemy
-          ctx.fillStyle = isFrozen ? '#67E8F9' : '#DC2626';
-          ctx.shadowColor = isFrozen ? '#67E8F9' : '#EF4444';
-          ctx.shadowBlur = 8;
-          
-          // Body
-          ctx.beginPath();
-          ctx.roundRect(ex + 5, enemy.y + 15, 30, 25, 4);
-          ctx.fill();
-          
-          // Cannon
-          const cannonDir = player.x > enemy.x ? 1 : -1;
-          ctx.fillStyle = isFrozen ? '#A5F3FC' : '#991B1B';
-          ctx.beginPath();
-          ctx.roundRect(ex + 15 + cannonDir * 10, enemy.y + 22, 18, 10, 2);
-          ctx.fill();
-          
-          // Eye
-          ctx.fillStyle = isFrozen ? '#fff' : '#FBBF24';
-          ctx.beginPath();
-          ctx.arc(ex + 20, enemy.y + 25, 6, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.fillStyle = isFrozen ? '#67E8F9' : '#000';
-          ctx.beginPath();
-          ctx.arc(ex + 20 + cannonDir * 2, enemy.y + 25, 3, 0, Math.PI * 2);
-          ctx.fill();
-          
-        } else if (enemy.type === 'diver') {
-          // Diver - hawk-like enemy
-          ctx.fillStyle = isFrozen ? '#67E8F9' : '#F59E0B';
-          ctx.shadowColor = isFrozen ? '#67E8F9' : '#FBBF24';
-          ctx.shadowBlur = 10;
-          
-          // Body
-          ctx.beginPath();
-          ctx.ellipse(ex + 20, enemy.y + 20, 15, 10, 0, 0, Math.PI * 2);
-          ctx.fill();
-          
-          // Wings
-          const diveAngle = enemy.diveState === 'diving' ? 0.3 : (isFrozen ? 0 : Math.sin(time * 0.4) * 0.4);
-          ctx.fillStyle = isFrozen ? '#A5F3FC' : '#D97706';
-          ctx.beginPath();
-          ctx.moveTo(ex + 5, enemy.y + 20);
-          ctx.lineTo(ex - 15, enemy.y + 10 + diveAngle * 20);
-          ctx.lineTo(ex - 10, enemy.y + 25);
-          ctx.closePath();
-          ctx.fill();
-          ctx.beginPath();
-          ctx.moveTo(ex + 35, enemy.y + 20);
-          ctx.lineTo(ex + 55, enemy.y + 10 - diveAngle * 20);
-          ctx.lineTo(ex + 50, enemy.y + 25);
-          ctx.closePath();
-          ctx.fill();
-          
-          // Beak
-          ctx.fillStyle = isFrozen ? '#fff' : '#78350F';
-          const beakDir = enemy.velocityX > 0 ? 1 : -1;
-          ctx.beginPath();
-          ctx.moveTo(ex + 20 + beakDir * 15, enemy.y + 20);
-          ctx.lineTo(ex + 20 + beakDir * 25, enemy.y + 22);
-          ctx.lineTo(ex + 20 + beakDir * 15, enemy.y + 24);
-          ctx.closePath();
-          ctx.fill();
-          
-          // Eyes
-          ctx.fillStyle = isFrozen ? '#fff' : '#000';
-          ctx.beginPath();
-          ctx.arc(ex + 15, enemy.y + 18, 3, 0, Math.PI * 2);
-          ctx.arc(ex + 25, enemy.y + 18, 3, 0, Math.PI * 2);
-          ctx.fill();
-          
-        } else if (enemy.type === 'bomber') {
-          // Bomber - bulky enemy that drops hazards
-          ctx.fillStyle = isFrozen ? '#67E8F9' : '#581C87';
-          ctx.shadowColor = isFrozen ? '#67E8F9' : '#7C3AED';
-          ctx.shadowBlur = 10;
-          
-          // Body
-          ctx.beginPath();
-          ctx.ellipse(ex + 22, enemy.y + 25, 22, 18, 0, 0, Math.PI * 2);
-          ctx.fill();
-          
-          // Pattern
-          ctx.fillStyle = isFrozen ? '#A5F3FC' : '#7C3AED';
-          ctx.beginPath();
-          ctx.arc(ex + 15, enemy.y + 20, 5, 0, Math.PI * 2);
-          ctx.arc(ex + 30, enemy.y + 20, 5, 0, Math.PI * 2);
-          ctx.arc(ex + 22, enemy.y + 32, 4, 0, Math.PI * 2);
-          ctx.fill();
-          
-          // Eyes
-          ctx.fillStyle = '#fff';
-          ctx.beginPath();
-          ctx.arc(ex + 15, enemy.y + 18, 6, 0, Math.PI * 2);
-          ctx.arc(ex + 30, enemy.y + 18, 6, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.fillStyle = isFrozen ? '#67E8F9' : '#EF4444';
-          ctx.beginPath();
-          ctx.arc(ex + 15, enemy.y + 18, 3, 0, Math.PI * 2);
-          ctx.arc(ex + 30, enemy.y + 18, 3, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        
-        // Frozen ice crystals for all enemies
-        if (isFrozen) {
-          ctx.fillStyle = '#A5F3FC';
-          ctx.beginPath();
-          ctx.moveTo(ex + 5, enemy.y + 5);
-          ctx.lineTo(ex + 10, enemy.y + 15);
-          ctx.lineTo(ex + 0, enemy.y + 15);
-          ctx.closePath();
-          ctx.fill();
-          ctx.beginPath();
-          ctx.moveTo(ex + 35, enemy.y + 5);
-          ctx.lineTo(ex + 40, enemy.y + 15);
-          ctx.lineTo(ex + 30, enemy.y + 15);
-          ctx.closePath();
-          ctx.fill();
-        }
-        
-        ctx.shadowBlur = 0;
-        ctx.restore();
+      }
+      
+      // Draw boss if exists
+      if (state.boss) {
+        const bx = state.boss.x - state.cameraX;
+        const isFrozen = state.boss.frozen > 0;
+        drawBoss(ctx, state.boss, bx, time, isFrozen, state.biome?.key);
       }
       
       // Draw enemy projectiles
