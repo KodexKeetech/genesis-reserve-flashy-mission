@@ -2444,9 +2444,14 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       }
       
       // Draw particles with enhanced effects
-      for (const particle of particles) {
-        drawParticle(ctx, { ...particle, x: particle.x - state.cameraX }, time);
-      }
+                  for (const particle of particles) {
+                    const adjustedParticle = { ...particle, x: particle.x - state.cameraX };
+                    if (['firefly', 'leaf', 'ember', 'ash', 'snow', 'iceSparkle', 'voidParticle'].includes(particle.type)) {
+                      drawAmbientParticle(ctx, adjustedParticle, time);
+                    } else {
+                      drawParticle(ctx, adjustedParticle, time);
+                    }
+                  }
       
       // Draw shield effect around Jeff if active
       if (player.powerUps.SHIELD > 0) {
