@@ -7,7 +7,7 @@ import GameUI from '@/components/game/GameUI';
 import GameOverlay from '@/components/game/GameOverlay';
 import TouchControls from '@/components/game/TouchControls';
 import soundManager from '@/components/game/SoundManager';
-import { Sparkles, ShoppingBag } from 'lucide-react';
+import { Sparkles, ShoppingBag, Gem, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function Game() {
@@ -30,6 +30,19 @@ export default function Game() {
     magicRegen: 0,
     scrapMagnet: 0
   });
+  const [unlockedAbilities, setUnlockedAbilities] = useState({
+    aoeBlast: false,
+    reflectShield: false,
+    hover: false
+  });
+  const [abilityUpgrades, setAbilityUpgrades] = useState({
+    aoeBlastPower: 0,
+    aoeBlastRadius: 0,
+    reflectDuration: 0,
+    hoverDuration: 0
+  });
+  const [arcaneCrystals, setArcaneCrystals] = useState(0);
+  const [sessionCrystals, setSessionCrystals] = useState(0);
   
   const touchInputRef = useRef({
     move: { x: 0, y: 0 },
@@ -50,6 +63,15 @@ export default function Game() {
         if (user.magicScraps) {
           setMagicScraps(user.magicScraps);
         }
+        if (user.unlockedAbilities) {
+          setUnlockedAbilities(user.unlockedAbilities);
+        }
+        if (user.abilityUpgrades) {
+          setAbilityUpgrades(user.abilityUpgrades);
+        }
+        if (user.arcaneCrystals) {
+          setArcaneCrystals(user.arcaneCrystals);
+        }
       } catch (e) {
         // Not logged in or error, use defaults
       }
@@ -58,21 +80,28 @@ export default function Game() {
   }, []);
 
   // Save scraps when level completes or game over
-  const saveScraps = useCallback(async (scrapsToAdd) => {
+  const saveScraps = useCallback(async (scrapsToAdd, crystalsToAdd = 0) => {
     try {
       const user = await base44.auth.me();
       const newTotal = (user.magicScraps || 0) + scrapsToAdd;
       const newLifetime = (user.totalScrapsEarned || 0) + scrapsToAdd;
+      const newCrystals = (user.arcaneCrystals || 0) + crystalsToAdd;
       await base44.auth.updateMe({ 
         magicScraps: newTotal,
         totalScrapsEarned: newLifetime,
+        arcaneCrystals: newCrystals,
         highestLevel: Math.max(user.highestLevel || 1, level)
       });
       setMagicScraps(newTotal);
+      setArcaneCrystals(newCrystals);
     } catch (e) {
       // Not logged in
     }
   }, [level]);
+
+  const handleCrystalsEarned = useCallback((crystals) => {
+    setSessionCrystals(prev => prev + crystals);
+  }, []);
 
   const handleScrapsEarned = useCallback((scraps) => {
     setSessionScraps(prev => prev + scraps);
@@ -100,6 +129,7 @@ export default function Game() {
     setScore(0);
     setHealth(100);
     setSessionScraps(0);
+    setSessionCrystals(0);
   }, []);
 
   const handleNextLevel = useCallback(() => {
@@ -110,18 +140,22 @@ export default function Game() {
 
   const handleGameOver = useCallback(() => {
     setGameState('gameOver');
-    if (sessionScraps > 0) {
-      saveScraps(sessionScraps);
+    if (sessionScraps > 0 || sessionCrystals > 0) {
+      saveScraps(sessionScraps, sessionCrystals);
     }
-  }, [sessionScraps, saveScraps]);
+  }, [sessionScraps, sessionCrystals, saveScraps]);
 
   const handleLevelComplete = useCallback(() => {
     setGameState('levelComplete');
-    if (sessionScraps > 0) {
-      saveScraps(sessionScraps);
+    // Award bonus crystal every 5 levels
+    const bonusCrystal = level % 5 === 0 ? 1 : 0;
+    const totalCrystals = sessionCrystals + bonusCrystal;
+    if (sessionScraps > 0 || totalCrystals > 0) {
+      saveScraps(sessionScraps, totalCrystals);
       setSessionScraps(0);
+      setSessionCrystals(0);
     }
-  }, [sessionScraps, saveScraps]);
+  }, [sessionScraps, sessionCrystals, saveScraps, level]);
 
   const handleScoreChange = useCallback((newScore) => {
     setScore(newScore);
@@ -164,7 +198,10 @@ export default function Game() {
               onPowerUpChange={handlePowerUpChange}
               onAbilityCooldowns={handleAbilityCooldowns}
               onScrapsEarned={handleScrapsEarned}
+              onCrystalsEarned={handleCrystalsEarned}
               playerUpgrades={playerUpgrades}
+              unlockedAbilities={unlockedAbilities}
+              abilityUpgrades={abilityUpgrades}
               touchInput={touchInputRef}
             />
           )}
@@ -199,15 +236,25 @@ export default function Game() {
         <TouchControls onInput={handleTouchInput} />
         )}
 
-      {/* Upgrade Shop Button */}
-      <div className="mt-4">
+      {/* Shop Buttons */}
+      <div className="mt-4 flex gap-3 flex-wrap justify-center">
         <Link to={createPageUrl('UpgradeShop')}>
           <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500">
             <ShoppingBag className="w-5 h-5 mr-2" />
-            Upgrade Shop
-            <div className="ml-3 flex items-center gap-1 bg-black/30 rounded px-2 py-0.5">
+            Upgrades
+            <div className="ml-2 flex items-center gap-1 bg-black/30 rounded px-2 py-0.5">
               <Sparkles className="w-4 h-4 text-purple-300" />
               <span className="text-purple-200">{magicScraps}</span>
+            </div>
+          </Button>
+        </Link>
+        <Link to={createPageUrl('AbilityShop')}>
+          <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500">
+            <Zap className="w-5 h-5 mr-2" />
+            Abilities
+            <div className="ml-2 flex items-center gap-1 bg-black/30 rounded px-2 py-0.5">
+              <Gem className="w-4 h-4 text-indigo-300" />
+              <span className="text-indigo-200">{arcaneCrystals}</span>
             </div>
           </Button>
         </Link>
@@ -235,7 +282,11 @@ export default function Game() {
           <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">Q</kbd>
           Switch Spell
         </span>
-      </div>
+        <span className="flex items-center gap-2">
+          <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">E/R/F</kbd>
+          Special Abilities
+        </span>
+        </div>
     </div>
   );
 }
