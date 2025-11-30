@@ -1140,47 +1140,25 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       ctx.fill();
       ctx.shadowBlur = 0;
 
-      // Face features - expressive eyes
+      // Face features - simple dot eyes
       const eyeOffsetX = facingRight ? 2 : -2;
-      const blinkOffset = Math.floor(time / 120) % 40 === 0 ? 1 : 0;
       
-      // Eye sockets (dark)
-      ctx.fillStyle = '#1A2530';
+      // Two small black dot eyes
+      ctx.fillStyle = '#1A1A1A';
       ctx.beginPath();
-      ctx.roundRect(centerX - 7 + eyeOffsetX, y + 3 - bodyBob + breathe, 6, 6 - blinkOffset * 4, 2);
+      ctx.arc(centerX - 4 + eyeOffsetX, y + 5 - bodyBob + breathe, 2.5, 0, Math.PI * 2);
       ctx.fill();
       ctx.beginPath();
-      ctx.roundRect(centerX + 1 + eyeOffsetX, y + 3 - bodyBob + breathe, 6, 6 - blinkOffset * 4, 2);
+      ctx.arc(centerX + 4 + eyeOffsetX, y + 5 - bodyBob + breathe, 2.5, 0, Math.PI * 2);
       ctx.fill();
       
-      // Eye glow (cyan)
-      if (blinkOffset === 0) {
-        ctx.fillStyle = '#22D3EE';
-        ctx.shadowColor = '#22D3EE';
-        ctx.shadowBlur = 8;
-        ctx.beginPath();
-        ctx.arc(centerX - 4 + eyeOffsetX, y + 6 - bodyBob + breathe, 2, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(centerX + 4 + eyeOffsetX, y + 6 - bodyBob + breathe, 2, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
-        // Eye sparkle
-        ctx.fillStyle = '#FFFFFF';
-        ctx.beginPath();
-        ctx.arc(centerX - 5 + eyeOffsetX, y + 5 - bodyBob + breathe, 0.8, 0, Math.PI * 2);
-        ctx.arc(centerX + 3 + eyeOffsetX, y + 5 - bodyBob + breathe, 0.8, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      
-      // Mouth - LED display style
-      ctx.fillStyle = '#22D3EE';
-      ctx.shadowColor = '#22D3EE';
-      ctx.shadowBlur = 4;
+      // Neutral expression mouth - simple horizontal line
+      ctx.strokeStyle = '#1A1A1A';
+      ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.roundRect(centerX - 4 + eyeOffsetX, y + 11 - bodyBob + breathe, 8, 2, 1);
-      ctx.fill();
-      ctx.shadowBlur = 0;
+      ctx.moveTo(centerX - 4 + eyeOffsetX, y + 11 - bodyBob + breathe);
+      ctx.lineTo(centerX + 4 + eyeOffsetX, y + 11 - bodyBob + breathe);
+      ctx.stroke();
 
       // Industrial wizard hat with more detail
       // Hat brim shadow
