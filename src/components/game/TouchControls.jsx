@@ -144,6 +144,7 @@ export default function TouchControls({ onInput }) {
         onTouchStart={handleJoystickStart}
         onTouchMove={handleJoystickMove}
         onTouchEnd={handleJoystickEnd}
+        onTouchCancel={handleJoystickCancel}
       >
         <div
           className="absolute w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 border-2 border-white/30 shadow-md transition-transform duration-50"
