@@ -25,7 +25,7 @@ const POWERUP_TYPES = {
   SHIELD: { color: '#3B82F6', icon: '🛡️', duration: 400, name: 'Shield' }
 };
 
-export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel, onPowerUpChange, onAbilityCooldowns, onScrapsEarned, onCrystalsEarned, onCoinAmmoChange, savedCoinAmmo, playerUpgrades, unlockedAbilities, abilityUpgrades, touchInput, startingGun = 0, gameSettings = { sound: true, graphics: 'high', particles: true } }) {
+export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel, onPowerUpChange, onAbilityCooldowns, onScrapsEarned, onCrystalsEarned, onCoinAmmoChange, savedCoinAmmo, playerUpgrades, unlockedAbilities, abilityUpgrades, touchInput, startingGun = 0, gameSettings = { sound: true, graphics: 'high', particles: true }, onGunChange, onCheckpointReached, checkpoint }) {
   const canvasRef = useRef(null);
   const mouseRef = useRef({ x: 400, y: 300 }); // Track mouse position relative to canvas
   const gameStateRef = useRef({
@@ -90,8 +90,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     levelWidth: 2000,
     cameraX: 0,
     goalX: 1900,
-    biome: null
-  });
+    biome: null,
+    checkpointX: 0,
+    checkpointReached: false
+    });
 
   const generateLevel = useCallback((level) => {
         const state = gameStateRef.current;
@@ -641,7 +643,22 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     };
     state.bossNoDamage = true;
     state.cameraX = 0;
-  }, [startingGun]);
+
+    // Set checkpoint at ~40% of level width (before middle)
+    state.checkpointX = Math.floor(state.levelWidth * 0.4);
+    state.checkpointReached = false;
+
+    // If resuming from checkpoint, restore position
+    if (checkpoint && checkpoint.level === level) {
+      state.player.x = checkpoint.x;
+      state.player.y = checkpoint.y;
+      state.score = checkpoint.score;
+      state.player.health = checkpoint.health;
+      state.player.selectedProjectile = checkpoint.gun;
+      state.cameraX = Math.max(0, checkpoint.x - 400);
+      state.checkpointReached = true;
+    }
+    }, [startingGun, checkpoint]);
 
   useEffect(() => {
     generateLevel(currentLevel);
