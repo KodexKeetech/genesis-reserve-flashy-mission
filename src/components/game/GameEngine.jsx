@@ -2107,51 +2107,33 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
               boss.frozen = 60;
             }
             
-            // Boss hit particles
-            for (let k = 0; k < 8; k++) {
-              particles.push({
-                x: boss.x + boss.width / 2,
-                y: boss.y + boss.height / 2,
-                velocityX: (Math.random() - 0.5) * 6,
-                velocityY: (Math.random() - 0.5) * 6,
-                life: 20,
-                color: state.biome.boss.color
-              });
-            }
-            
-            soundManager.playEnemyHit();
-            projectiles.splice(i, 1);
-            
-            if (boss.health <= 0) {
-              soundManager.playEnemyDefeat();
-              // Big explosion
-              for (let k = 0; k < 30; k++) {
-                particles.push({
-                  x: boss.x + boss.width / 2,
-                  y: boss.y + boss.height / 2,
-                  velocityX: (Math.random() - 0.5) * 10,
-                  velocityY: (Math.random() - 0.5) * 10,
-                  life: 40,
-                  color: state.biome.boss.color
-                });
-              }
-              state.score += 500;
-              onScoreChange(state.score);
+            // Enhanced boss hit effect
+                              createBossHitEffect(particles, boss.x + boss.width / 2, boss.y + boss.height / 2, state.biome.boss.color);
 
-              // Award bonus scraps for boss
-              const scrapBonus = 1 + ((playerUpgrades || {}).scrapMagnet || 0) * 0.2;
-              const bossScrap = Math.floor(50 * scrapBonus);
-              if (onScrapsEarned) onScrapsEarned(bossScrap);
-              
-              // Award arcane crystals for boss kill
-              let crystals = 2;
-              if (state.bossNoDamage) crystals += 1; // Bonus for no-hit
-              if (onCrystalsEarned) onCrystalsEarned(crystals);
+                              soundManager.playEnemyHit();
+                              projectiles.splice(i, 1);
 
-              state.boss = null;
-            }
-          }
-        }
+                              if (boss.health <= 0) {
+                                soundManager.playEnemyDefeat();
+                                // Massive boss death explosion
+                                createBossDeathEffect(particles, boss.x + boss.width / 2, boss.y + boss.height / 2, state.biome.boss.color);
+                                state.score += 500;
+                                onScoreChange(state.score);
+
+                                // Award bonus scraps for boss
+                                const scrapBonus = 1 + ((playerUpgrades || {}).scrapMagnet || 0) * 0.2;
+                                const bossScrap = Math.floor(50 * scrapBonus);
+                                if (onScrapsEarned) onScrapsEarned(bossScrap);
+
+                                // Award arcane crystals for boss kill
+                                let crystals = 2;
+                                if (state.bossNoDamage) crystals += 1;
+                                if (onCrystalsEarned) onCrystalsEarned(crystals);
+
+                                state.boss = null;
+                              }
+                            }
+                          }
         
         // Boss collision with player
         if (boss) {
