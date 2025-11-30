@@ -1,9 +1,15 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Trophy, RotateCcw, Play, Sparkles } from 'lucide-react';
+import { Trophy, RotateCcw, Play, Sparkles, Save, FolderOpen } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function GameOverlay({ type, score, level, onRestart, onNextLevel, onStart }) {
+export default function GameOverlay({ type, score, level, onRestart, onNextLevel, onStart, onLoadGame }) {
+  const [hasSavedGame, setHasSavedGame] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('jeff_save_game');
+    setHasSavedGame(!!saved);
+  }, []);
   if (type === 'start') {
     return (
       <motion.div
@@ -44,14 +50,28 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
           <p className="text-2xl font-bold text-slate-400 mb-1">The Robot Wizard</p>
           <p className="text-slate-500 mb-8">A Magical Platformer Adventure</p>
           
-          <Button
-            onClick={onStart}
-            size="lg"
-            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold px-8 py-6 text-xl rounded-xl shadow-lg shadow-purple-500/30"
-          >
-            <Play className="w-6 h-6 mr-2" />
-            Start Game
-          </Button>
+          <div className="flex flex-col gap-3">
+            <Button
+              onClick={onStart}
+              size="lg"
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold px-8 py-6 text-xl rounded-xl shadow-lg shadow-purple-500/30"
+            >
+              <Play className="w-6 h-6 mr-2" />
+              New Game
+            </Button>
+            
+            {hasSavedGame && (
+              <Button
+                onClick={onLoadGame}
+                size="lg"
+                variant="outline"
+                className="border-cyan-500 text-cyan-400 hover:bg-cyan-500/20 font-bold px-8 py-4 text-lg rounded-xl"
+              >
+                <FolderOpen className="w-5 h-5 mr-2" />
+                Continue (Level {JSON.parse(localStorage.getItem('jeff_save_game') || '{}').level || 1})
+              </Button>
+            )}
+          </div>
           
           <div className="mt-8 text-slate-500 text-sm space-y-1">
             <p>← → or A/D to move | SPACE to jump</p>
@@ -110,14 +130,34 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
           <h2 className="text-5xl font-black text-yellow-300 mb-2">LEVEL {level} COMPLETE!</h2>
           <p className="text-purple-200 text-xl mb-8">Score: {score.toLocaleString()}</p>
           
-          <Button
-            onClick={onNextLevel}
-            size="lg"
-            className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-black font-bold px-8 py-6 text-xl rounded-xl shadow-lg shadow-yellow-500/30"
-          >
-            <Sparkles className="w-6 h-6 mr-2" />
-            Next Level
-          </Button>
+          <div className="flex flex-col gap-3">
+            <Button
+              onClick={onNextLevel}
+              size="lg"
+              className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-black font-bold px-8 py-6 text-xl rounded-xl shadow-lg shadow-yellow-500/30"
+            >
+              <Sparkles className="w-6 h-6 mr-2" />
+              Next Level
+            </Button>
+            
+            <Button
+              onClick={() => {
+                const saveData = {
+                  level: level + 1,
+                  score,
+                  savedAt: new Date().toISOString()
+                };
+                localStorage.setItem('jeff_save_game', JSON.stringify(saveData));
+                alert('Game saved!');
+              }}
+              size="lg"
+              variant="outline"
+              className="border-green-500 text-green-400 hover:bg-green-500/20 font-bold px-6 py-3 rounded-xl"
+            >
+              <Save className="w-5 h-5 mr-2" />
+              Save Progress
+            </Button>
+          </div>
         </motion.div>
       </motion.div>
     );
