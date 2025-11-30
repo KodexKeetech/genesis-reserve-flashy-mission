@@ -241,6 +241,17 @@ export default function Game() {
       {/* Game Container */}
       <div className="relative w-full max-w-[800px]" style={{ aspectRatio: '800/600' }}>
         <div className="absolute inset-0">
+        {gameState === 'tutorial' && (
+          <div className="w-full h-full bg-slate-900 rounded-xl relative">
+            <GameOverlay
+              type="tutorial"
+              score={score}
+              level={level}
+              onStart={handleStartTutorial}
+              onNextLevel={handleSkipTutorial}
+            />
+          </div>
+        )}
         {gameState === 'playing' && (
             <GameEngine
               currentLevel={level}
