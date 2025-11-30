@@ -476,28 +476,43 @@ export function drawParticle(ctx, particle, time) {
 
 export function drawProjectileTrail(ctx, proj, cameraX, time) {
   const px = proj.x - cameraX;
-  const trailLength = 5;
+  const trailLength = 8;
   
   for (let i = 1; i <= trailLength; i++) {
-    const trailX = px - proj.velocityX * i * 0.5;
-    const alpha = (1 - i / trailLength) * 0.6;
+    const trailX = px - proj.velocityX * i * 0.4;
+    const trailY = (proj.y + 8) - (proj.velocityY || 0) * i * 0.4;
+    const alpha = (1 - i / trailLength) * 0.7;
     ctx.globalAlpha = alpha;
     
     let color = '#A855F7';
-    let size = 6 - i;
+    let size = 7 - i * 0.8;
     
-    if (proj.type === 'freeze') {
-      color = '#22D3EE';
+    if (proj.type === 'coin') {
+      color = i % 2 === 0 ? '#FBBF24' : '#FEF3C7';
+      size = 8 - i * 0.9;
+      ctx.shadowColor = '#FBBF24';
+      ctx.shadowBlur = 10 * alpha;
+    } else if (proj.type === 'freeze') {
+      color = i % 2 === 0 ? '#22D3EE' : '#A5F3FC';
+      ctx.shadowColor = '#22D3EE';
+      ctx.shadowBlur = 12 * alpha;
     } else if (proj.isPowerShot) {
-      color = '#F97316';
-      size = 10 - i * 1.5;
+      color = i % 2 === 0 ? '#F97316' : '#FBBF24';
+      size = 10 - i * 1.2;
+      ctx.shadowColor = '#F97316';
+      ctx.shadowBlur = 15 * alpha;
+    } else {
+      color = i % 2 === 0 ? '#A855F7' : '#C084FC';
+      ctx.shadowColor = '#A855F7';
+      ctx.shadowBlur = 10 * alpha;
     }
     
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.arc(trailX, proj.y + 8, Math.max(2, size), 0, Math.PI * 2);
+    ctx.arc(trailX, trailY, Math.max(2, size), 0, Math.PI * 2);
     ctx.fill();
   }
+  ctx.shadowBlur = 0;
   ctx.globalAlpha = 1;
 }
 
