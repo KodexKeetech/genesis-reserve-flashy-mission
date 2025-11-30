@@ -391,13 +391,6 @@ export function drawBoss(ctx, boss, bx, time, isFrozen, biomeKey) {
     ctx.stroke();
   }
 
-  // Boss name with shadow
-  ctx.fillStyle = '#000000';
-  ctx.font = 'bold 14px Arial';
-  ctx.textAlign = 'center';
-  ctx.fillText(boss.name, bx + boss.width / 2 + 1, barY - 7);
-  ctx.fillStyle = rage ? '#EF4444' : '#FFFFFF';
-  ctx.fillText(boss.name, bx + boss.width / 2, barY - 8);
   
   // Attack indicator
   if (boss.isAttacking) {
