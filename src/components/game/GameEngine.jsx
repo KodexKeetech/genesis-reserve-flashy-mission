@@ -644,8 +644,30 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     state.bossNoDamage = true;
     state.cameraX = 0;
 
-    // Set checkpoint at ~40% of level width (before middle)
-    state.checkpointX = Math.floor(state.levelWidth * 0.4);
+    // Find a safe checkpoint position on a ground platform around 40% of level
+    const targetX = Math.floor(state.levelWidth * 0.4);
+    let checkpointPlatform = null;
+    let bestDist = Infinity;
+    
+    for (const platform of state.platforms) {
+      // Only use ground or large normal platforms as checkpoints
+      if (platform.type === 'ground' || (platform.type === 'normal' && platform.width >= 80)) {
+        const platformCenterX = platform.x + platform.width / 2;
+        const dist = Math.abs(platformCenterX - targetX);
+        if (dist < bestDist) {
+          bestDist = dist;
+          checkpointPlatform = platform;
+        }
+      }
+    }
+    
+    if (checkpointPlatform) {
+      state.checkpointX = checkpointPlatform.x + checkpointPlatform.width / 2;
+      state.checkpointY = checkpointPlatform.y - 70; // Above the platform
+    } else {
+      state.checkpointX = 0; // No checkpoint if no safe platform found
+      state.checkpointY = 400;
+    }
     state.checkpointReached = false;
 
     // If resuming from checkpoint, restore position
