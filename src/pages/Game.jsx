@@ -65,6 +65,11 @@ export default function Game() {
   const [startingGun, setStartingGun] = useState(0);
   const [currentGun, setCurrentGun] = useState(0);
   
+  const [difficulty, setDifficulty] = useState(() => {
+    const saved = localStorage.getItem('jeff_difficulty');
+    return saved || 'medium';
+  });
+  
   const [gameSettings, setGameSettings] = useState(() => {
     const saved = localStorage.getItem('jeff_settings');
     const defaults = {
