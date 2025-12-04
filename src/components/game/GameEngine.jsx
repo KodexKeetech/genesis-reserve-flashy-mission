@@ -2160,8 +2160,243 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           }
           enemy.facingRight = dx > 0;
         }
+        // ARCANE SANCTUM ENEMIES - Unique movement patterns
+        else if (enemy.type === 'runeConstruct') {
+          // Rune Construct - Stomps toward player, stops to charge energy, then lunges
+          if (!enemy.chargeState) enemy.chargeState = 'walking';
+          if (!enemy.chargeTimer) enemy.chargeTimer = 0;
+          
+          const distToPlayer = Math.abs(enemy.x - player.x);
+          
+          if (enemy.chargeState === 'walking') {
+            // Walk slowly toward player
+            const dir = player.x > enemy.x ? 1 : -1;
+            enemy.velocityX = dir * 1.2;
+            enemy.x += enemy.velocityX;
+            enemy.facingRight = dir > 0;
+            
+            // Start charging when close
+            if (distToPlayer < 200) {
+              enemy.chargeState = 'charging';
+              enemy.chargeTimer = 60;
+              enemy.velocityX = 0;
+            }
+          } else if (enemy.chargeState === 'charging') {
+            // Stand still and charge (particles)
+            enemy.chargeTimer--;
+            if (Math.random() < 0.3) {
+              particles.push({
+                x: enemy.x + enemy.width / 2,
+                y: enemy.y + enemy.height / 2,
+                velocityX: (Math.random() - 0.5) * 2,
+                velocityY: -Math.random() * 3,
+                life: 20,
+                color: '#818CF8'
+              });
+            }
+            if (enemy.chargeTimer <= 0) {
+              enemy.chargeState = 'lunging';
+              enemy.chargeTimer = 20;
+              enemy.velocityX = (player.x > enemy.x ? 1 : -1) * 12;
+            }
+          } else if (enemy.chargeState === 'lunging') {
+            // Fast lunge attack
+            enemy.x += enemy.velocityX;
+            enemy.chargeTimer--;
+            if (enemy.chargeTimer <= 0) {
+              enemy.chargeState = 'cooldown';
+              enemy.chargeTimer = 40;
+              enemy.velocityX = 0;
+            }
+          } else if (enemy.chargeState === 'cooldown') {
+            enemy.chargeTimer--;
+            if (enemy.chargeTimer <= 0) {
+              enemy.chargeState = 'walking';
+            }
+          }
+        }
+        else if (enemy.type === 'phantomWisp') {
+          // Phantom Wisp - Floats erratically, phases through platforms, orbits around player
+          if (!enemy.orbitAngle) enemy.orbitAngle = Math.random() * Math.PI * 2;
+          if (!enemy.orbitDistance) enemy.orbitDistance = 120 + Math.random() * 60;
+          if (!enemy.phaseTimer) enemy.phaseTimer = 0;
+          
+          enemy.orbitAngle += 0.03 + (enemy.isEnraged ? 0.02 : 0);
+          enemy.phaseTimer++;
+          
+          // Orbit around player with wobbly movement
+          const targetX = player.x + Math.cos(enemy.orbitAngle) * enemy.orbitDistance;
+          const targetY = player.y - 50 + Math.sin(enemy.orbitAngle * 2) * 40;
+          
+          enemy.x += (targetX - enemy.x) * 0.04;
+          enemy.y += (targetY - enemy.y) * 0.04;
+          
+          // Add erratic jitter
+          enemy.x += Math.sin(enemy.phaseTimer * 0.2) * 2;
+          enemy.y += Math.cos(enemy.phaseTimer * 0.15) * 1.5;
+          
+          // Occasionally dash toward player
+          if (enemy.phaseTimer % 180 === 0) {
+            enemy.x += (player.x - enemy.x) * 0.3;
+            enemy.y += (player.y - enemy.y) * 0.3;
+            // Dash particles
+            for (let i = 0; i < 6; i++) {
+              particles.push({
+                x: enemy.x + enemy.width / 2,
+                y: enemy.y + enemy.height / 2,
+                velocityX: (Math.random() - 0.5) * 4,
+                velocityY: (Math.random() - 0.5) * 4,
+                life: 15,
+                color: '#A78BFA'
+              });
+            }
+          }
+          
+          enemy.facingRight = player.x > enemy.x;
+        }
+        else if (enemy.type === 'spellweaver') {
+          // Spellweaver - Keeps distance, teleports when player gets close, casts spells
+          if (!enemy.teleportCooldown) enemy.teleportCooldown = 0;
+          if (!enemy.castCooldown) enemy.castCooldown = 60;
+          
+          const distToPlayer = Math.sqrt(
+            Math.pow(player.x - enemy.x, 2) + Math.pow(player.y - enemy.y, 2)
+          );
+          
+          enemy.teleportCooldown--;
+          enemy.castCooldown--;
+          
+          // Teleport away if player gets too close
+          if (distToPlayer < 100 && enemy.teleportCooldown <= 0) {
+            const teleportDir = Math.random() > 0.5 ? 1 : -1;
+            const oldX = enemy.x;
+            const oldY = enemy.y;
+            enemy.x = player.x + teleportDir * (180 + Math.random() * 80);
+            enemy.x = Math.max(50, Math.min(enemy.x, state.levelWidth - 50));
+            enemy.y = enemy.originalY + (Math.random() - 0.5) * 60;
+            enemy.teleportCooldown = 90;
+            
+            // Teleport particles at both locations
+            for (let i = 0; i < 10; i++) {
+              particles.push({
+                x: oldX + enemy.width / 2,
+                y: oldY + enemy.height / 2,
+                velocityX: (Math.random() - 0.5) * 6,
+                velocityY: (Math.random() - 0.5) * 6,
+                life: 20,
+                color: '#6366F1'
+              });
+              particles.push({
+                x: enemy.x + enemy.width / 2,
+                y: enemy.y + enemy.height / 2,
+                velocityX: (Math.random() - 0.5) * 6,
+                velocityY: (Math.random() - 0.5) * 6,
+                life: 20,
+                color: '#818CF8'
+              });
+            }
+            soundManager.createOscillator('sine', 500, 0.1, 0.15);
+          }
+          
+          // Hover in place with gentle bob
+          enemy.y = enemy.originalY + Math.sin(time * 0.06) * 15;
+          
+          // Cast spell at player
+          if (enemy.castCooldown <= 0 && distToPlayer < 350) {
+            const dx = player.x - enemy.x;
+            const dy = player.y - enemy.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            
+            // Fire arcane bolt
+            state.enemyProjectiles.push({
+              x: enemy.x + enemy.width / 2,
+              y: enemy.y + 10,
+              velocityX: (dx / dist) * 5,
+              velocityY: (dy / dist) * 5,
+              width: 14,
+              height: 14,
+              life: 100,
+              type: 'arcaneBolt'
+            });
+            enemy.castCooldown = enemy.isEnraged ? 50 : 80;
+            soundManager.createOscillator('triangle', 400, 0.1, 0.2);
+          }
+          
+          enemy.facingRight = player.x > enemy.x;
+        }
+        else if (enemy.type === 'illusionist') {
+          // Illusionist - Creates illusion copies, swaps positions with them, confusing movement
+          if (!enemy.illusionPhase) enemy.illusionPhase = 0;
+          if (!enemy.swapCooldown) enemy.swapCooldown = 0;
+          if (!enemy.illusions) enemy.illusions = [];
+          
+          enemy.illusionPhase++;
+          enemy.swapCooldown--;
+          
+          // Flicker and phase movement
+          const flickerSpeed = enemy.isEnraged ? 0.15 : 0.1;
+          enemy.x += Math.sin(enemy.illusionPhase * flickerSpeed) * 3;
+          enemy.y = enemy.originalY + Math.cos(enemy.illusionPhase * 0.08) * 25;
+          
+          // Create/update illusion positions
+          if (enemy.illusionPhase % 120 === 0) {
+            enemy.illusions = [
+              { x: enemy.x - 60, y: enemy.y },
+              { x: enemy.x + 60, y: enemy.y }
+            ];
+          }
+          
+          // Randomly swap position with an illusion
+          if (enemy.swapCooldown <= 0 && enemy.illusions.length > 0 && Math.random() < 0.02) {
+            const swapIndex = Math.floor(Math.random() * enemy.illusions.length);
+            const oldX = enemy.x;
+            const oldY = enemy.y;
+            enemy.x = enemy.illusions[swapIndex].x;
+            enemy.y = enemy.illusions[swapIndex].y;
+            enemy.illusions[swapIndex].x = oldX;
+            enemy.illusions[swapIndex].y = oldY;
+            enemy.originalY = enemy.y;
+            enemy.swapCooldown = 60;
+            
+            // Swap particles
+            for (let i = 0; i < 8; i++) {
+              particles.push({
+                x: enemy.x + enemy.width / 2,
+                y: enemy.y + enemy.height / 2,
+                velocityX: (Math.random() - 0.5) * 5,
+                velocityY: (Math.random() - 0.5) * 5,
+                life: 18,
+                color: '#A5B4FC'
+              });
+            }
+          }
+          
+          // Move toward player slowly
+          const moveDir = player.x > enemy.x ? 1 : -1;
+          enemy.x += moveDir * 0.8;
+          enemy.facingRight = moveDir > 0;
+          
+          // Attack with confusion bolt
+          if (enemy.illusionPhase % 150 === 0) {
+            const dx = player.x - enemy.x;
+            const dy = player.y - enemy.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 300) {
+              state.enemyProjectiles.push({
+                x: enemy.x + enemy.width / 2,
+                y: enemy.y + 20,
+                velocityX: (dx / dist) * 4,
+                velocityY: (dy / dist) * 4,
+                width: 16,
+                height: 16,
+                life: 90,
+                type: 'illusionBolt'
+              });
+            }
+          }
+        }
         // Type-specific AI
-        else if (['shooter', 'frostShooter'].includes(enemy.type)) {
+        else if (['shooter', 'frostShooter', 'prismShooter'].includes(enemy.type)) {
           // Shooter - moves slowly and fires projectiles at player
           if (!enemy.waitingForSignal) {
             enemy.x += enemy.velocityX;
@@ -2247,35 +2482,30 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             enemy.bombCooldown = bombRate;
             soundManager.createOscillator('sine', 200, 0.15, 0.2);
           }
-        } else if (enemy.type === 'voidWalker') {
-          // Void walker - teleports and attacks
-          enemy.x += enemy.velocityX;
+        } else if (enemy.type === 'voidWalker' || enemy.type === 'mirrorPhantom' || enemy.type === 'sandWraith') {
+          // Void walker variants - teleports and attacks with different styles
+          if (!enemy.teleportTimer) enemy.teleportTimer = 0;
+          enemy.teleportTimer++;
           enemy.shootCooldown--;
+          
+          // Ghostly floating movement
+          enemy.y = enemy.originalY + Math.sin(time * 0.07 + enemy.x * 0.01) * 20;
+          
+          // Slowly drift toward player
+          const driftDir = player.x > enemy.x ? 1 : -1;
+          enemy.x += driftDir * 0.5;
           
           if (enemy.shootCooldown <= 0) {
             // Teleport near player
             const teleportDir = Math.random() > 0.5 ? 1 : -1;
+            const oldX = enemy.x;
             enemy.x = player.x + teleportDir * (80 + Math.random() * 40);
             enemy.x = Math.max(50, Math.min(enemy.x, state.levelWidth - 50));
             
-            // Attack after teleport
-            const dirX = player.x > enemy.x ? 1 : -1;
-            state.enemyProjectiles.push({
-              x: enemy.x + enemy.width / 2,
-              y: enemy.y + enemy.height / 2,
-              velocityX: dirX * 6,
-              velocityY: 0,
-              width: 16,
-              height: 16,
-              life: 80,
-              type: 'void'
-            });
-            enemy.shootCooldown = enemy.isEnraged ? 60 : 100;
-            
-            // Teleport particles
-            for (let i = 0; i < 10; i++) {
+            // Teleport particles at old location
+            for (let i = 0; i < 8; i++) {
               particles.push({
-                x: enemy.x + enemy.width / 2,
+                x: oldX + enemy.width / 2,
                 y: enemy.y + enemy.height / 2,
                 velocityX: (Math.random() - 0.5) * 5,
                 velocityY: (Math.random() - 0.5) * 5,
@@ -2283,12 +2513,71 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                 color: '#A855F7'
               });
             }
+            
+            // Attack after teleport - aimed at player
+            const dx = player.x - enemy.x;
+            const dy = player.y - enemy.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            state.enemyProjectiles.push({
+              x: enemy.x + enemy.width / 2,
+              y: enemy.y + enemy.height / 2,
+              velocityX: (dx / dist) * 6,
+              velocityY: (dy / dist) * 6,
+              width: 16,
+              height: 16,
+              life: 80,
+              type: 'void'
+            });
+            enemy.shootCooldown = enemy.isEnraged ? 60 : 100;
+            
+            // Teleport particles at new location
+            for (let i = 0; i < 10; i++) {
+              particles.push({
+                x: enemy.x + enemy.width / 2,
+                y: enemy.y + enemy.height / 2,
+                velocityX: (Math.random() - 0.5) * 5,
+                velocityY: (Math.random() - 0.5) * 5,
+                life: 20,
+                color: '#C084FC'
+              });
+            }
           }
+          enemy.facingRight = player.x > enemy.x;
         } else {
-          // Default movement for flying enemies
+          // Default movement for flying enemies - more dynamic patterns
           enemy.x += enemy.velocityX;
-          if (['bat', 'lavaBat', 'snowOwl', 'shadowBat'].includes(enemy.type)) {
-            enemy.y = enemy.originalY + Math.sin(time * 0.05 + enemy.x * 0.01) * 30;
+          if (['bat', 'lavaBat', 'snowOwl', 'shadowBat', 'gemBat', 'cloudSprite'].includes(enemy.type)) {
+            // Different flying patterns per type
+            if (enemy.type === 'lavaBat') {
+              // Erratic fire bat - swoops down aggressively
+              enemy.y = enemy.originalY + Math.sin(time * 0.08 + enemy.x * 0.02) * 40;
+              if (Math.abs(player.x - enemy.x) < 100) {
+                enemy.y += 30; // Swoop down near player
+              }
+            } else if (enemy.type === 'snowOwl') {
+              // Graceful owl - wide figure-8 pattern
+              enemy.y = enemy.originalY + Math.sin(time * 0.04) * 35;
+              enemy.x += Math.cos(time * 0.03) * 1.5;
+            } else if (enemy.type === 'shadowBat') {
+              // Shadow bat - quick darting movements
+              enemy.y = enemy.originalY + Math.sin(time * 0.1 + enemy.x * 0.03) * 25;
+              if (Math.random() < 0.02) {
+                enemy.x += (Math.random() - 0.5) * 40; // Random dart
+              }
+            } else if (enemy.type === 'gemBat') {
+              // Gem bat - circular spiraling
+              if (!enemy.spiralAngle) enemy.spiralAngle = Math.random() * Math.PI * 2;
+              enemy.spiralAngle += 0.05;
+              enemy.y = enemy.originalY + Math.sin(enemy.spiralAngle) * 30;
+              enemy.x += Math.cos(enemy.spiralAngle) * 0.8;
+            } else if (enemy.type === 'cloudSprite') {
+              // Cloud sprite - floaty drifting
+              enemy.y = enemy.originalY + Math.sin(time * 0.03 + enemy.x * 0.005) * 45;
+              enemy.x += Math.sin(time * 0.02) * 0.5;
+            } else {
+              // Regular bat
+              enemy.y = enemy.originalY + Math.sin(time * 0.05 + enemy.x * 0.01) * 30;
+            }
           }
         }
         
@@ -3841,6 +4130,27 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.beginPath();
           ctx.arc(px, proj.y, 3, 0, Math.PI * 2);
           ctx.fill();
+          ctx.shadowBlur = 0;
+          continue;
+        } else if (proj.type === 'arcaneBolt') {
+          // Draw arcane bolt from spellweaver
+          ctx.save();
+          ctx.translate(px, proj.y);
+          ctx.rotate(time * 0.3);
+          ctx.fillStyle = '#6366F1';
+          ctx.shadowColor = '#818CF8';
+          ctx.shadowBlur = 12;
+          // Star shape
+          ctx.beginPath();
+          for (let i = 0; i < 5; i++) {
+            const angle = (i / 5) * Math.PI * 2 - Math.PI / 2;
+            const r = i % 2 === 0 ? 8 : 4;
+            if (i === 0) ctx.moveTo(Math.cos(angle) * r, Math.sin(angle) * r);
+            else ctx.lineTo(Math.cos(angle) * r, Math.sin(angle) * r);
+          }
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
           ctx.shadowBlur = 0;
           continue;
         }
