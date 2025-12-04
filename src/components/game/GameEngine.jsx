@@ -140,7 +140,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         // Hidden level generation
         if (hiddenLevelId && HIDDEN_LEVELS[hiddenLevelId]) {
           const hiddenLevel = HIDDEN_LEVELS[hiddenLevelId];
-          const biome = getBiomeForLevel(hiddenLevel.afterLevel);
+          const biome = getBiomeForLevel(hiddenLevel.afterLevel, hiddenLevelId);
           state.biome = biome;
           
           const difficultyMult = hiddenLevel.difficulty;
