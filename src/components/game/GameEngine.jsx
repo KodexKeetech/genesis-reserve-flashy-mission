@@ -4135,7 +4135,9 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
               soundManager.playShieldHit();
             } else {
               soundManager.playDamage();
-              player.health -= 25;
+              const bossDiffSettingsHit = getDifficultySettings(currentLevel, difficulty);
+              const bossDamage = Math.floor(25 * bossDiffSettingsHit.playerDamageTakenMult);
+              player.health -= bossDamage;
               player.invincible = true;
               player.invincibleTimer = 60;
               player.velocityY = -10;
