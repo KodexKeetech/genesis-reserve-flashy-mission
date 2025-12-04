@@ -3229,7 +3229,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         }
         // Default movement for flying enemies - more dynamic patterns
         else if (!enemy.patrolPath) {
-          enemy.x += enemy.velocityX;
+          enemy.x += enemy.velocityX * timeSlowMult;
         }
         if (['bat', 'lavaBat', 'snowOwl', 'shadowBat', 'gemBat', 'cloudSprite'].includes(enemy.type) && !enemy.behavior) {
             // Different flying patterns per type
