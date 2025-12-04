@@ -5513,6 +5513,58 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         ctx.shadowBlur = 0;
       }
       
+      // Draw shadow clone if active
+      if (player.specialAbilities.shadowClone.active) {
+        const cloneX = player.specialAbilities.shadowClone.cloneX - state.cameraX;
+        const cloneY = player.specialAbilities.shadowClone.cloneY;
+        const flicker = Math.sin(time * 0.2) * 0.2 + 0.5;
+        
+        ctx.globalAlpha = flicker;
+        ctx.fillStyle = '#6366F1';
+        ctx.shadowColor = '#818CF8';
+        ctx.shadowBlur = 20;
+        
+        // Clone body (simplified Jeff shape)
+        ctx.beginPath();
+        ctx.roundRect(cloneX + 10, cloneY + 10, 28, 45, 4);
+        ctx.fill();
+        
+        // Clone head
+        ctx.beginPath();
+        ctx.roundRect(cloneX + 12, cloneY - 5, 24, 20, 4);
+        ctx.fill();
+        
+        // Clone hat
+        ctx.beginPath();
+        ctx.moveTo(cloneX + 24, cloneY - 25);
+        ctx.lineTo(cloneX + 10, cloneY - 5);
+        ctx.lineTo(cloneX + 38, cloneY - 5);
+        ctx.closePath();
+        ctx.fill();
+        
+        ctx.globalAlpha = 1;
+        ctx.shadowBlur = 0;
+      }
+      
+      // Draw time slow effect overlay
+      if (player.specialAbilities.timeSlow.active) {
+        ctx.fillStyle = `rgba(251, 191, 36, ${0.05 + Math.sin(time * 0.1) * 0.02})`;
+        ctx.fillRect(0, 0, 800, 600);
+        
+        // Clock-like indicators at edges
+        ctx.strokeStyle = `rgba(251, 191, 36, ${0.3 + Math.sin(time * 0.15) * 0.1})`;
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 12; i++) {
+          const angle = (i / 12) * Math.PI * 2;
+          const r1 = 380;
+          const r2 = 395;
+          ctx.beginPath();
+          ctx.moveTo(400 + Math.cos(angle) * r1, 300 + Math.sin(angle) * r1);
+          ctx.lineTo(400 + Math.cos(angle) * r2, 300 + Math.sin(angle) * r2);
+          ctx.stroke();
+        }
+      }
+      
       // Draw hover effect
       if (player.specialAbilities.hover.active) {
         ctx.strokeStyle = `rgba(34, 211, 238, ${0.5 + Math.sin(time * 0.2) * 0.2})`;
