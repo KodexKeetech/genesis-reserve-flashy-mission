@@ -2406,6 +2406,44 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       for (let i = state.enemyProjectiles.length - 1; i >= 0; i--) {
         const proj = state.enemyProjectiles[i];
         
+        // Arcane missile AI - track player (slower turn)
+        if (proj.type === 'arcaneMissile') {
+          const dx = player.x - proj.x;
+          const dy = player.y - proj.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist > 0) {
+            const targetVX = (dx / dist) * 4;
+            const targetVY = (dy / dist) * 4;
+            proj.velocityX += (targetVX - proj.velocityX) * (proj.turnSpeed || 0.04);
+            proj.velocityY += (targetVY - proj.velocityY) * (proj.turnSpeed || 0.04);
+          }
+        }
+        
+        // Phantom illusion AI - chase and attack
+        if (proj.type === 'phantomIllusion') {
+          const dx = player.x - proj.x;
+          const dy = player.y - proj.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          proj.velocityX = (dx / dist) * 2;
+          proj.velocityY = (dy / dist) * 2;
+          
+          // Shoot at player periodically
+          proj.illusionTimer = (proj.illusionTimer || 0) + 1;
+          if (proj.illusionTimer >= 60) {
+            proj.illusionTimer = 0;
+            state.enemyProjectiles.push({
+              x: proj.x,
+              y: proj.y + 20,
+              velocityX: (dx / dist) * 5,
+              velocityY: (dy / dist) * 5,
+              width: 12,
+              height: 12,
+              life: 80,
+              type: 'illusionBolt'
+            });
+          }
+        }
+        
         // Homing missile AI - track player
         if (proj.type === 'homingMissile') {
           const dx = player.x - proj.x;
@@ -2999,6 +3037,97 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                 }
               }
               soundManager.createOscillator('sine', 600, 0.15, 0.3);
+              
+            } else if (boss.type === 'arcanist') {
+              // The Arcanist - teleporting mage boss with summons and illusions
+              const enraged = boss.health < boss.maxHealth / 2;
+              
+              if (boss.attackPattern === 0) {
+                // ARCANE MISSILES - Homing magic bolts
+                const missileCount = enraged ? 6 : 4;
+                for (let i = 0; i < missileCount; i++) {
+                  const angle = (i / missileCount) * Math.PI * 2;
+                  state.enemyProjectiles.push({
+                    x: boss.x + boss.width / 2,
+                    y: boss.y + 50,
+                    velocityX: Math.cos(angle) * 3,
+                    velocityY: Math.sin(angle) * 3,
+                    width: 16,
+                    height: 16,
+                    life: 180,
+                    type: 'arcaneMissile',
+                    targetX: player.x,
+                    targetY: player.y,
+                    turnSpeed: 0.04
+                  });
+                }
+                soundManager.createOscillator('sine', 500, 0.2, 0.3);
+                
+              } else if (boss.attackPattern === 1) {
+                // TELEPORT + RUNE TRAP - Teleport and create rune hazards
+                const teleportDir = player.x > boss.x ? -1 : 1;
+                const oldX = boss.x;
+                boss.x = player.x + teleportDir * 150;
+                boss.x = Math.max(350, Math.min(boss.x, 750));
+                
+                // Teleport particles at old position
+                for (let i = 0; i < 15; i++) {
+                  particles.push({
+                    x: oldX + boss.width / 2,
+                    y: boss.y + boss.height / 2,
+                    velocityX: (Math.random() - 0.5) * 8,
+                    velocityY: (Math.random() - 0.5) * 8,
+                    life: 25,
+                    color: '#8B5CF6'
+                  });
+                }
+                // Teleport particles at new position
+                for (let i = 0; i < 15; i++) {
+                  particles.push({
+                    x: boss.x + boss.width / 2,
+                    y: boss.y + boss.height / 2,
+                    velocityX: (Math.random() - 0.5) * 8,
+                    velocityY: (Math.random() - 0.5) * 8,
+                    life: 25,
+                    color: '#A78BFA'
+                  });
+                }
+                
+                // Create rune traps where player is standing
+                const trapCount = enraged ? 3 : 2;
+                for (let i = 0; i < trapCount; i++) {
+                  state.hazards.push({
+                    x: player.x - 30 + (i - 1) * 60,
+                    y: 470,
+                    width: 60,
+                    height: 30,
+                    life: 200,
+                    damage: 20,
+                    type: 'arcaneRune'
+                  });
+                }
+                soundManager.createOscillator('sawtooth', 200, 0.25, 0.2);
+                
+              } else {
+                // SUMMON ILLUSIONS - Create phantom copies that attack
+                const summonCount = enraged ? 3 : 2;
+                for (let i = 0; i < summonCount; i++) {
+                  state.enemyProjectiles.push({
+                    x: boss.x + boss.width / 2 + (i - 1) * 80,
+                    y: boss.y + 30,
+                    velocityX: 0,
+                    velocityY: 0,
+                    width: 35,
+                    height: 50,
+                    life: 240,
+                    type: 'phantomIllusion',
+                    illusionTimer: 0,
+                    targetX: player.x,
+                    targetY: player.y
+                  });
+                }
+                soundManager.createOscillator('triangle', 350, 0.2, 0.4);
+              }
               
             } else if (boss.type === 'omegaPrime') {
               // Omega Prime - Ultimate robot boss with 4 attack patterns
@@ -3648,6 +3777,69 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.fillStyle = '#FCA5A5';
           ctx.beginPath();
           ctx.arc(px, proj.y, 2, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+          continue;
+        } else if (proj.type === 'arcaneMissile') {
+          // Draw arcane homing missile
+          ctx.fillStyle = '#8B5CF6';
+          ctx.shadowColor = '#A78BFA';
+          ctx.shadowBlur = 15 + Math.sin(time * 0.4) * 5;
+          ctx.beginPath();
+          ctx.arc(px, proj.y, 8, 0, Math.PI * 2);
+          ctx.fill();
+          // Inner glow
+          ctx.fillStyle = '#C4B5FD';
+          ctx.beginPath();
+          ctx.arc(px, proj.y, 4, 0, Math.PI * 2);
+          ctx.fill();
+          // Trailing sparkles
+          ctx.fillStyle = '#E0E7FF';
+          for (let i = 0; i < 3; i++) {
+            const trailX = px - proj.velocityX * (i + 1) * 2;
+            const trailY = proj.y - proj.velocityY * (i + 1) * 2;
+            ctx.beginPath();
+            ctx.arc(trailX, trailY, 2 - i * 0.5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.shadowBlur = 0;
+          continue;
+        } else if (proj.type === 'phantomIllusion') {
+          // Draw phantom illusion enemy
+          const flicker = Math.sin(time * 0.3) > 0 ? 0.8 : 0.5;
+          ctx.globalAlpha = flicker;
+          ctx.fillStyle = '#6366F1';
+          ctx.shadowColor = '#818CF8';
+          ctx.shadowBlur = 20;
+          // Body
+          ctx.beginPath();
+          ctx.ellipse(px, proj.y + 20, 15, 25, 0, 0, Math.PI * 2);
+          ctx.fill();
+          // Face
+          ctx.fillStyle = '#E0E7FF';
+          ctx.beginPath();
+          ctx.ellipse(px, proj.y + 8, 10, 12, 0, 0, Math.PI * 2);
+          ctx.fill();
+          // Eyes
+          ctx.fillStyle = '#1E1B4B';
+          ctx.beginPath();
+          ctx.ellipse(px - 4, proj.y + 6, 3, 4, 0, 0, Math.PI * 2);
+          ctx.ellipse(px + 4, proj.y + 6, 3, 4, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.globalAlpha = 1;
+          ctx.shadowBlur = 0;
+          continue;
+        } else if (proj.type === 'illusionBolt') {
+          // Draw illusion bolt
+          ctx.fillStyle = '#A78BFA';
+          ctx.shadowColor = '#8B5CF6';
+          ctx.shadowBlur = 10;
+          ctx.beginPath();
+          ctx.arc(px, proj.y, 6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#E0E7FF';
+          ctx.beginPath();
+          ctx.arc(px, proj.y, 3, 0, Math.PI * 2);
           ctx.fill();
           ctx.shadowBlur = 0;
           continue;
