@@ -3212,7 +3212,9 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             soundManager.playShieldHit();
           } else {
             soundManager.playDamage();
-            player.health -= 15;
+            const projDiffSettings = getDifficultySettings(currentLevel, difficulty);
+            const projDamage = Math.floor(15 * projDiffSettings.playerDamageTakenMult);
+            player.health -= projDamage;
             player.invincible = true;
             player.invincibleTimer = 40;
             onHealthChange(player.health);
