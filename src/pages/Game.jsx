@@ -168,7 +168,12 @@ export default function Game() {
           });
         }
         if (user.abilityUpgrades) {
-          setAbilityUpgrades(user.abilityUpgrades);
+          setAbilityUpgrades({
+            aoeBlastPower: 0, aoeBlastRadius: 0, reflectDuration: 0, hoverDuration: 0,
+            timeSlowDuration: 0, chainLightningDamage: 0, chainLightningChains: 0,
+            shadowCloneDuration: 0, magneticPullRadius: 0, teleportDistance: 0, teleportCooldown: 0,
+            ...user.abilityUpgrades
+          });
         }
         if (user.arcaneCrystals) {
           setArcaneCrystals(user.arcaneCrystals);
