@@ -4560,6 +4560,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         onGameOver();
         return;
       }
+      } // end of fixed timestep update loop
       
       // RENDER - Use biome-specific background
       if (state.biome) {
@@ -5747,8 +5748,6 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.shadowBlur = 0;
         }
       }
-      
-      } // end of fixed timestep while loop
       
       animationId = requestAnimationFrame(gameLoop);
     };
