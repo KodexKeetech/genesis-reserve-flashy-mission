@@ -1080,7 +1080,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     }
     
     // Generate collectibles spread across level
-    const collectibleCount = 12 + level * 2;
+    const collectibleCountSettings = getDifficultySettings(level, difficulty);
+    const collectibleCount = collectibleCountSettings.collectibleCount;
     for (let i = 0; i < collectibleCount; i++) {
       const collectX = 150 + (i * (state.levelWidth - 300) / collectibleCount);
       state.collectibles.push({
