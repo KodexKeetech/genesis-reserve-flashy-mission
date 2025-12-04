@@ -59,6 +59,18 @@ export function drawEnemy(ctx, enemy, ex, time, isFrozen, biomeKey) {
     case 'hackerBot':
       drawDrone(ctx, enemy, ex, time, isFrozen);
       break;
+    case 'runeConstruct':
+      drawRuneConstruct(ctx, enemy, ex, time, isFrozen);
+      break;
+    case 'phantomWisp':
+      drawPhantomWisp(ctx, enemy, ex, time, isFrozen);
+      break;
+    case 'spellweaver':
+      drawSpellweaver(ctx, enemy, ex, time, isFrozen);
+      break;
+    case 'illusionist':
+      drawIllusionist(ctx, enemy, ex, time, isFrozen);
+      break;
     default:
       drawSlime(ctx, enemy, ex, time, isFrozen);
   }
@@ -446,6 +458,171 @@ function drawVoidWalker(ctx, enemy, ex, time, isFrozen) {
   ctx.fill();
 }
 
+function drawRuneConstruct(ctx, enemy, ex, time, isFrozen) {
+  const hover = isFrozen ? 0 : Math.sin(time * 0.12) * 3;
+  const runeGlow = Math.sin(time * 0.15) * 0.3 + 0.7;
+  
+  // Stone body
+  ctx.fillStyle = isFrozen ? '#67E8F9' : '#4338CA';
+  ctx.shadowColor = isFrozen ? '#67E8F9' : '#818CF8';
+  ctx.shadowBlur = 15;
+  ctx.beginPath();
+  ctx.roundRect(ex + 5, enemy.y + 10 + hover, 30, 35, 5);
+  ctx.fill();
+  
+  // Glowing runes on body
+  ctx.strokeStyle = isFrozen ? '#A5F3FC' : `rgba(165, 180, 252, ${runeGlow})`;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(ex + 12, enemy.y + 18 + hover);
+  ctx.lineTo(ex + 20, enemy.y + 25 + hover);
+  ctx.lineTo(ex + 28, enemy.y + 18 + hover);
+  ctx.moveTo(ex + 20, enemy.y + 25 + hover);
+  ctx.lineTo(ex + 20, enemy.y + 38 + hover);
+  ctx.stroke();
+  
+  // Head with eye
+  ctx.fillStyle = isFrozen ? '#A5F3FC' : '#3730A3';
+  ctx.beginPath();
+  ctx.arc(ex + 20, enemy.y + 8 + hover, 10, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Single glowing eye
+  ctx.fillStyle = isFrozen ? '#fff' : '#A5B4FC';
+  ctx.shadowBlur = 12;
+  ctx.beginPath();
+  ctx.arc(ex + 20, enemy.y + 8 + hover, 5, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawPhantomWisp(ctx, enemy, ex, time, isFrozen) {
+  const float = isFrozen ? 0 : Math.sin(time * 0.2) * 8;
+  const pulse = Math.sin(time * 0.15) * 0.4 + 0.6;
+  
+  // Ethereal trail
+  ctx.fillStyle = isFrozen ? 'rgba(103, 232, 249, 0.3)' : `rgba(139, 92, 246, ${pulse * 0.3})`;
+  ctx.beginPath();
+  ctx.ellipse(ex + 20, enemy.y + 30 + float, 12, 20, 0, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Core orb
+  ctx.fillStyle = isFrozen ? '#67E8F9' : `rgba(167, 139, 250, ${pulse})`;
+  ctx.shadowColor = isFrozen ? '#67E8F9' : '#8B5CF6';
+  ctx.shadowBlur = 20;
+  ctx.beginPath();
+  ctx.arc(ex + 20, enemy.y + 18 + float, 12, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Inner glow
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.arc(ex + 18, enemy.y + 15 + float, 4, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Orbiting particles
+  for (let i = 0; i < 3; i++) {
+    const angle = time * 0.1 + i * Math.PI * 2 / 3;
+    const orbX = ex + 20 + Math.cos(angle) * 18;
+    const orbY = enemy.y + 18 + float + Math.sin(angle) * 10;
+    ctx.fillStyle = isFrozen ? '#A5F3FC' : '#C4B5FD';
+    ctx.beginPath();
+    ctx.arc(orbX, orbY, 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawSpellweaver(ctx, enemy, ex, time, isFrozen) {
+  const sway = isFrozen ? 0 : Math.sin(time * 0.08) * 3;
+  
+  // Robed body
+  ctx.fillStyle = isFrozen ? '#67E8F9' : '#312E81';
+  ctx.shadowColor = isFrozen ? '#67E8F9' : '#6366F1';
+  ctx.shadowBlur = 12;
+  ctx.beginPath();
+  ctx.moveTo(ex + 20, enemy.y + 15 + sway);
+  ctx.lineTo(ex + 35, enemy.y + 45);
+  ctx.lineTo(ex + 5, enemy.y + 45);
+  ctx.closePath();
+  ctx.fill();
+  
+  // Hood
+  ctx.fillStyle = isFrozen ? '#A5F3FC' : '#1E1B4B';
+  ctx.beginPath();
+  ctx.arc(ex + 20, enemy.y + 12 + sway, 12, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Glowing eyes
+  ctx.fillStyle = isFrozen ? '#fff' : '#A78BFA';
+  ctx.shadowBlur = 10;
+  ctx.beginPath();
+  ctx.arc(ex + 15, enemy.y + 12 + sway, 3, 0, Math.PI * 2);
+  ctx.arc(ex + 25, enemy.y + 12 + sway, 3, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Staff
+  ctx.strokeStyle = isFrozen ? '#A5F3FC' : '#818CF8';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(ex + 35, enemy.y + 5 + sway);
+  ctx.lineTo(ex + 35, enemy.y + 42);
+  ctx.stroke();
+  
+  // Staff orb
+  ctx.fillStyle = isFrozen ? '#67E8F9' : '#C4B5FD';
+  ctx.shadowBlur = 15;
+  ctx.beginPath();
+  ctx.arc(ex + 35, enemy.y + 3 + sway, 6, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawIllusionist(ctx, enemy, ex, time, isFrozen) {
+  const phase = Math.sin(time * 0.12);
+  const flicker = Math.sin(time * 0.3) > 0 ? 1 : 0.6;
+  
+  // Create illusion copies (semi-transparent)
+  ctx.globalAlpha = isFrozen ? 0.8 : 0.3;
+  for (let i = -1; i <= 1; i += 2) {
+    ctx.fillStyle = isFrozen ? '#67E8F9' : '#6366F1';
+    ctx.beginPath();
+    ctx.ellipse(ex + 20 + i * 25, enemy.y + 22, 10, 15, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = isFrozen ? 0.8 : flicker;
+  
+  // Main body - ethereal humanoid
+  ctx.fillStyle = isFrozen ? '#67E8F9' : '#4F46E5';
+  ctx.shadowColor = isFrozen ? '#67E8F9' : '#818CF8';
+  ctx.shadowBlur = 20;
+  ctx.beginPath();
+  ctx.ellipse(ex + 20, enemy.y + 22, 12, 18, 0, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Mask face
+  ctx.fillStyle = isFrozen ? '#A5F3FC' : '#E0E7FF';
+  ctx.beginPath();
+  ctx.ellipse(ex + 20, enemy.y + 12, 8, 10, 0, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Empty eye sockets (unsettling)
+  ctx.fillStyle = isFrozen ? '#fff' : '#1E1B4B';
+  ctx.beginPath();
+  ctx.ellipse(ex + 16, enemy.y + 10, 3, 4, 0, 0, Math.PI * 2);
+  ctx.ellipse(ex + 24, enemy.y + 10, 3, 4, 0, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Glowing pupils that appear/disappear
+  if (phase > 0) {
+    ctx.fillStyle = '#A78BFA';
+    ctx.shadowBlur = 8;
+    ctx.beginPath();
+    ctx.arc(ex + 16, enemy.y + 10, 1.5, 0, Math.PI * 2);
+    ctx.arc(ex + 24, enemy.y + 10, 1.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  
+  ctx.globalAlpha = 1;
+}
+
 export function drawBoss(ctx, boss, bx, time, isFrozen, biomeKey) {
   ctx.save();
   
@@ -493,6 +670,9 @@ export function drawBoss(ctx, boss, bx, time, isFrozen, biomeKey) {
       break;
     case 'omegaPrime':
       drawOmegaPrime(ctx, boss, bx, time, isFrozen, rage, pulse);
+      break;
+    case 'arcanist':
+      drawArcanist(ctx, boss, bx, time, isFrozen, rage, pulse);
       break;
     default:
       // Fallback - draw a generic boss shape
@@ -1091,6 +1271,133 @@ function drawOmegaPrime(ctx, boss, bx, time, isFrozen, rage, pulse) {
     ctx.beginPath();
     ctx.moveTo(bx + 50, boss.y + 55);
     ctx.lineTo(bx + 50, boss.y + 150);
+    ctx.stroke();
+  }
+}
+
+function drawArcanist(ctx, boss, bx, time, isFrozen, rage, pulse) {
+  const float = Math.sin(time * 0.05) * 6;
+  const runeRotate = time * 0.03;
+  
+  // Floating arcane circle underneath
+  ctx.save();
+  ctx.translate(bx + 50, boss.y + 90);
+  ctx.rotate(runeRotate);
+  ctx.strokeStyle = isFrozen ? '#67E8F9' : `rgba(139, 92, 246, ${pulse})`;
+  ctx.lineWidth = 3;
+  ctx.shadowColor = '#8B5CF6';
+  ctx.shadowBlur = 20;
+  ctx.beginPath();
+  ctx.arc(0, 0, 45, 0, Math.PI * 2);
+  ctx.stroke();
+  // Inner rune symbols
+  for (let i = 0; i < 6; i++) {
+    const angle = i * Math.PI / 3;
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(angle) * 30, Math.sin(angle) * 30);
+    ctx.lineTo(Math.cos(angle) * 45, Math.sin(angle) * 45);
+    ctx.stroke();
+  }
+  ctx.restore();
+  
+  // Ethereal robed body
+  ctx.fillStyle = isFrozen ? '#67E8F9' : '#1E1B4B';
+  ctx.shadowColor = isFrozen ? '#67E8F9' : '#6366F1';
+  ctx.shadowBlur = 25;
+  ctx.beginPath();
+  ctx.moveTo(bx + 50, boss.y + 20 + float);
+  ctx.bezierCurveTo(bx + 90, boss.y + 40 + float, bx + 85, boss.y + 95, bx + 75, boss.y + 100);
+  ctx.lineTo(bx + 25, boss.y + 100);
+  ctx.bezierCurveTo(bx + 15, boss.y + 95, bx + 10, boss.y + 40 + float, bx + 50, boss.y + 20 + float);
+  ctx.fill();
+  
+  // Inner robe glow
+  ctx.fillStyle = isFrozen ? '#A5F3FC' : `rgba(99, 102, 241, ${pulse * 0.5})`;
+  ctx.beginPath();
+  ctx.ellipse(bx + 50, boss.y + 60 + float, 20, 30, 0, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Hood
+  ctx.fillStyle = isFrozen ? '#A5F3FC' : '#312E81';
+  ctx.beginPath();
+  ctx.arc(bx + 50, boss.y + 25 + float, 25, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Face void (mysterious darkness)
+  ctx.fillStyle = '#0F0D1A';
+  ctx.beginPath();
+  ctx.ellipse(bx + 50, boss.y + 28 + float, 15, 18, 0, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Glowing eyes
+  ctx.fillStyle = isFrozen ? '#fff' : (rage ? '#EF4444' : '#A78BFA');
+  ctx.shadowColor = ctx.fillStyle;
+  ctx.shadowBlur = 20;
+  ctx.beginPath();
+  ctx.arc(bx + 43, boss.y + 25 + float, 5, 0, Math.PI * 2);
+  ctx.arc(bx + 57, boss.y + 25 + float, 5, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Floating hands with magic
+  const handFloat = Math.sin(time * 0.08) * 5;
+  
+  // Left hand with orb
+  ctx.fillStyle = isFrozen ? '#A5F3FC' : '#4338CA';
+  ctx.beginPath();
+  ctx.arc(bx + 10, boss.y + 55 + float + handFloat, 12, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = isFrozen ? '#67E8F9' : '#C4B5FD';
+  ctx.shadowBlur = 15;
+  ctx.beginPath();
+  ctx.arc(bx + 10, boss.y + 55 + float + handFloat, 8, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Right hand with orb
+  ctx.fillStyle = isFrozen ? '#A5F3FC' : '#4338CA';
+  ctx.shadowBlur = 0;
+  ctx.beginPath();
+  ctx.arc(bx + 90, boss.y + 55 + float - handFloat, 12, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = isFrozen ? '#67E8F9' : '#C4B5FD';
+  ctx.shadowBlur = 15;
+  ctx.beginPath();
+  ctx.arc(bx + 90, boss.y + 55 + float - handFloat, 8, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Crown of floating runes
+  for (let i = 0; i < 5; i++) {
+    const crownAngle = -runeRotate * 2 + i * Math.PI * 2 / 5;
+    const crownX = bx + 50 + Math.cos(crownAngle) * 30;
+    const crownY = boss.y + 10 + float + Math.sin(crownAngle) * 8;
+    
+    ctx.fillStyle = isFrozen ? '#A5F3FC' : `rgba(167, 139, 250, ${pulse})`;
+    ctx.shadowBlur = 10;
+    ctx.save();
+    ctx.translate(crownX, crownY);
+    ctx.rotate(crownAngle);
+    ctx.beginPath();
+    ctx.moveTo(0, -8);
+    ctx.lineTo(5, 0);
+    ctx.lineTo(0, 8);
+    ctx.lineTo(-5, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+  
+  // Attack charge effect
+  if (boss.isAttacking) {
+    ctx.strokeStyle = `rgba(139, 92, 246, ${pulse})`;
+    ctx.lineWidth = 4;
+    ctx.shadowBlur = 30;
+    // Energy lines from hands to center
+    ctx.beginPath();
+    ctx.moveTo(bx + 10, boss.y + 55 + float);
+    ctx.quadraticCurveTo(bx + 50, boss.y + 40 + float, bx + 50, boss.y + 60 + float);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(bx + 90, boss.y + 55 + float);
+    ctx.quadraticCurveTo(bx + 50, boss.y + 40 + float, bx + 50, boss.y + 60 + float);
     ctx.stroke();
   }
 }
