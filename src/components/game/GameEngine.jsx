@@ -1002,7 +1002,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     
     // Generate enemies based on level (skip for boss levels - boss is the only enemy)
     if (!isBoss) {
-      const enemyCount = 5 + level * 2;
+      const diffSettings = getDifficultySettings(level, difficulty);
+      const enemyCount = diffSettings.enemyCount;
       const levelEnemies = getEnemiesForLevel(level);
       
       for (let i = 0; i < enemyCount; i++) {
