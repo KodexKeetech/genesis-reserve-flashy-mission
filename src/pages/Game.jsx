@@ -7,10 +7,11 @@ import GameUI from '@/components/game/GameUI';
 import GameOverlay from '@/components/game/GameOverlay';
 import TouchControls from '@/components/game/TouchControls';
 import SettingsMenu from '@/components/game/SettingsMenu';
+import useGamepad from '@/components/game/useGamepad';
 
 import soundManager from '@/components/game/SoundManager';
 
-import { Sparkles, ShoppingBag, Gem, Zap, Settings } from 'lucide-react';
+import { Sparkles, ShoppingBag, Gem, Zap, Settings, Gamepad2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function Game() {
