@@ -360,16 +360,18 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           return;
         }
 
-        // LEVEL 1 - Hand-crafted Enchanted Forest introduction
-        if (level === 1) {
-          const biome = getBiomeForLevel(1);
+        // LEVELS 1-9 - Hand-crafted levels
+        const levelData = getLevelConfig(level);
+        if (levelData) {
+          const { config: LEVEL_CONFIG, behaviors: ENEMY_BEHAVIORS } = levelData;
+          const biome = getBiomeForLevel(level);
           state.biome = biome;
-          state.biome.customLevel = true; // Flag for custom background
-          state.levelWidth = LEVEL_1_CONFIG.levelWidth;
+          state.biome.customLevel = true;
+          state.levelWidth = LEVEL_CONFIG.levelWidth;
           state.decorations = [];
           
           // Load platforms, enemies, collectibles from config
-          for (const section of LEVEL_1_CONFIG.sections) {
+          for (const section of LEVEL_CONFIG.sections) {
             // Add platforms
             for (const plat of section.platforms || []) {
               state.platforms.push({ ...plat });
@@ -377,7 +379,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             
             // Add enemies with enhanced behaviors
             for (const enemy of section.enemies || []) {
-              const behaviorConfig = LEVEL_1_ENEMY_BEHAVIORS[enemy.type]?.[enemy.variant];
+              const behaviorConfig = ENEMY_BEHAVIORS[enemy.type]?.[enemy.variant];
               const behavior = behaviorConfig?.[enemy.behavior] || behaviorConfig || {};
               
               state.enemies.push({
@@ -394,7 +396,6 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                 patrolEnd: enemy.x + (behavior.patrolRange || 80),
                 frozen: 0,
                 facingRight: true,
-                // Enhanced behaviors
                 behavior: enemy.behavior,
                 hopTowardsPlayer: behavior.hopTowardsPlayer || false,
                 hopRange: behavior.hopRange || 100,
@@ -409,7 +410,11 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                 diveMaxCooldown: behavior.diveCooldown || 180,
                 amplitude: behavior.amplitude || 30,
                 frequency: behavior.frequency || 0.05,
-                originalY: enemy.y
+                originalY: enemy.y,
+                shootCooldown: behavior.shootInterval || 0,
+                shootInterval: behavior.shootInterval || 100,
+                projectileSpeed: behavior.projectileSpeed || 5,
+                projectileType: behavior.projectileType || 'energy'
               });
             }
             
@@ -470,6 +475,26 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             if (section.portal) {
               state.goalX = section.portal.x;
             }
+            
+            // Handle boss levels
+            if (section.boss && LEVEL_CONFIG.isBossLevel) {
+              state.boss = {
+                x: section.boss.x,
+                y: section.boss.y,
+                width: 100,
+                height: 100,
+                health: biome.boss?.health || 20,
+                maxHealth: biome.boss?.health || 20,
+                type: section.boss.type,
+                name: section.boss.name,
+                phase: 1,
+                attackCooldown: 0,
+                isAttacking: false,
+                velocityX: 0,
+                velocityY: 0,
+                frozen: 0
+              };
+            }
           }
           
           // Add crumbling platforms behavior tracking
@@ -477,19 +502,26 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             .filter(p => p.type === 'crumbling')
             .map(p => ({ ...p, touched: false, crumbleTimer: p.crumbleTime || 45, originalY: p.y }));
           
-          // Add checkpoint at middle
-          const midX = state.levelWidth / 2;
-          state.checkpoint = {
-            x: midX - 20,
-            y: 340,
-            width: 40,
-            height: 60,
-            activated: false
-          };
-          state.checkpointActivated = false;
+          // Add checkpoint (non-boss levels only)
+          if (!LEVEL_CONFIG.isBossLevel) {
+            const midX = state.levelWidth / 2;
+            state.checkpoint = {
+              x: midX - 20,
+              y: 340,
+              width: 40,
+              height: 60,
+              activated: false
+            };
+            state.checkpointActivated = false;
+          } else {
+            state.checkpoint = null;
+            state.checkpointActivated = false;
+          }
           
-          // Store secret hint
-          state.secretHint = LEVEL_1_CONFIG.secretHint;
+          // Store secret hint if exists
+          if (LEVEL_CONFIG.secretHint) {
+            state.secretHint = LEVEL_CONFIG.secretHint;
+          }
           
           // Reset player
           const upgrades = playerUpgrades || {};
