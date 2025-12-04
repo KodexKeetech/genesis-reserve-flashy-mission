@@ -2884,38 +2884,128 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
               soundManager.createOscillator('sine', 600, 0.15, 0.3);
               
             } else if (boss.type === 'omegaPrime') {
-              // Laser beam and missile barrage
+              // Omega Prime - Ultimate robot boss with 4 attack patterns
+              const enraged = boss.health < boss.maxHealth / 2;
+              
               if (boss.attackPattern === 0) {
-                // Laser aimed at player position
+                // PLASMA CANNON - Sweeping laser beam
                 state.enemyProjectiles.push({
-                  x: player.x,
-                  y: boss.y + 55,
-                  velocityX: 0,
-                  velocityY: 8,
-                  width: 30,
-                  height: 300,
-                  life: 60,
-                  type: 'laser'
+                  x: boss.x + boss.width / 2,
+                  y: boss.y + 50,
+                  velocityX: dirToPlayer * 6,
+                  velocityY: 0,
+                  width: 80,
+                  height: 20,
+                  life: 80,
+                  type: 'plasmaBeam'
                 });
-              } else {
-                // Homing missiles aimed at player
-                const missileCount = boss.health < boss.maxHealth / 2 ? 4 : 2;
-                for (let i = 0; i < missileCount; i++) {
+                // Fire a second beam when enraged
+                if (enraged) {
                   state.enemyProjectiles.push({
-                    x: boss.x + 20 + i * 30,
+                    x: boss.x + boss.width / 2,
+                    y: boss.y + 30,
+                    velocityX: dirToPlayer * 5,
+                    velocityY: -1,
+                    width: 60,
+                    height: 15,
+                    life: 70,
+                    type: 'plasmaBeam'
+                  });
+                }
+                soundManager.createOscillator('sawtooth', 150, 0.3, 0.3);
+                
+              } else if (boss.attackPattern === 1) {
+                // MISSILE BARRAGE - Homing missiles that track player
+                const missileCount = enraged ? 6 : 3;
+                for (let i = 0; i < missileCount; i++) {
+                  const angle = (i / missileCount) * Math.PI - Math.PI / 2;
+                  state.enemyProjectiles.push({
+                    x: boss.x + boss.width / 2 + Math.cos(angle) * 30,
+                    y: boss.y + 20,
+                    velocityX: Math.cos(angle) * 2,
+                    velocityY: -3,
+                    width: 14,
+                    height: 14,
+                    life: 200,
+                    type: 'homingMissile',
+                    targetX: player.x,
+                    targetY: player.y,
+                    turnSpeed: enraged ? 0.08 : 0.05
+                  });
+                }
+                soundManager.createOscillator('square', 400, 0.2, 0.2);
+                
+              } else if (boss.attackPattern === 2) {
+                // GROUND SHOCKWAVE - Electric waves along the ground
+                state.enemyProjectiles.push({
+                  x: boss.x + boss.width / 2 - 20,
+                  y: 480,
+                  velocityX: -8,
+                  velocityY: 0,
+                  width: 40,
+                  height: 50,
+                  life: 120,
+                  type: 'shockwave'
+                });
+                state.enemyProjectiles.push({
+                  x: boss.x + boss.width / 2 + 20,
+                  y: 480,
+                  velocityX: 8,
+                  velocityY: 0,
+                  width: 40,
+                  height: 50,
+                  life: 120,
+                  type: 'shockwave'
+                });
+                // Extra waves when enraged
+                if (enraged) {
+                  setTimeout(() => {
+                    if (state.boss) {
+                      state.enemyProjectiles.push({
+                        x: boss.x + boss.width / 2,
+                        y: 480,
+                        velocityX: -6,
+                        velocityY: 0,
+                        width: 40,
+                        height: 50,
+                        life: 100,
+                        type: 'shockwave'
+                      });
+                      state.enemyProjectiles.push({
+                        x: boss.x + boss.width / 2,
+                        y: 480,
+                        velocityX: 6,
+                        velocityY: 0,
+                        width: 40,
+                        height: 50,
+                        life: 100,
+                        type: 'shockwave'
+                      });
+                    }
+                  }, 300);
+                }
+                soundManager.createOscillator('sine', 100, 0.4, 0.3);
+                
+              } else {
+                // DRONE SWARM - Spawn attack drones
+                const droneCount = enraged ? 4 : 2;
+                for (let i = 0; i < droneCount; i++) {
+                  state.enemyProjectiles.push({
+                    x: boss.x + boss.width / 2,
                     y: boss.y,
-                    velocityX: aimX * 3,
-                    velocityY: aimY * 3 - 1,
-                    width: 12,
-                    height: 12,
+                    velocityX: (i % 2 === 0 ? -1 : 1) * 3,
+                    velocityY: -2,
+                    width: 25,
+                    height: 25,
                     life: 180,
-                    type: 'missile',
+                    type: 'attackDrone',
+                    droneTimer: 0,
                     targetX: player.x,
                     targetY: player.y
                   });
                 }
+                soundManager.createOscillator('triangle', 600, 0.15, 0.2);
               }
-              soundManager.createOscillator('square', 300, 0.2, 0.2);
             }
             
             // Slower attack cooldowns for later bosses (level 12+), faster for hard bosses
@@ -3320,6 +3410,114 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.lineTo(px - 8, proj.y + 12);
           ctx.closePath();
           ctx.fill();
+          ctx.shadowBlur = 0;
+          continue;
+        } else if (proj.type === 'plasmaBeam') {
+          // Draw plasma beam - glowing energy projectile
+          const beamGrad = ctx.createLinearGradient(px - 40, proj.y, px + 40, proj.y);
+          beamGrad.addColorStop(0, 'rgba(16, 185, 129, 0.3)');
+          beamGrad.addColorStop(0.5, '#10B981');
+          beamGrad.addColorStop(1, 'rgba(16, 185, 129, 0.3)');
+          ctx.fillStyle = beamGrad;
+          ctx.shadowColor = '#10B981';
+          ctx.shadowBlur = 25 + Math.sin(time * 0.5) * 10;
+          ctx.fillRect(px - proj.width / 2, proj.y - proj.height / 2, proj.width, proj.height);
+          // Inner core
+          ctx.fillStyle = '#6EE7B7';
+          ctx.fillRect(px - proj.width / 2 + 5, proj.y - proj.height / 4, proj.width - 10, proj.height / 2);
+          ctx.shadowBlur = 0;
+          continue;
+        } else if (proj.type === 'homingMissile') {
+          // Draw homing missile with exhaust trail
+          ctx.save();
+          ctx.translate(px, proj.y);
+          const angle = Math.atan2(proj.velocityY, proj.velocityX);
+          ctx.rotate(angle + Math.PI / 2);
+          // Missile body
+          ctx.fillStyle = '#475569';
+          ctx.beginPath();
+          ctx.moveTo(0, -12);
+          ctx.lineTo(6, 8);
+          ctx.lineTo(-6, 8);
+          ctx.closePath();
+          ctx.fill();
+          // Red tip
+          ctx.fillStyle = '#EF4444';
+          ctx.beginPath();
+          ctx.moveTo(0, -12);
+          ctx.lineTo(3, -6);
+          ctx.lineTo(-3, -6);
+          ctx.closePath();
+          ctx.fill();
+          // Exhaust flame
+          ctx.fillStyle = '#F97316';
+          ctx.shadowColor = '#F97316';
+          ctx.shadowBlur = 10;
+          ctx.beginPath();
+          ctx.moveTo(-4, 8);
+          ctx.lineTo(0, 18 + Math.random() * 8);
+          ctx.lineTo(4, 8);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+          ctx.shadowBlur = 0;
+          continue;
+        } else if (proj.type === 'shockwave') {
+          // Draw electric shockwave
+          ctx.strokeStyle = '#22D3EE';
+          ctx.shadowColor = '#22D3EE';
+          ctx.shadowBlur = 20;
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          // Zigzag lightning pattern
+          const segments = 5;
+          for (let i = 0; i <= segments; i++) {
+            const segX = px - proj.width / 2 + (i / segments) * proj.width;
+            const segY = proj.y + (i % 2 === 0 ? 0 : -20) + Math.sin(time * 0.3 + i) * 5;
+            if (i === 0) ctx.moveTo(segX, segY);
+            else ctx.lineTo(segX, segY);
+          }
+          ctx.stroke();
+          // Electric sparks
+          ctx.fillStyle = '#FFFFFF';
+          for (let i = 0; i < 3; i++) {
+            const sparkX = px + (Math.random() - 0.5) * proj.width;
+            const sparkY = proj.y - Math.random() * 30;
+            ctx.beginPath();
+            ctx.arc(sparkX, sparkY, 2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.shadowBlur = 0;
+          continue;
+        } else if (proj.type === 'attackDrone') {
+          // Draw attack drone
+          ctx.fillStyle = '#334155';
+          ctx.shadowColor = '#EF4444';
+          ctx.shadowBlur = 8;
+          // Drone body (hexagon)
+          ctx.beginPath();
+          for (let i = 0; i < 6; i++) {
+            const angle = (i / 6) * Math.PI * 2 + time * 0.1;
+            const r = 12;
+            if (i === 0) ctx.moveTo(px + Math.cos(angle) * r, proj.y + Math.sin(angle) * r);
+            else ctx.lineTo(px + Math.cos(angle) * r, proj.y + Math.sin(angle) * r);
+          }
+          ctx.closePath();
+          ctx.fill();
+          // Red eye
+          ctx.fillStyle = '#EF4444';
+          ctx.beginPath();
+          ctx.arc(px, proj.y, 4, 0, Math.PI * 2);
+          ctx.fill();
+          // Propellers
+          ctx.strokeStyle = '#94A3B8';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(px - 15, proj.y - 5);
+          ctx.lineTo(px - 20, proj.y - 10);
+          ctx.moveTo(px + 15, proj.y - 5);
+          ctx.lineTo(px + 20, proj.y - 10);
+          ctx.stroke();
           ctx.shadowBlur = 0;
           continue;
         }
