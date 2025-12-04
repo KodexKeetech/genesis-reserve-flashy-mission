@@ -14,13 +14,19 @@ export default function useGamepad(onInput) {
     const axes = gamepad.axes;
     const prev = prevButtonsRef.current;
 
-    // Left stick for movement (axes 0 = X, axes 1 = Y)
-    const moveX = Math.abs(axes[0]) > 0.15 ? axes[0] : 0; // deadzone
-    const moveY = Math.abs(axes[1]) > 0.15 ? axes[1] : 0;
+    // Left stick for movement - lower deadzone for better response
+    const rawMoveX = axes[0] || 0;
+    const rawMoveY = axes[1] || 0;
+    const moveDeadzone = 0.12;
+    const moveX = Math.abs(rawMoveX) > moveDeadzone ? rawMoveX : 0;
+    const moveY = Math.abs(rawMoveY) > moveDeadzone ? rawMoveY : 0;
 
-    // Right stick for aiming (axes 2 = X, axes 3 = Y)
-    const aimX = Math.abs(axes[2]) > 0.15 ? axes[2] : 0;
-    const aimY = Math.abs(axes[3]) > 0.15 ? axes[3] : 0;
+    // Right stick for aiming - lower deadzone
+    const rawAimX = axes[2] || 0;
+    const rawAimY = axes[3] || 0;
+    const aimDeadzone = 0.1;
+    const aimX = Math.abs(rawAimX) > aimDeadzone ? rawAimX : 0;
+    const aimY = Math.abs(rawAimY) > aimDeadzone ? rawAimY : 0;
 
     // Xbox 360 button mapping:
     // 0 = A (jump)

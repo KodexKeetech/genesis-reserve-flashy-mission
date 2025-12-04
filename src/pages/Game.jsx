@@ -145,6 +145,10 @@ export default function Game() {
   const handleTouchInput = useCallback((action, value) => {
     if (action === 'move') {
       gameInputRef.current.move = value;
+    } else if (action === 'aimX') {
+      gameInputRef.current.aimX = value;
+    } else if (action === 'aimY') {
+      gameInputRef.current.aimY = value;
     } else {
       gameInputRef.current[action] = value;
     }
