@@ -1045,7 +1045,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           y: enemyY,
           width: enemyType === 'bomber' ? 45 : (enemyType === 'voidWalker' ? 50 : 40),
           height: enemyType === 'bomber' ? 45 : (enemyType === 'voidWalker' ? 50 : 40),
-          velocityX: (Math.random() > 0.5 ? 1 : -1) * (['shooter', 'frostShooter'].includes(enemyType) ? 0.8 : 1.5 + level * 0.3),
+          velocityX: (Math.random() > 0.5 ? 1 : -1) * (['shooter', 'frostShooter'].includes(enemyType) ? 0.8 : 1.5 + level * 0.15) * diffSettings.enemySpeedMultiplier,
           velocityY: 0,
           type: enemyType,
           health: maxHealth,
