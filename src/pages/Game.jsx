@@ -72,6 +72,39 @@ export default function Game() {
     switch: false
   });
 
+  const [gamepadConnected, setGamepadConnected] = useState(false);
+
+  // Gamepad input handler
+  const handleGamepadInput = useCallback((input) => {
+    // Update touch input ref with gamepad values (same interface)
+    touchInputRef.current.move = input.move;
+    touchInputRef.current.jump = input.jump;
+    touchInputRef.current.dash = input.dash;
+    touchInputRef.current.cast = input.cast;
+    touchInputRef.current.switch = input.switch;
+    
+    // Handle special abilities via gamepad
+    if (input.aoeBlast) {
+      // Trigger AOE blast - dispatch keyboard event
+      window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyE' }));
+      setTimeout(() => window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyE' })), 50);
+    }
+    if (input.reflectShield) {
+      window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyR' }));
+      setTimeout(() => window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyR' })), 50);
+    }
+    if (input.hover) {
+      window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyF' }));
+      setTimeout(() => window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyF' })), 50);
+    }
+  }, []);
+
+  // Use gamepad hook
+  useGamepad((input) => {
+    handleGamepadInput(input);
+    setGamepadConnected(true);
+  });
+
   // Load player upgrades and scraps on mount
   useEffect(() => {
     const loadPlayerData = async () => {
