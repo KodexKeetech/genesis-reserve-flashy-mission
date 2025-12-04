@@ -483,30 +483,65 @@ export default function Game() {
 
       {/* Controls hint - hide on small screens */}
       <div className="hidden md:flex mt-6 flex-wrap justify-center gap-4 text-slate-500 text-sm">
-        <span className="flex items-center gap-2">
-          <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">←→</kbd>
-          Move
-        </span>
-        <span className="flex items-center gap-2">
-          <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">SPACE</kbd>
-          Jump
-        </span>
-        <span className="flex items-center gap-2">
-          <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">CLICK</kbd>
-          Cast Magic
-        </span>
-        <span className="flex items-center gap-2">
-          <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">SHIFT</kbd>
-          Dash
-        </span>
-        <span className="flex items-center gap-2">
-          <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">Q</kbd>
-          Switch Spell
-        </span>
-        <span className="flex items-center gap-2">
-          <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">E/R/F</kbd>
-          Special Abilities
-        </span>
+        {gamepadConnected ? (
+          <>
+            <span className="flex items-center gap-2 text-green-400">
+              <Gamepad2 className="w-4 h-4" />
+              Controller Connected
+            </span>
+            <span className="flex items-center gap-2">
+              <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">L-Stick</kbd>
+              Move
+            </span>
+            <span className="flex items-center gap-2">
+              <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">A</kbd>
+              Jump
+            </span>
+            <span className="flex items-center gap-2">
+              <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">RT/X</kbd>
+              Cast
+            </span>
+            <span className="flex items-center gap-2">
+              <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">LT</kbd>
+              Dash
+            </span>
+            <span className="flex items-center gap-2">
+              <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">Y</kbd>
+              Switch
+            </span>
+            <span className="flex items-center gap-2">
+              <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">LB/RB</kbd>
+              Abilities
+            </span>
+          </>
+        ) : (
+          <>
+            <span className="flex items-center gap-2">
+              <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">←→</kbd>
+              Move
+            </span>
+            <span className="flex items-center gap-2">
+              <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">SPACE</kbd>
+              Jump
+            </span>
+            <span className="flex items-center gap-2">
+              <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">CLICK</kbd>
+              Cast Magic
+            </span>
+            <span className="flex items-center gap-2">
+              <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">SHIFT</kbd>
+              Dash
+            </span>
+            <span className="flex items-center gap-2">
+              <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">Q</kbd>
+              Switch Spell
+            </span>
+            <span className="flex items-center gap-2">
+              <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">E/R/F</kbd>
+              Special Abilities
+            </span>
+          </>
+        )}
         </div>
     </div>
   );
