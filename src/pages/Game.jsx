@@ -56,6 +56,7 @@ export default function Game() {
   const [coinAmmo, setCoinAmmo] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
   const [checkpointData, setCheckpointData] = useState(null);
+  const [respawnAtCheckpoint, setRespawnAtCheckpoint] = useState(false);
   
   const [startingGun, setStartingGun] = useState(0);
   const [currentGun, setCurrentGun] = useState(0);
@@ -350,7 +351,12 @@ export default function Game() {
       hover: false
     };
     setHealth(50);
+    setRespawnAtCheckpoint(true);
     setGameState('playing');
+  }, []);
+
+  const handleRespawnComplete = useCallback(() => {
+    setRespawnAtCheckpoint(false);
   }, []);
 
   const handleLevelComplete = useCallback(() => {
@@ -474,7 +480,8 @@ export default function Game() {
                 gameSettings={gameSettings}
                 onGunChange={handleGunChange}
                 onCheckpointActivated={handleCheckpointActivated}
-                continueFromCheckpoint={gameState === 'playing' && checkpointData}
+                respawnAtCheckpoint={respawnAtCheckpoint}
+                onRespawnComplete={handleRespawnComplete}
               />
             )}
 

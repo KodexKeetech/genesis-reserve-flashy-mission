@@ -25,7 +25,7 @@ const POWERUP_TYPES = {
   SHIELD: { color: '#3B82F6', icon: '🛡️', duration: 400, name: 'Shield' }
 };
 
-export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel, onPowerUpChange, onAbilityCooldowns, onScrapsEarned, onCrystalsEarned, onCoinAmmoChange, savedCoinAmmo, playerUpgrades, unlockedAbilities, abilityUpgrades, gameInput, startingGun = 0, gameSettings = { sound: true, graphics: 'high', particles: true }, onGunChange, onCheckpointActivated, continueFromCheckpoint }) {
+export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel, onPowerUpChange, onAbilityCooldowns, onScrapsEarned, onCrystalsEarned, onCoinAmmoChange, savedCoinAmmo, playerUpgrades, unlockedAbilities, abilityUpgrades, gameInput, startingGun = 0, gameSettings = { sound: true, graphics: 'high', particles: true }, onGunChange, onCheckpointActivated, respawnAtCheckpoint, onRespawnComplete }) {
   const canvasRef = useRef(null);
   const mouseRef = useRef({ x: 400, y: 300 }); // Track mouse position relative to canvas
   const gameStateRef = useRef({
@@ -2718,14 +2718,16 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         }
       }
       
-      // Handle continue from checkpoint
-      if (continueFromCheckpoint && state.checkpoint && state.checkpointActivated) {
+      // Handle respawn at checkpoint
+      if (respawnAtCheckpoint && state.checkpoint && state.checkpointActivated) {
         player.x = state.checkpoint.x;
         player.y = state.checkpoint.y - player.height - 10;
         player.velocityX = 0;
         player.velocityY = 0;
+        player.health = Math.floor(player.maxHealth * 0.5);
         player.invincible = true;
         player.invincibleTimer = 120;
+        onHealthChange(player.health);
         // Respawn particles
         for (let i = 0; i < 15; i++) {
           particles.push({
@@ -2736,6 +2738,11 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             life: 25,
             color: '#3B82F6'
           });
+        }
+        soundManager.playPowerUp();
+        // Notify parent that respawn is complete
+        if (onRespawnComplete) {
+          onRespawnComplete();
         }
       }
       
