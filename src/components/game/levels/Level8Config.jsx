@@ -1,10 +1,11 @@
+
 // Level 8: Frozen Peaks - Avalanche Pass
 // More challenging ice platforming with environmental hazards
 
 export const LEVEL_8_CONFIG = {
   name: "Avalanche Pass",
   biome: "ice",
-  levelWidth: 3400,
+  levelWidth: 4500,
   
   sections: [
     // Section 1: Mountain pass entrance
@@ -12,189 +13,187 @@ export const LEVEL_8_CONFIG = {
       type: 'start',
       x: 0,
       platforms: [
-        { x: 0, y: 500, width: 300, height: 100, type: 'ground' },
-        { x: 250, y: 430, width: 100, height: 20, type: 'ice', slippery: true },
-        { x: 400, y: 380, width: 80, height: 20, type: 'normal' },
-        { x: 520, y: 450, width: 150, height: 50, type: 'ground' },
+        { x: 0, y: 500, width: 350, height: 100, type: 'ground' },
+        { x: 300, y: 430, width: 100, height: 20, type: 'ice', slippery: true },
+        { x: 460, y: 380, width: 80, height: 20, type: 'normal' },
+        { x: 600, y: 450, width: 200, height: 50, type: 'ground' },
       ],
       enemies: [
-        { type: 'iceSlime', x: 120, y: 470, variant: 'frost', behavior: 'patrol' },
-        { type: 'iceSlime', x: 580, y: 420, variant: 'frost', behavior: 'aggressive' },
+        { type: 'iceSlime', x: 150, y: 470, variant: 'frost', behavior: 'patrol' },
+        { type: 'iceSlime', x: 700, y: 420, variant: 'frost', behavior: 'aggressive' },
       ],
       collectibles: [
-        { type: 'coin', x: 80, y: 450 },
-        { type: 'coin', x: 180, y: 450 },
-        { type: 'coin', x: 300, y: 390 },
-        { type: 'coin', x: 440, y: 340 },
-        { type: 'coin', x: 600, y: 410 },
+        { type: 'coin', x: 100, y: 450 },
+        { type: 'coin', x: 200, y: 450 },
+        { type: 'coin', x: 350, y: 390 },
+        { type: 'coin', x: 500, y: 340 },
+        { type: 'coin', x: 750, y: 410 },
       ],
       decorations: [
-        { type: 'snow_pile', x: 30, y: 500 },
-        { type: 'frozen_tree', x: 350, y: 280 },
-        { type: 'ice_crystal', x: 500, y: 430 },
+        { type: 'snow_pile', x: 50, y: 500 },
+        { type: 'frozen_tree', x: 420, y: 280 },
+        { type: 'ice_crystal', x: 580, y: 430 },
       ]
     },
     
     // Section 2: Crumbling ice bridges
     {
       type: 'ice_bridges',
-      x: 670,
+      x: 800,
       platforms: [
-        { x: 670, y: 420, width: 80, height: 20, type: 'normal' },
-        { x: 800, y: 400, width: 70, height: 15, type: 'crumbling', crumbleTime: 35 },
-        { x: 920, y: 380, width: 70, height: 15, type: 'crumbling', crumbleTime: 35 },
-        { x: 1040, y: 360, width: 70, height: 15, type: 'crumbling', crumbleTime: 35 },
-        { x: 1160, y: 400, width: 100, height: 20, type: 'normal' },
+        { x: 800, y: 420, width: 100, height: 20, type: 'normal' },
+        { x: 960, y: 400, width: 70, height: 15, type: 'crumbling', crumbleTime: 35 },
+        { x: 1090, y: 380, width: 70, height: 15, type: 'crumbling', crumbleTime: 35 },
+        { x: 1220, y: 360, width: 70, height: 15, type: 'crumbling', crumbleTime: 35 },
+        { x: 1350, y: 400, width: 120, height: 20, type: 'normal' },
+        { x: 1530, y: 500, width: 200, height: 100, type: 'ground' },
       ],
       hazards: [
-        { type: 'cold_water', x: 750, y: 520, width: 450, damage: 35 },
+        { type: 'cold_water', x: 900, y: 520, width: 520, damage: 35 },
       ],
       enemies: [
-        { type: 'snowOwl', x: 900, y: 280, variant: 'frost', behavior: 'patrol' },
-        { type: 'snowOwl', x: 1050, y: 260, variant: 'frost', behavior: 'dive_attack' },
+        { type: 'snowOwl', x: 1050, y: 280, variant: 'frost', behavior: 'patrol' },
+        { type: 'snowOwl', x: 1220, y: 260, variant: 'frost', behavior: 'dive_attack' },
       ],
       collectibles: [
-        { type: 'coin', x: 835, y: 360 },
-        { type: 'coin', x: 955, y: 340 },
-        { type: 'coin', x: 1075, y: 320 },
-        { type: 'scrap', x: 1210, y: 360 },
+        { type: 'coin', x: 995, y: 360 },
+        { type: 'coin', x: 1125, y: 340 },
+        { type: 'coin', x: 1255, y: 320 },
+        { type: 'scrap', x: 1410, y: 360 },
       ],
       decorations: [
-        { type: 'snow_particles', x: 900, y: 250 },
-        { type: 'icicle_cluster', x: 950, y: 150 },
+        { type: 'snow_particles', x: 1100, y: 250 },
+        { type: 'icicle_cluster', x: 1150, y: 150 },
       ]
     },
     
     // Section 3: Icicle storm
     {
       type: 'icicle_storm',
-      x: 1260,
+      x: 1730,
       platforms: [
-        { x: 1260, y: 500, width: 150, height: 100, type: 'ground' },
-        { x: 1360, y: 420, width: 80, height: 20, type: 'ice' },
-        { x: 1490, y: 380, width: 80, height: 20, type: 'normal' },
-        { x: 1620, y: 340, width: 80, height: 20, type: 'ice' },
-        { x: 1750, y: 380, width: 80, height: 20, type: 'normal' },
-        { x: 1880, y: 500, width: 150, height: 100, type: 'ground' },
+        { x: 1730, y: 500, width: 180, height: 100, type: 'ground' },
+        { x: 1860, y: 420, width: 100, height: 20, type: 'ice' },
+        { x: 2020, y: 380, width: 100, height: 20, type: 'normal' },
+        { x: 2180, y: 340, width: 100, height: 20, type: 'ice' },
+        { x: 2340, y: 380, width: 100, height: 20, type: 'normal' },
+        { x: 2500, y: 500, width: 200, height: 100, type: 'ground' },
       ],
       hazards: [
-        { type: 'icicle', x: 1400, y: 80, damage: 25 },
-        { type: 'icicle', x: 1530, y: 80, damage: 25 },
-        { type: 'icicle', x: 1660, y: 80, damage: 25 },
-        { type: 'icicle', x: 1790, y: 80, damage: 25 },
+        { type: 'icicle', x: 1930, y: 80, damage: 25 },
+        { type: 'icicle', x: 2090, y: 80, damage: 25 },
+        { type: 'icicle', x: 2250, y: 80, damage: 25 },
+        { type: 'icicle', x: 2410, y: 80, damage: 25 },
       ],
       enemies: [
-        { type: 'iceSlime', x: 1320, y: 470, variant: 'frost', behavior: 'patrol' },
-        { type: 'frostShooter', x: 1550, y: 350, variant: 'frost', behavior: 'mobile' },
-        { type: 'iceSlime', x: 1930, y: 470, variant: 'frost', behavior: 'aggressive' },
+        { type: 'iceSlime', x: 1820, y: 470, variant: 'frost', behavior: 'patrol' },
+        { type: 'frostShooter', x: 2080, y: 350, variant: 'frost', behavior: 'mobile' },
+        { type: 'iceSlime', x: 2580, y: 470, variant: 'frost', behavior: 'aggressive' },
       ],
       collectibles: [
-        { type: 'coin', x: 1400, y: 380 },
-        { type: 'coin', x: 1530, y: 340 },
-        { type: 'coin', x: 1660, y: 300 },
-        { type: 'coin', x: 1790, y: 340 },
-        { type: 'heart', x: 1950, y: 450 },
+        { type: 'coin', x: 1910, y: 380 },
+        { type: 'coin', x: 2070, y: 340 },
+        { type: 'coin', x: 2230, y: 300 },
+        { type: 'coin', x: 2390, y: 340 },
+        { type: 'heart', x: 2620, y: 450 },
       ],
       powerUps: [
-        { type: 'SHIELD', x: 1620, y: 300 }
+        { type: 'SHIELD', x: 2180, y: 300 }
       ],
       decorations: [
-        { type: 'blizzard_wind', x: 1400, y: 200, direction: 'left' },
-        { type: 'frost_mist', x: 1600, y: 450 },
+        { type: 'blizzard_wind', x: 1900, y: 200, direction: 'left' },
+        { type: 'frost_mist', x: 2200, y: 450 },
       ]
     },
     
     // Section 4: Vertical ice climb
     {
       type: 'vertical_climb',
-      x: 2030,
+      x: 2700,
       platforms: [
-        { x: 2030, y: 500, width: 100, height: 100, type: 'ground' },
-        { x: 2080, y: 420, width: 60, height: 20, type: 'ice' },
-        { x: 2000, y: 350, width: 60, height: 20, type: 'normal' },
-        { x: 2100, y: 280, width: 60, height: 20, type: 'ice' },
-        { x: 2020, y: 210, width: 70, height: 20, type: 'normal' },
-        { x: 2150, y: 350, width: 100, height: 20, type: 'normal' },
-        { x: 2150, y: 500, width: 150, height: 100, type: 'ground' },
+        { x: 2700, y: 500, width: 130, height: 100, type: 'ground' },
+        { x: 2780, y: 420, width: 80, height: 20, type: 'ice' },
+        { x: 2680, y: 350, width: 80, height: 20, type: 'normal' },
+        { x: 2800, y: 280, width: 80, height: 20, type: 'ice' },
+        { x: 2700, y: 210, width: 90, height: 20, type: 'normal' },
+        { x: 2880, y: 350, width: 120, height: 20, type: 'normal' },
+        { x: 2880, y: 500, width: 200, height: 100, type: 'ground' },
       ],
       enemies: [
-        { type: 'snowOwl', x: 2050, y: 300, variant: 'frost', behavior: 'guard' },
-        { type: 'frostShooter', x: 2080, y: 180, variant: 'frost', behavior: 'stationary' },
+        { type: 'snowOwl', x: 2750, y: 300, variant: 'frost', behavior: 'guard' },
+        { type: 'frostShooter', x: 2780, y: 180, variant: 'frost', behavior: 'stationary' },
       ],
       collectibles: [
-        { type: 'coin', x: 2110, y: 380 },
-        { type: 'coin', x: 2030, y: 310 },
-        { type: 'coin', x: 2130, y: 240 },
-        { type: 'coin', x: 2050, y: 170 },
-        { type: 'scrap', x: 2200, y: 310 },
+        { type: 'coin', x: 2820, y: 380 },
+        { type: 'coin', x: 2720, y: 310 },
+        { type: 'coin', x: 2840, y: 240 },
+        { type: 'coin', x: 2745, y: 170 },
+        { type: 'scrap', x: 2940, y: 310 },
       ],
       decorations: [
-        { type: 'ice_stalactite', x: 2050, y: 100 },
-        { type: 'frozen_waterfall', x: 2130, y: 200 },
+        { type: 'ice_stalactite', x: 2760, y: 100 },
+        { type: 'frozen_waterfall', x: 2860, y: 200 },
       ]
     },
     
     // Section 5: Moving ice platforms
     {
       type: 'moving_ice',
-      x: 2300,
+      x: 3080,
       platforms: [
-        { x: 2300, y: 450, width: 80, height: 20, type: 'normal' },
-        { x: 2430, y: 420, width: 80, height: 20, type: 'moving', moveType: 'horizontal', moveRange: 120, moveSpeed: 2.5 },
-        { x: 2620, y: 380, width: 80, height: 20, type: 'moving', moveType: 'vertical', moveRange: 100, moveSpeed: 2 },
-        { x: 2780, y: 420, width: 100, height: 20, type: 'ice' },
-        { x: 2930, y: 500, width: 150, height: 100, type: 'ground' },
+        { x: 3080, y: 450, width: 100, height: 20, type: 'normal' },
+        { x: 3240, y: 420, width: 80, height: 20, type: 'moving', moveType: 'horizontal', moveRange: 140, moveSpeed: 2.5 },
+        { x: 3460, y: 380, width: 80, height: 20, type: 'moving', moveType: 'vertical', moveRange: 120, moveSpeed: 2 },
+        { x: 3640, y: 420, width: 120, height: 20, type: 'ice' },
+        { x: 3820, y: 500, width: 200, height: 100, type: 'ground' },
       ],
       hazards: [
-        { type: 'cold_water', x: 2380, y: 520, width: 400, damage: 40 },
+        { type: 'cold_water', x: 3180, y: 520, width: 500, damage: 40 },
       ],
       enemies: [
-        { type: 'snowOwl', x: 2550, y: 280, variant: 'frost', behavior: 'dive_attack' },
-        { type: 'snowOwl', x: 2700, y: 300, variant: 'frost', behavior: 'patrol' },
+        { type: 'snowOwl', x: 3380, y: 280, variant: 'frost', behavior: 'dive_attack' },
+        { type: 'snowOwl', x: 3560, y: 300, variant: 'frost', behavior: 'patrol' },
       ],
       collectibles: [
-        { type: 'coin', x: 2470, y: 380 },
-        { type: 'coin', x: 2660, y: 340 },
-        { type: 'coin', x: 2830, y: 380 },
-        { type: 'scrap', x: 3000, y: 450 },
+        { type: 'coin', x: 3280, y: 380 },
+        { type: 'coin', x: 3500, y: 340 },
+        { type: 'coin', x: 3700, y: 380 },
+        { type: 'scrap', x: 3920, y: 450 },
       ],
       powerUps: [
-        { type: 'INVINCIBILITY', x: 2660, y: 340 }
+        { type: 'INVINCIBILITY', x: 3500, y: 340 }
       ],
       decorations: [
-        { type: 'aurora_glow', x: 2600, y: 80 },
-        { type: 'snow_particles', x: 2700, y: 250 },
+        { type: 'aurora_glow', x: 3450, y: 80 },
+        { type: 'snow_particles', x: 3600, y: 250 },
       ]
     },
     
     // Section 6: Final gauntlet
     {
       type: 'finale',
-      x: 3080,
+      x: 4020,
       platforms: [
-        { x: 3080, y: 500, width: 320, height: 100, type: 'ground' },
-        { x: 3140, y: 400, width: 80, height: 20, type: 'ice' },
-        { x: 3280, y: 360, width: 80, height: 20, type: 'normal' },
-        { x: 3200, y: 280, width: 100, height: 20, type: 'ice' },
+        { x: 4020, y: 500, width: 200, height: 100, type: 'ground' },
+        { x: 4100, y: 400, width: 80, height: 20, type: 'ice' },
+        { x: 4250, y: 360, width: 100, height: 20, type: 'normal' },
+        { x: 4400, y: 450, width: 100, height: 50, type: 'ground' },
       ],
       enemies: [
-        { type: 'iceSlime', x: 3150, y: 470, variant: 'frost', behavior: 'aggressive' },
-        { type: 'iceSlime', x: 3300, y: 470, variant: 'frost', behavior: 'aggressive' },
-        { type: 'frostShooter', x: 3240, y: 250, variant: 'frost', behavior: 'stationary' },
-        { type: 'snowOwl', x: 3350, y: 280, variant: 'frost', behavior: 'guard' },
+        { type: 'iceSlime', x: 4100, y: 470, variant: 'frost', behavior: 'aggressive' },
+        { type: 'snowOwl', x: 4200, y: 280, variant: 'frost', behavior: 'guard' },
       ],
       collectibles: [
-        { type: 'coin', x: 3180, y: 360 },
-        { type: 'coin', x: 3320, y: 320 },
-        { type: 'coin', x: 3240, y: 240 },
-        { type: 'scrap', x: 3370, y: 450 },
+        { type: 'coin', x: 4140, y: 360 },
+        { type: 'coin', x: 4300, y: 320 },
+        { type: 'scrap', x: 4450, y: 410 },
       ],
-      portal: { x: 3340, y: 310 },
+      portal: { x: 4430, y: 370 },
       decorations: [
-        { type: 'aurora_glow', x: 3200, y: 50 },
-        { type: 'portal_ice', x: 3340, y: 310 },
-        { type: 'ice_arch', x: 3300, y: 260 },
-        { type: 'frozen_tree', x: 3380, y: 350 },
+        { type: 'aurora_glow', x: 4300, y: 50 },
+        { type: 'portal_ice', x: 4430, y: 370 },
+        { type: 'ice_arch', x: 4390, y: 350 },
+        { type: 'frozen_tree', x: 4480, y: 300 },
       ]
     }
   ],
