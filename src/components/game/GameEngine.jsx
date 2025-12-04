@@ -2328,6 +2328,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       if (accumulator >= FRAME_TIME) {
         accumulator -= FRAME_TIME;
         time++;
+      }
+      
       const { player, platforms, enemies, projectiles, particles, collectibles, keys } = state;
       
       // Update power-up timers
@@ -4555,7 +4557,6 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         onGameOver();
         return;
       }
-      } // end of fixed timestep check
       
       // RENDER - Use biome-specific background
       if (state.biome) {
