@@ -83,6 +83,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     hazards: [],
     enemyProjectiles: [],
     environmentalHazards: [],
+    checkpoint: null,
+    checkpointActivated: false,
     boss: null,
     keys: {},
     score: 0,
@@ -510,6 +512,16 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       state.platforms.push({ x: currentX, y: 500, width: 400, height: 100, type: 'ground' });
       state.levelWidth = currentX + 400;
       state.goalX = currentX + 300;
+      
+      // Add checkpoint at middle of level (non-boss levels only)
+      state.checkpoint = {
+        x: state.levelWidth / 2,
+        y: 450,
+        width: 40,
+        height: 60,
+        activated: false
+      };
+      state.checkpointActivated = false;
     }
     
     // Generate enemies based on level (skip for boss levels - boss is the only enemy)
@@ -2665,12 +2677,56 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         return;
       }
       
+      // Check checkpoint collision
+      if (state.checkpoint && !state.checkpointActivated) {
+        if (checkCollision(player, state.checkpoint)) {
+          state.checkpointActivated = true;
+          state.checkpoint.activated = true;
+          soundManager.playPowerUp();
+          // Checkpoint activation particles
+          for (let i = 0; i < 20; i++) {
+            particles.push({
+              x: state.checkpoint.x + state.checkpoint.width / 2,
+              y: state.checkpoint.y + state.checkpoint.height / 2,
+              velocityX: (Math.random() - 0.5) * 6,
+              velocityY: (Math.random() - 0.5) * 6,
+              life: 30,
+              color: '#3B82F6'
+            });
+          }
+        }
+      }
+      
       // Check lose condition
       if (player.health <= 0) {
-        soundManager.playGameOver();
-        state.gameRunning = false;
-        onGameOver();
-        return;
+        // Respawn at checkpoint if activated
+        if (state.checkpointActivated && state.checkpoint) {
+          player.x = state.checkpoint.x;
+          player.y = state.checkpoint.y - player.height;
+          player.health = Math.floor(player.maxHealth * 0.5);
+          player.velocityX = 0;
+          player.velocityY = 0;
+          player.invincible = true;
+          player.invincibleTimer = 120;
+          onHealthChange(player.health);
+          soundManager.playPowerUp();
+          // Respawn particles
+          for (let i = 0; i < 15; i++) {
+            particles.push({
+              x: player.x + player.width / 2,
+              y: player.y + player.height / 2,
+              velocityX: (Math.random() - 0.5) * 5,
+              velocityY: (Math.random() - 0.5) * 5,
+              life: 25,
+              color: '#3B82F6'
+            });
+          }
+        } else {
+          soundManager.playGameOver();
+          state.gameRunning = false;
+          onGameOver();
+          return;
+        }
       }
       
       // RENDER - Use biome-specific background
@@ -3195,6 +3251,55 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       
       // Draw Jeff
       drawJeff(ctx, player, time, state.cameraX);
+      
+      // Draw checkpoint crystal
+      if (state.checkpoint) {
+        const cpx = state.checkpoint.x - state.cameraX;
+        if (cpx > -50 && cpx < 850) {
+          const activated = state.checkpoint.activated;
+          const pulse = Math.sin(time * 0.1) * 0.3 + 0.7;
+          const floatY = Math.sin(time * 0.08) * 3;
+          
+          // Glow effect
+          ctx.shadowColor = activated ? '#3B82F6' : '#1E40AF';
+          ctx.shadowBlur = activated ? 30 + pulse * 15 : 10;
+          
+          // Crystal body
+          ctx.fillStyle = activated ? `rgba(59, 130, 246, ${0.8 + pulse * 0.2})` : 'rgba(30, 64, 175, 0.7)';
+          ctx.beginPath();
+          ctx.moveTo(cpx + 20, state.checkpoint.y - 10 + floatY);
+          ctx.lineTo(cpx + 35, state.checkpoint.y + 25 + floatY);
+          ctx.lineTo(cpx + 20, state.checkpoint.y + 55 + floatY);
+          ctx.lineTo(cpx + 5, state.checkpoint.y + 25 + floatY);
+          ctx.closePath();
+          ctx.fill();
+          
+          // Inner crystal highlight
+          ctx.fillStyle = activated ? '#93C5FD' : '#3B82F6';
+          ctx.beginPath();
+          ctx.moveTo(cpx + 20, state.checkpoint.y + floatY);
+          ctx.lineTo(cpx + 28, state.checkpoint.y + 20 + floatY);
+          ctx.lineTo(cpx + 20, state.checkpoint.y + 35 + floatY);
+          ctx.lineTo(cpx + 12, state.checkpoint.y + 20 + floatY);
+          ctx.closePath();
+          ctx.fill();
+          
+          // Sparkle on top
+          if (activated) {
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.arc(cpx + 20, state.checkpoint.y - 5 + floatY, 3 + pulse * 2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          
+          // Base
+          ctx.shadowBlur = 0;
+          ctx.fillStyle = '#475569';
+          ctx.beginPath();
+          ctx.ellipse(cpx + 20, state.checkpoint.y + 58 + floatY, 15, 5, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
       
       // Draw goal - Purple Portal
       const goalX = state.goalX - state.cameraX;
