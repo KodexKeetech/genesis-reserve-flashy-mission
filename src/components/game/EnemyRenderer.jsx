@@ -337,6 +337,22 @@ export function drawBoss(ctx, boss, bx, time, isFrozen, biomeKey) {
     case 'voidLord':
       drawVoidLord(ctx, boss, bx, time, isFrozen, rage, pulse);
       break;
+    case 'stormTitan':
+      drawStormTitan(ctx, boss, bx, time, isFrozen, rage, pulse);
+      break;
+    case 'pharaohKing':
+      drawPharaohKing(ctx, boss, bx, time, isFrozen, rage, pulse);
+      break;
+    case 'crystalQueen':
+      drawCrystalQueen(ctx, boss, bx, time, isFrozen, rage, pulse);
+      break;
+    case 'omegaPrime':
+      drawOmegaPrime(ctx, boss, bx, time, isFrozen, rage, pulse);
+      break;
+    default:
+      // Fallback - draw a generic boss shape
+      drawGenericBoss(ctx, boss, bx, time, isFrozen, rage, pulse);
+      break;
   }
 
   // Enhanced health bar
@@ -608,4 +624,352 @@ function drawVoidLord(ctx, boss, bx, time, isFrozen, rage, pulse) {
     ctx.arc(orbX, orbY, 6, 0, Math.PI * 2);
     ctx.fill();
   }
+}
+
+function drawStormTitan(ctx, boss, bx, time, isFrozen, rage, pulse) {
+  const float = Math.sin(time * 0.06) * 8;
+  
+  // Cloud body base
+  ctx.fillStyle = isFrozen ? '#67E8F9' : '#E0F2FE';
+  ctx.shadowColor = isFrozen ? '#67E8F9' : '#0284C7';
+  ctx.shadowBlur = 25;
+  
+  // Main cloud body
+  ctx.beginPath();
+  ctx.arc(bx + 50, boss.y + 55 + float, 35, 0, Math.PI * 2);
+  ctx.arc(bx + 25, boss.y + 60 + float, 25, 0, Math.PI * 2);
+  ctx.arc(bx + 75, boss.y + 60 + float, 25, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Upper body / head
+  ctx.fillStyle = isFrozen ? '#A5F3FC' : '#BAE6FD';
+  ctx.beginPath();
+  ctx.arc(bx + 50, boss.y + 30 + float, 30, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Lightning crown
+  ctx.strokeStyle = isFrozen ? '#fff' : (rage ? '#EF4444' : '#FBBF24');
+  ctx.lineWidth = 3;
+  ctx.shadowColor = ctx.strokeStyle;
+  ctx.shadowBlur = 15;
+  for (let i = 0; i < 5; i++) {
+    const angle = -Math.PI / 2 + (i - 2) * 0.4;
+    const boltLen = 20 + Math.sin(time * 0.3 + i) * 8;
+    ctx.beginPath();
+    ctx.moveTo(bx + 50 + Math.cos(angle) * 25, boss.y + 30 + float + Math.sin(angle) * 25);
+    ctx.lineTo(bx + 50 + Math.cos(angle) * (25 + boltLen), boss.y + 30 + float + Math.sin(angle) * (25 + boltLen));
+    ctx.stroke();
+  }
+  
+  // Eyes - glowing electric
+  ctx.fillStyle = isFrozen ? '#fff' : (rage ? '#EF4444' : '#0284C7');
+  ctx.shadowBlur = 20;
+  ctx.beginPath();
+  ctx.arc(bx + 40, boss.y + 28 + float, 8, 0, Math.PI * 2);
+  ctx.arc(bx + 60, boss.y + 28 + float, 8, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Inner eye glow
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.arc(bx + 40, boss.y + 28 + float, 3, 0, Math.PI * 2);
+  ctx.arc(bx + 60, boss.y + 28 + float, 3, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Lightning bolts from hands when attacking
+  if (boss.isAttacking) {
+    ctx.strokeStyle = `rgba(251, 191, 36, ${pulse})`;
+    ctx.lineWidth = 4;
+    ctx.shadowBlur = 25;
+    ctx.beginPath();
+    ctx.moveTo(bx + 10, boss.y + 60 + float);
+    ctx.lineTo(bx - 20, boss.y + 80);
+    ctx.lineTo(bx - 10, boss.y + 85);
+    ctx.lineTo(bx - 40, boss.y + 110);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(bx + 90, boss.y + 60 + float);
+    ctx.lineTo(bx + 120, boss.y + 80);
+    ctx.lineTo(bx + 110, boss.y + 85);
+    ctx.lineTo(bx + 140, boss.y + 110);
+    ctx.stroke();
+  }
+}
+
+function drawPharaohKing(ctx, boss, bx, time, isFrozen, rage, pulse) {
+  const hover = Math.sin(time * 0.04) * 3;
+  
+  // Golden sarcophagus body
+  ctx.fillStyle = isFrozen ? '#67E8F9' : '#CA8A04';
+  ctx.shadowColor = isFrozen ? '#67E8F9' : '#EAB308';
+  ctx.shadowBlur = 20;
+  ctx.beginPath();
+  ctx.roundRect(bx + 20, boss.y + 25 + hover, 60, 75, 8);
+  ctx.fill();
+  
+  // Body stripes
+  ctx.fillStyle = isFrozen ? '#A5F3FC' : '#78350F';
+  for (let i = 0; i < 4; i++) {
+    ctx.fillRect(bx + 25, boss.y + 45 + hover + i * 15, 50, 5);
+  }
+  
+  // Pharaoh headdress
+  ctx.fillStyle = isFrozen ? '#A5F3FC' : '#EAB308';
+  ctx.beginPath();
+  ctx.moveTo(bx + 50, boss.y + hover);
+  ctx.lineTo(bx + 85, boss.y + 35 + hover);
+  ctx.lineTo(bx + 80, boss.y + 55 + hover);
+  ctx.lineTo(bx + 20, boss.y + 55 + hover);
+  ctx.lineTo(bx + 15, boss.y + 35 + hover);
+  ctx.closePath();
+  ctx.fill();
+  
+  // Headdress stripes
+  ctx.strokeStyle = isFrozen ? '#67E8F9' : '#1E3A5F';
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 5; i++) {
+    ctx.beginPath();
+    ctx.moveTo(bx + 25 + i * 10, boss.y + 15 + hover);
+    ctx.lineTo(bx + 20 + i * 12, boss.y + 50 + hover);
+    ctx.stroke();
+  }
+  
+  // Face
+  ctx.fillStyle = isFrozen ? '#67E8F9' : '#A16207';
+  ctx.beginPath();
+  ctx.roundRect(bx + 30, boss.y + 20 + hover, 40, 35, 5);
+  ctx.fill();
+  
+  // Eyes - glowing
+  ctx.fillStyle = isFrozen ? '#fff' : (rage ? '#EF4444' : '#22D3EE');
+  ctx.shadowBlur = 15;
+  ctx.beginPath();
+  ctx.ellipse(bx + 40, boss.y + 32 + hover, 6, 4, 0, 0, Math.PI * 2);
+  ctx.ellipse(bx + 60, boss.y + 32 + hover, 6, 4, 0, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Crook and flail (arms)
+  ctx.strokeStyle = isFrozen ? '#A5F3FC' : '#CA8A04';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(bx + 15, boss.y + 45 + hover);
+  ctx.lineTo(bx - 10, boss.y + 70);
+  ctx.lineTo(bx - 15, boss.y + 50);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(bx + 85, boss.y + 45 + hover);
+  ctx.lineTo(bx + 110, boss.y + 70);
+  ctx.stroke();
+  
+  // Ankh symbol on chest
+  ctx.strokeStyle = isFrozen ? '#fff' : '#FDE68A';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(bx + 50, boss.y + 55 + hover, 6, 0, Math.PI * 2);
+  ctx.moveTo(bx + 50, boss.y + 61 + hover);
+  ctx.lineTo(bx + 50, boss.y + 80 + hover);
+  ctx.moveTo(bx + 42, boss.y + 68 + hover);
+  ctx.lineTo(bx + 58, boss.y + 68 + hover);
+  ctx.stroke();
+}
+
+function drawCrystalQueen(ctx, boss, bx, time, isFrozen, rage, pulse) {
+  const shimmer = Math.sin(time * 0.1) * 0.3 + 0.7;
+  const rotate = time * 0.02;
+  
+  // Floating crystal shards around her
+  for (let i = 0; i < 6; i++) {
+    const angle = rotate + i * Math.PI / 3;
+    const dist = 50 + Math.sin(time * 0.08 + i) * 10;
+    const cx = bx + 50 + Math.cos(angle) * dist;
+    const cy = boss.y + 50 + Math.sin(angle) * dist * 0.6;
+    
+    ctx.fillStyle = isFrozen ? '#67E8F9' : `rgba(232, 121, 249, ${shimmer})`;
+    ctx.shadowColor = '#E879F9';
+    ctx.shadowBlur = 10;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(angle);
+    ctx.beginPath();
+    ctx.moveTo(0, -12);
+    ctx.lineTo(6, 0);
+    ctx.lineTo(0, 12);
+    ctx.lineTo(-6, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+  
+  // Crystal body
+  ctx.fillStyle = isFrozen ? '#67E8F9' : '#E879F9';
+  ctx.shadowColor = isFrozen ? '#67E8F9' : '#F472B6';
+  ctx.shadowBlur = 25;
+  ctx.beginPath();
+  ctx.moveTo(bx + 50, boss.y + 10);
+  ctx.lineTo(bx + 80, boss.y + 50);
+  ctx.lineTo(bx + 70, boss.y + 95);
+  ctx.lineTo(bx + 30, boss.y + 95);
+  ctx.lineTo(bx + 20, boss.y + 50);
+  ctx.closePath();
+  ctx.fill();
+  
+  // Inner crystal facets
+  ctx.strokeStyle = isFrozen ? '#A5F3FC' : '#F9A8D4';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(bx + 50, boss.y + 10);
+  ctx.lineTo(bx + 50, boss.y + 95);
+  ctx.moveTo(bx + 35, boss.y + 50);
+  ctx.lineTo(bx + 65, boss.y + 50);
+  ctx.stroke();
+  
+  // Crown
+  ctx.fillStyle = isFrozen ? '#A5F3FC' : '#C084FC';
+  ctx.beginPath();
+  ctx.moveTo(bx + 35, boss.y + 15);
+  ctx.lineTo(bx + 30, boss.y - 10);
+  ctx.lineTo(bx + 40, boss.y + 5);
+  ctx.lineTo(bx + 50, boss.y - 15);
+  ctx.lineTo(bx + 60, boss.y + 5);
+  ctx.lineTo(bx + 70, boss.y - 10);
+  ctx.lineTo(bx + 65, boss.y + 15);
+  ctx.closePath();
+  ctx.fill();
+  
+  // Face
+  ctx.fillStyle = isFrozen ? '#fff' : (rage ? '#EF4444' : '#F0ABFC');
+  ctx.shadowBlur = 15;
+  ctx.beginPath();
+  ctx.arc(bx + 40, boss.y + 35, 6, 0, Math.PI * 2);
+  ctx.arc(bx + 60, boss.y + 35, 6, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Smile/mouth
+  ctx.strokeStyle = isFrozen ? '#67E8F9' : '#A855F7';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(bx + 50, boss.y + 45, 10, 0.2, Math.PI - 0.2);
+  ctx.stroke();
+}
+
+function drawOmegaPrime(ctx, boss, bx, time, isFrozen, rage, pulse) {
+  const scanLine = (time * 2) % 100;
+  
+  // Mechanical body
+  ctx.fillStyle = isFrozen ? '#67E8F9' : '#1E293B';
+  ctx.shadowColor = isFrozen ? '#67E8F9' : '#10B981';
+  ctx.shadowBlur = 20;
+  ctx.beginPath();
+  ctx.roundRect(bx + 15, boss.y + 30, 70, 65, 8);
+  ctx.fill();
+  
+  // Chest reactor core
+  ctx.fillStyle = isFrozen ? '#A5F3FC' : (rage ? '#EF4444' : '#10B981');
+  ctx.shadowBlur = 30;
+  ctx.beginPath();
+  ctx.arc(bx + 50, boss.y + 55, 15 + pulse * 5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.arc(bx + 50, boss.y + 55, 8, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Head
+  ctx.fillStyle = isFrozen ? '#67E8F9' : '#334155';
+  ctx.shadowBlur = 15;
+  ctx.beginPath();
+  ctx.roundRect(bx + 25, boss.y + 5, 50, 35, 5);
+  ctx.fill();
+  
+  // Visor
+  ctx.fillStyle = isFrozen ? '#A5F3FC' : (rage ? '#EF4444' : '#22D3EE');
+  ctx.shadowBlur = 20;
+  ctx.beginPath();
+  ctx.roundRect(bx + 30, boss.y + 15, 40, 12, 3);
+  ctx.fill();
+  
+  // Scanning line effect on visor
+  ctx.fillStyle = `rgba(255, 255, 255, ${0.8 - Math.abs(scanLine - 50) / 50})`;
+  ctx.fillRect(bx + 30, boss.y + 15 + scanLine / 10, 40, 2);
+  
+  // Antenna
+  ctx.strokeStyle = isFrozen ? '#A5F3FC' : '#475569';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(bx + 50, boss.y + 5);
+  ctx.lineTo(bx + 50, boss.y - 10);
+  ctx.stroke();
+  ctx.fillStyle = isFrozen ? '#67E8F9' : '#10B981';
+  ctx.beginPath();
+  ctx.arc(bx + 50, boss.y - 12, 4, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Arms - mechanical
+  ctx.fillStyle = isFrozen ? '#A5F3FC' : '#475569';
+  ctx.shadowBlur = 10;
+  const armAngle = Math.sin(time * 0.1) * 0.2;
+  
+  // Left arm
+  ctx.save();
+  ctx.translate(bx + 15, boss.y + 45);
+  ctx.rotate(-0.3 + armAngle);
+  ctx.fillRect(-25, -8, 30, 16);
+  ctx.fillStyle = isFrozen ? '#67E8F9' : '#10B981';
+  ctx.beginPath();
+  ctx.arc(-28, 0, 10, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+  
+  // Right arm
+  ctx.save();
+  ctx.translate(bx + 85, boss.y + 45);
+  ctx.rotate(0.3 - armAngle);
+  ctx.fillStyle = isFrozen ? '#A5F3FC' : '#475569';
+  ctx.fillRect(-5, -8, 30, 16);
+  ctx.fillStyle = isFrozen ? '#67E8F9' : '#10B981';
+  ctx.beginPath();
+  ctx.arc(28, 0, 10, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+  
+  // Legs
+  ctx.fillStyle = isFrozen ? '#A5F3FC' : '#334155';
+  ctx.fillRect(bx + 25, boss.y + 90, 18, 10);
+  ctx.fillRect(bx + 57, boss.y + 90, 18, 10);
+  
+  // Laser beam when attacking
+  if (boss.isAttacking) {
+    ctx.strokeStyle = `rgba(239, 68, 68, ${pulse})`;
+    ctx.lineWidth = 6;
+    ctx.shadowColor = '#EF4444';
+    ctx.shadowBlur = 30;
+    ctx.beginPath();
+    ctx.moveTo(bx + 50, boss.y + 55);
+    ctx.lineTo(bx + 50, boss.y + 150);
+    ctx.stroke();
+  }
+}
+
+function drawGenericBoss(ctx, boss, bx, time, isFrozen, rage, pulse) {
+  // Fallback generic boss rendering
+  ctx.fillStyle = isFrozen ? '#67E8F9' : '#7C3AED';
+  ctx.shadowColor = isFrozen ? '#67E8F9' : '#A855F7';
+  ctx.shadowBlur = 20;
+  
+  ctx.beginPath();
+  ctx.roundRect(bx + 10, boss.y + 20, 80, 80, 10);
+  ctx.fill();
+  
+  // Eyes
+  ctx.fillStyle = rage ? '#EF4444' : '#fff';
+  ctx.beginPath();
+  ctx.arc(bx + 35, boss.y + 50, 10, 0, Math.PI * 2);
+  ctx.arc(bx + 65, boss.y + 50, 10, 0, Math.PI * 2);
+  ctx.fill();
+  
+  ctx.fillStyle = '#000';
+  ctx.beginPath();
+  ctx.arc(bx + 35, boss.y + 50, 5, 0, Math.PI * 2);
+  ctx.arc(bx + 65, boss.y + 50, 5, 0, Math.PI * 2);
+  ctx.fill();
 }
