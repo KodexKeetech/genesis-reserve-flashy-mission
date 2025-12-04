@@ -360,9 +360,12 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           return;
         }
 
-        // LEVELS 1-9 - Hand-crafted levels
+        // LEVELS 1, 2, 4, 5, 7, 8 - Hand-crafted NON-BOSS levels only
+        // Boss levels (3, 6, 9) use procedural generation below for proper boss fights
         const levelData = getLevelConfig(level);
-        if (levelData) {
+        const isBossLevelCustom = level === 3 || level === 6 || level === 9;
+        
+        if (levelData && !isBossLevelCustom) {
           const { config: LEVEL_CONFIG, behaviors: ENEMY_BEHAVIORS } = levelData;
           const biome = getBiomeForLevel(level);
           state.biome = biome;
@@ -475,26 +478,6 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             if (section.portal) {
               state.goalX = section.portal.x;
             }
-            
-            // Handle boss levels
-            if (section.boss && LEVEL_CONFIG.isBossLevel) {
-              state.boss = {
-                x: section.boss.x,
-                y: section.boss.y,
-                width: 100,
-                height: 100,
-                health: biome.boss?.health || 20,
-                maxHealth: biome.boss?.health || 20,
-                type: section.boss.type,
-                name: section.boss.name,
-                phase: 1,
-                attackCooldown: 0,
-                isAttacking: false,
-                velocityX: 0,
-                velocityY: 0,
-                frozen: 0
-              };
-            }
           }
           
           // Add crumbling platforms behavior tracking
@@ -502,21 +485,16 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             .filter(p => p.type === 'crumbling')
             .map(p => ({ ...p, touched: false, crumbleTimer: p.crumbleTime || 45, originalY: p.y }));
           
-          // Add checkpoint (non-boss levels only)
-          if (!LEVEL_CONFIG.isBossLevel) {
-            const midX = state.levelWidth / 2;
-            state.checkpoint = {
-              x: midX - 20,
-              y: 340,
-              width: 40,
-              height: 60,
-              activated: false
-            };
-            state.checkpointActivated = false;
-          } else {
-            state.checkpoint = null;
-            state.checkpointActivated = false;
-          }
+          // Add checkpoint at middle of level
+          const midX = state.levelWidth / 2;
+          state.checkpoint = {
+            x: midX - 20,
+            y: 340,
+            width: 40,
+            height: 60,
+            activated: false
+          };
+          state.checkpointActivated = false;
           
           // Store secret hint if exists
           if (LEVEL_CONFIG.secretHint) {
