@@ -482,6 +482,11 @@ export default function Game() {
               level={level}
               onStart={handleStartTutorial}
               onNextLevel={handleSkipTutorial}
+              difficulty={difficulty}
+              onDifficultyChange={(d) => {
+                setDifficulty(d);
+                localStorage.setItem('jeff_difficulty', d);
+              }}
             />
           </div>
         )}
