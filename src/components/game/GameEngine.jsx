@@ -4140,8 +4140,17 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       }
       
       // Check win condition (boss must be defeated on boss levels)
-      const bossDefeated = !isBossLevel(currentLevel) || state.boss === null;
-      if (player.x > state.goalX && bossDefeated) {
+      // On boss levels, portal only appears after boss is defeated
+      const isBoss = isBossLevel(currentLevel);
+      const bossDefeated = !isBoss || state.boss === null;
+      
+      // Update goal position for boss levels - portal appears after boss dies
+      if (isBoss && state.boss === null && !state.bossPortalSpawned) {
+        state.bossPortalSpawned = true;
+        state.goalX = 550; // Center of arena
+      }
+      
+      if (player.x > state.goalX - 30 && player.x < state.goalX + 90 && bossDefeated) {
         soundManager.playLevelComplete();
         onLevelComplete();
         return;
