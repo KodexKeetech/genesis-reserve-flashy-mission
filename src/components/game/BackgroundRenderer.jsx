@@ -41,6 +41,21 @@ export function drawBackground(ctx, biome, time, cameraX) {
     case 'void':
       drawVoidBackground(ctx, time, cameraX);
       break;
+    case 'sky':
+      drawSkyBackground(ctx, time, cameraX);
+      break;
+    case 'ruins':
+      drawRuinsBackground(ctx, time, cameraX);
+      break;
+    case 'crystal':
+      drawCrystalBackground(ctx, time, cameraX);
+      break;
+    case 'techno':
+      drawTechnoBackground(ctx, time, cameraX);
+      break;
+    case 'arcane':
+      // Already handled above, but fallback
+      break;
   }
 }
 
