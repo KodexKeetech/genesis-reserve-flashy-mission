@@ -55,6 +55,7 @@ export default function Game() {
   const [sessionCrystals, setSessionCrystals] = useState(0);
   const [coinAmmo, setCoinAmmo] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
+  const [checkpointData, setCheckpointData] = useState(null);
   
   const [startingGun, setStartingGun] = useState(0);
   const [currentGun, setCurrentGun] = useState(0);
@@ -322,6 +323,10 @@ export default function Game() {
     }
   }, []);
 
+  const handleCheckpointActivated = useCallback((checkpoint) => {
+    setCheckpointData(checkpoint);
+  }, []);
+
   const handleGameOver = useCallback(() => {
     setGameState('gameOver');
     if (sessionScraps > 0 || sessionCrystals > 0) {
@@ -330,6 +335,23 @@ export default function Game() {
     // Save the gun the player was using
     saveGunPreference(currentGun);
   }, [sessionScraps, sessionCrystals, saveScraps, currentGun, saveGunPreference]);
+
+  const handleContinueFromCheckpoint = useCallback(() => {
+    // Reset input to prevent auto-movement
+    gameInputRef.current = {
+      move: { x: 0, y: 0 },
+      aim: { x: 0, y: 0 },
+      jump: false,
+      dash: false,
+      cast: false,
+      switch: false,
+      aoeBlast: false,
+      reflectShield: false,
+      hover: false
+    };
+    setHealth(50);
+    setGameState('playing');
+  }, []);
 
   const handleLevelComplete = useCallback(() => {
     setGameState('levelComplete');
@@ -451,6 +473,8 @@ export default function Game() {
                 startingGun={startingGun}
                 gameSettings={gameSettings}
                 onGunChange={handleGunChange}
+                onCheckpointActivated={handleCheckpointActivated}
+                continueFromCheckpoint={gameState === 'playing' && checkpointData}
               />
             )}
 
@@ -472,6 +496,8 @@ export default function Game() {
               level={level}
               onRestart={handleRestart}
               onNextLevel={handleNextLevel}
+              hasCheckpoint={!!checkpointData}
+              onContinueFromCheckpoint={handleContinueFromCheckpoint}
             />
           </div>
         )}
