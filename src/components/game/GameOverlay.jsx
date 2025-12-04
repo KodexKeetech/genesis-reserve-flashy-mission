@@ -503,23 +503,10 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
                 Continue Adventure
               </Button>
               
-              <Button
-                onClick={() => {
-                  const saveData = {
-                    level: level + 1,
-                    score,
-                    savedAt: new Date().toISOString()
-                  };
-                  localStorage.setItem('jeff_save_game', JSON.stringify(saveData));
-                  alert('Game saved!');
-                }}
-                size="lg"
-                variant="outline"
-                className="border-2 border-emerald-400/70 text-emerald-300 hover:bg-emerald-500/20 font-bold px-6 py-4 rounded-xl backdrop-blur-sm bg-black/30"
-              >
-                <Save className="w-5 h-5 mr-2" />
-                Save Progress
-              </Button>
+              <p className="text-emerald-400 text-sm flex items-center justify-center gap-2">
+                <Save className="w-4 h-4" />
+                Progress saved automatically
+              </p>
             </motion.div>
           </motion.div>
         </div>

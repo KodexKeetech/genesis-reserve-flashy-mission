@@ -416,8 +416,16 @@ export default function Game() {
     }
     // Save the gun and clear checkpoint for next level
     saveGunPreference(currentGun);
-      setStartingGun(currentGun);
-    }, [sessionScraps, sessionCrystals, saveScraps, level, currentGun, saveGunPreference]);
+    setStartingGun(currentGun);
+    
+    // Auto-save progress
+    const saveData = {
+      level: level + 1,
+      score,
+      savedAt: new Date().toISOString()
+    };
+    localStorage.setItem('jeff_save_game', JSON.stringify(saveData));
+  }, [sessionScraps, sessionCrystals, saveScraps, level, currentGun, saveGunPreference, score]);
 
   const handleScoreChange = useCallback((newScore) => {
     setScore(newScore);
