@@ -548,9 +548,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       state.platforms.push({ x: 500, y: 280, width: 120, height: 20, type: 'normal' });
       
       // Calculate boss difficulty multiplier for harder boss levels
+      const bossDiffSettings = getDifficultySettings(level, difficulty);
       const hardBossLevels = [15, 18, 21, 24];
       const isHardBoss = hardBossLevels.includes(level);
-      const healthMultiplier = isHardBoss ? 1.5 : 1;
+      const healthMultiplier = bossDiffSettings.bossHealthMultiplier * (isHardBoss ? 1.3 : 1);
       
       // Spawn boss
       state.boss = {
