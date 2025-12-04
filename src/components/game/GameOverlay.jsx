@@ -114,9 +114,34 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
             </div>
           </div>
 
-          <p className="text-slate-400 mb-2 md:mb-6 text-xs md:text-sm">
+          <p className="text-slate-400 mb-2 md:mb-4 text-xs md:text-sm">
             Collect coins 🪙 and reach the portal!
           </p>
+          
+          {/* Difficulty Selection */}
+          <div className="mb-3 md:mb-5">
+            <p className="text-slate-500 text-xs mb-2">Select Difficulty:</p>
+            <div className="flex gap-2 justify-center">
+              {Object.entries(DIFFICULTY_MODES).map(([key, mode]) => (
+                <button
+                  key={key}
+                  onClick={() => handleDifficultySelect(key)}
+                  className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg border-2 transition-all ${
+                    selectedDifficulty === key 
+                      ? 'border-white bg-white/10' 
+                      : 'border-slate-700 hover:border-slate-500 bg-slate-800/50'
+                  }`}
+                  style={{ borderColor: selectedDifficulty === key ? mode.color : undefined }}
+                >
+                  <span style={{ color: mode.color }}>{difficultyIcons[key]}</span>
+                  <span className="text-xs font-bold" style={{ color: mode.color }}>{mode.name}</span>
+                </button>
+              ))}
+            </div>
+            <p className="text-slate-500 text-[10px] mt-1">
+              {DIFFICULTY_MODES[selectedDifficulty]?.description}
+            </p>
+          </div>
           
           <div className="flex flex-col gap-2 md:gap-3">
             <Button
