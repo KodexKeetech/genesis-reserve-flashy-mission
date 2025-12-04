@@ -4228,9 +4228,11 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         for (const dec of state.decorations) {
           const dx = dec.x - state.cameraX;
           if (dx > -100 && dx < 900) {
-            if (currentLevel === 1) {
+            // Use Level 1 decorations for forest levels (1-3)
+            if (currentLevel >= 1 && currentLevel <= 3) {
               drawLevel1Decoration(ctx, dec, dx, time);
             }
+            // Other biomes can add their own decoration renderers later
           }
         }
       }
