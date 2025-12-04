@@ -270,14 +270,22 @@ export default function Game() {
       reflectShield: false,
       hover: false
     };
+    // Clear checkpoint data on full restart
+    setCheckpointData(null);
+    setRespawnAtCheckpoint(false);
     setGameState('playing');
     setScore(0);
-          setHealth(100);
-          setSessionScraps(0);
-          setSessionCrystals(0);
+    setHealth(100);
+    setSessionScraps(0);
+    setSessionCrystals(0);
     // Keep using the same gun
     setStartingGun(currentGun);
-  }, [currentGun]);
+    // Force level re-render by toggling
+    setLevel(prev => {
+      setTimeout(() => setLevel(prev), 0);
+      return -999;
+    });
+  }, [currentGun, level]);
 
   const handleNextLevel = useCallback(() => {
     // Reset input to prevent auto-movement
