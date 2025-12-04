@@ -680,6 +680,96 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         }
       }
       
+      // Add new environmental hazards based on level progression
+      if (level >= 4) {
+        // Add retractable spikes
+        const spikeCount = Math.min(3 + Math.floor(level / 3), 8);
+        for (let i = 0; i < spikeCount; i++) {
+          const spikeX = 400 + (i * (state.levelWidth - 600) / spikeCount);
+          state.environmentalHazards.push({
+            x: spikeX,
+            y: 480,
+            width: 40,
+            height: 20,
+            type: 'spikes',
+            damage: 20,
+            timer: i * 30,
+            extended: false,
+            extendDuration: 90,
+            retractDuration: 60
+          });
+        }
+      }
+      
+      if (level >= 7) {
+        // Add moving platforms
+        const movingCount = Math.min(2 + Math.floor(level / 5), 5);
+        for (let i = 0; i < movingCount; i++) {
+          const mpX = 500 + (i * (state.levelWidth - 800) / movingCount);
+          const isVertical = i % 2 === 0;
+          state.platforms.push({
+            x: mpX,
+            y: isVertical ? 350 : 400,
+            width: 80,
+            height: 20,
+            type: 'moving',
+            moveType: isVertical ? 'vertical' : 'horizontal',
+            startX: mpX,
+            startY: isVertical ? 350 : 400,
+            moveRange: isVertical ? 120 : 150,
+            moveSpeed: 1.5 + (level * 0.1),
+            moveTimer: i * 40
+          });
+        }
+      }
+      
+      if (level >= 10) {
+        // Add laser grids
+        const laserCount = Math.min(2 + Math.floor(level / 6), 4);
+        for (let i = 0; i < laserCount; i++) {
+          const laserX = 600 + (i * (state.levelWidth - 900) / laserCount);
+          state.environmentalHazards.push({
+            x: laserX,
+            y: 300,
+            width: 10,
+            height: 200,
+            type: 'laserGrid',
+            damage: 25,
+            active: true,
+            timer: i * 50,
+            activeDuration: 120,
+            inactiveDuration: 80
+          });
+        }
+      }
+      
+      if (level >= 13) {
+        // Add pressure plate traps
+        const trapCount = Math.min(2 + Math.floor(level / 7), 5);
+        for (let i = 0; i < trapCount; i++) {
+          const trapX = 450 + (i * (state.levelWidth - 700) / trapCount);
+          state.environmentalHazards.push({
+            x: trapX,
+            y: 490,
+            width: 60,
+            height: 10,
+            type: 'pressurePlate',
+            damage: 0,
+            triggered: false,
+            triggerCooldown: 0,
+            linkedHazard: {
+              x: trapX - 20,
+              y: 100,
+              width: 100,
+              height: 400,
+              type: 'trapBoulder',
+              active: false,
+              fallSpeed: 0
+            }
+          });
+        }
+      }
+      
       state.platforms.push({ x: currentX, y: 500, width: 400, height: 100, type: 'ground' });
       state.levelWidth = currentX + 400;
       state.goalX = currentX + 300;
@@ -2872,7 +2962,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             envHazard.fallSpeed = 2;
           }
         }
-        if (envHazard.falling) {
+        if (envHazard.type === 'icicle' && envHazard.falling) {
           envHazard.y += envHazard.fallSpeed;
           envHazard.fallSpeed += 0.3;
           if (envHazard.y > 600) {
@@ -2882,9 +2972,119 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           }
         }
         
-        // Check collision with player
+        // Retractable spikes
+        if (envHazard.type === 'spikes') {
+          envHazard.timer++;
+          const cycleLength = envHazard.extendDuration + envHazard.retractDuration;
+          const cyclePos = envHazard.timer % cycleLength;
+          envHazard.extended = cyclePos < envHazard.extendDuration;
+          envHazard.height = envHazard.extended ? 30 : 5;
+          envHazard.y = envHazard.extended ? 470 : 495;
+        }
+        
+        // Laser grids
+        if (envHazard.type === 'laserGrid') {
+          envHazard.timer++;
+          const cycleLength = envHazard.activeDuration + envHazard.inactiveDuration;
+          const cyclePos = envHazard.timer % cycleLength;
+          envHazard.active = cyclePos < envHazard.activeDuration;
+        }
+        
+        // Pressure plate traps
+        if (envHazard.type === 'pressurePlate') {
+          if (envHazard.triggerCooldown > 0) envHazard.triggerCooldown--;
+          
+          // Check if player or enemy steps on it
+          const plateRect = { x: envHazard.x, y: envHazard.y, width: envHazard.width, height: envHazard.height + 20 };
+          let triggered = false;
+          
+          if (checkCollision(player, plateRect) && player.onGround) {
+            triggered = true;
+          }
+          for (const enemy of state.enemies) {
+            if (checkCollision(enemy, plateRect)) {
+              triggered = true;
+              break;
+            }
+          }
+          
+          if (triggered && envHazard.triggerCooldown <= 0 && envHazard.linkedHazard) {
+            envHazard.triggered = true;
+            envHazard.linkedHazard.active = true;
+            envHazard.linkedHazard.fallSpeed = 0;
+            envHazard.triggerCooldown = 180;
+            soundManager.createOscillator('square', 150, 0.2, 0.1);
+          }
+          
+          // Update linked boulder
+          if (envHazard.linkedHazard && envHazard.linkedHazard.active) {
+            envHazard.linkedHazard.fallSpeed += 0.4;
+            envHazard.linkedHazard.y += envHazard.linkedHazard.fallSpeed;
+            
+            // Boulder damages both player and enemies
+            const boulderRect = {
+              x: envHazard.linkedHazard.x,
+              y: envHazard.linkedHazard.y,
+              width: envHazard.linkedHazard.width,
+              height: 40
+            };
+            
+            const isInvincible = player.invincible || player.powerUps.INVINCIBILITY > 0 || player.isDashing;
+            if (!isInvincible && checkCollision(player, boulderRect)) {
+              if (player.powerUps.SHIELD > 0 && player.powerUps.shieldHealth > 0) {
+                player.powerUps.shieldHealth--;
+                if (player.powerUps.shieldHealth <= 0) player.powerUps.SHIELD = 0;
+                soundManager.playShieldHit();
+              } else {
+                soundManager.playDamage();
+                player.health -= 30;
+                player.invincible = true;
+                player.invincibleTimer = 60;
+                player.velocityY = -8;
+                player.velocityX = player.x < boulderRect.x + 50 ? -6 : 6;
+                onHealthChange(player.health);
+              }
+            }
+            
+            // Damage enemies too
+            for (let i = state.enemies.length - 1; i >= 0; i--) {
+              if (checkCollision(state.enemies[i], boulderRect)) {
+                state.enemies[i].health -= 3;
+                if (state.enemies[i].health <= 0) {
+                  soundManager.playEnemyDefeat();
+                  state.enemies.splice(i, 1);
+                  state.score += 100;
+                  onScoreChange(state.score);
+                }
+              }
+            }
+            
+            if (envHazard.linkedHazard.y > 550) {
+              envHazard.linkedHazard.active = false;
+              envHazard.linkedHazard.y = 100;
+              envHazard.triggered = false;
+              // Impact particles
+              for (let i = 0; i < 10; i++) {
+                particles.push({
+                  x: envHazard.linkedHazard.x + 50,
+                  y: 500,
+                  velocityX: (Math.random() - 0.5) * 8,
+                  velocityY: -Math.random() * 6,
+                  life: 25,
+                  color: '#78716C'
+                });
+              }
+            }
+          }
+        }
+        
+        // Check collision with player (skip inactive hazards)
+        if (envHazard.type === 'laserGrid' && !envHazard.active) continue;
+        if (envHazard.type === 'spikes' && !envHazard.extended) continue;
+        if (envHazard.type === 'pressurePlate') continue;
+        
         const isInvincible = player.invincible || player.powerUps.INVINCIBILITY > 0 || player.isDashing;
-        if (!isInvincible && checkCollision(player, envHazard)) {
+        if (!isInvincible && envHazard.damage > 0 && checkCollision(player, envHazard)) {
           if (player.powerUps.SHIELD > 0 && player.powerUps.shieldHealth > 0) {
             player.powerUps.shieldHealth--;
             if (player.powerUps.shieldHealth <= 0) player.powerUps.SHIELD = 0;
@@ -2896,6 +3096,34 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             player.invincibleTimer = 40;
             player.velocityY = -6;
             onHealthChange(player.health);
+          }
+        }
+      }
+      
+      // Update moving platforms
+      for (const platform of state.platforms) {
+        if (platform.type === 'moving') {
+          platform.moveTimer++;
+          const progress = Math.sin(platform.moveTimer * 0.02 * platform.moveSpeed);
+          
+          if (platform.moveType === 'vertical') {
+            platform.y = platform.startY + progress * platform.moveRange;
+          } else {
+            platform.x = platform.startX + progress * platform.moveRange;
+          }
+          
+          // Move player with platform if standing on it
+          if (player.onGround) {
+            const onPlatform = player.x + player.width > platform.x &&
+                              player.x < platform.x + platform.width &&
+                              Math.abs((player.y + player.height) - platform.y) < 10;
+            if (onPlatform) {
+              if (platform.moveType === 'horizontal') {
+                const newProgress = Math.sin((platform.moveTimer + 1) * 0.02 * platform.moveSpeed);
+                const deltaX = (newProgress - progress) * platform.moveRange;
+                player.x += deltaX;
+              }
+            }
           }
         }
       }
@@ -3672,7 +3900,40 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       for (const platform of platforms) {
         const px = platform.x - state.cameraX;
         if (px > -platform.width && px < 800) {
-          if (state.biome) {
+          if (platform.type === 'moving') {
+            // Draw moving platform with special styling
+            const moveGlow = Math.sin(time * 0.1) * 0.3 + 0.7;
+            ctx.fillStyle = '#3B82F6';
+            ctx.shadowColor = '#60A5FA';
+            ctx.shadowBlur = 10 * moveGlow;
+            ctx.beginPath();
+            ctx.roundRect(px, platform.y, platform.width, platform.height, 4);
+            ctx.fill();
+            // Arrow indicator
+            ctx.fillStyle = '#93C5FD';
+            if (platform.moveType === 'vertical') {
+              ctx.beginPath();
+              ctx.moveTo(px + platform.width / 2, platform.y + 5);
+              ctx.lineTo(px + platform.width / 2 - 8, platform.y + 12);
+              ctx.lineTo(px + platform.width / 2 + 8, platform.y + 12);
+              ctx.closePath();
+              ctx.fill();
+            } else {
+              ctx.beginPath();
+              ctx.moveTo(px + 8, platform.y + platform.height / 2);
+              ctx.lineTo(px + 15, platform.y + platform.height / 2 - 6);
+              ctx.lineTo(px + 15, platform.y + platform.height / 2 + 6);
+              ctx.closePath();
+              ctx.fill();
+              ctx.beginPath();
+              ctx.moveTo(px + platform.width - 8, platform.y + platform.height / 2);
+              ctx.lineTo(px + platform.width - 15, platform.y + platform.height / 2 - 6);
+              ctx.lineTo(px + platform.width - 15, platform.y + platform.height / 2 + 6);
+              ctx.closePath();
+              ctx.fill();
+            }
+            ctx.shadowBlur = 0;
+          } else if (state.biome) {
             drawPlatform(ctx, platform, px, time, state.biome);
           }
         }
@@ -3682,7 +3943,105 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       for (const envHazard of state.environmentalHazards) {
         const hx = envHazard.x - state.cameraX;
         if (hx > -envHazard.width && hx < 800) {
-          drawEnvironmentalHazard(ctx, envHazard, hx, time, state.biome?.key);
+          // Draw new hazard types
+          if (envHazard.type === 'spikes') {
+            // Retractable spikes
+            const spikeHeight = envHazard.extended ? 25 : 5;
+            ctx.fillStyle = '#475569';
+            ctx.fillRect(hx, envHazard.y + (envHazard.extended ? 0 : 20), envHazard.width, 10);
+            
+            if (envHazard.extended) {
+              ctx.fillStyle = '#94A3B8';
+              const spikeCount = 4;
+              for (let i = 0; i < spikeCount; i++) {
+                const sx = hx + 5 + i * 10;
+                ctx.beginPath();
+                ctx.moveTo(sx, envHazard.y + 10);
+                ctx.lineTo(sx + 5, envHazard.y - 15);
+                ctx.lineTo(sx + 10, envHazard.y + 10);
+                ctx.closePath();
+                ctx.fill();
+              }
+              // Danger glow
+              ctx.shadowColor = '#EF4444';
+              ctx.shadowBlur = 8;
+              ctx.strokeStyle = '#EF4444';
+              ctx.lineWidth = 1;
+              ctx.stroke();
+              ctx.shadowBlur = 0;
+            }
+          } else if (envHazard.type === 'laserGrid') {
+            if (envHazard.active) {
+              // Active laser
+              ctx.strokeStyle = '#EF4444';
+              ctx.shadowColor = '#EF4444';
+              ctx.shadowBlur = 20 + Math.sin(time * 0.3) * 10;
+              ctx.lineWidth = 4;
+              ctx.beginPath();
+              ctx.moveTo(hx + 5, envHazard.y);
+              ctx.lineTo(hx + 5, envHazard.y + envHazard.height);
+              ctx.stroke();
+              // Inner white core
+              ctx.strokeStyle = '#FCA5A5';
+              ctx.lineWidth = 2;
+              ctx.stroke();
+              ctx.shadowBlur = 0;
+              // Emitter nodes
+              ctx.fillStyle = '#1F2937';
+              ctx.fillRect(hx - 5, envHazard.y - 10, 20, 15);
+              ctx.fillRect(hx - 5, envHazard.y + envHazard.height - 5, 20, 15);
+              ctx.fillStyle = '#EF4444';
+              ctx.beginPath();
+              ctx.arc(hx + 5, envHazard.y, 4, 0, Math.PI * 2);
+              ctx.arc(hx + 5, envHazard.y + envHazard.height, 4, 0, Math.PI * 2);
+              ctx.fill();
+            } else {
+              // Inactive - just show emitters
+              ctx.fillStyle = '#1F2937';
+              ctx.fillRect(hx - 5, envHazard.y - 10, 20, 15);
+              ctx.fillRect(hx - 5, envHazard.y + envHazard.height - 5, 20, 15);
+              ctx.fillStyle = '#475569';
+              ctx.beginPath();
+              ctx.arc(hx + 5, envHazard.y, 4, 0, Math.PI * 2);
+              ctx.arc(hx + 5, envHazard.y + envHazard.height, 4, 0, Math.PI * 2);
+              ctx.fill();
+              // Warning flicker before activation
+              const cyclePos = envHazard.timer % (envHazard.activeDuration + envHazard.inactiveDuration);
+              if (cyclePos > envHazard.inactiveDuration - 30 && Math.floor(time / 5) % 2 === 0) {
+                ctx.fillStyle = '#FBBF24';
+                ctx.beginPath();
+                ctx.arc(hx + 5, envHazard.y, 3, 0, Math.PI * 2);
+                ctx.arc(hx + 5, envHazard.y + envHazard.height, 3, 0, Math.PI * 2);
+                ctx.fill();
+              }
+            }
+          } else if (envHazard.type === 'pressurePlate') {
+            // Pressure plate
+            ctx.fillStyle = envHazard.triggered ? '#FBBF24' : '#78716C';
+            ctx.fillRect(hx, envHazard.y, envHazard.width, envHazard.height);
+            ctx.fillStyle = envHazard.triggered ? '#F59E0B' : '#57534E';
+            ctx.fillRect(hx + 5, envHazard.y + 2, envHazard.width - 10, envHazard.height - 4);
+            
+            // Draw linked boulder if active
+            if (envHazard.linkedHazard && envHazard.linkedHazard.active) {
+              const bx = envHazard.linkedHazard.x - state.cameraX;
+              ctx.fillStyle = '#78716C';
+              ctx.shadowColor = '#57534E';
+              ctx.shadowBlur = 10;
+              ctx.beginPath();
+              ctx.arc(bx + 50, envHazard.linkedHazard.y + 20, 35, 0, Math.PI * 2);
+              ctx.fill();
+              // Rock texture
+              ctx.fillStyle = '#A8A29E';
+              ctx.beginPath();
+              ctx.arc(bx + 40, envHazard.linkedHazard.y + 10, 8, 0, Math.PI * 2);
+              ctx.arc(bx + 60, envHazard.linkedHazard.y + 25, 6, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.shadowBlur = 0;
+            }
+          } else {
+            drawEnvironmentalHazard(ctx, envHazard, hx, time, state.biome?.key);
+          }
         }
       }
       
