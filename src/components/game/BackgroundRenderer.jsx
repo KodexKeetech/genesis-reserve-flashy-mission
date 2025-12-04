@@ -349,6 +349,473 @@ function drawArcaneBackground(ctx, time, cameraX) {
   ctx.fillRect(0, 500, 800, 100);
 }
 
+function drawSecretBackground(ctx, biome, time, cameraX) {
+  const hiddenLevelId = biome.hiddenLevelId;
+  const bg = biome.background;
+  
+  // Base gradient from biome background
+  const gradient = ctx.createLinearGradient(0, 0, 0, 600);
+  gradient.addColorStop(0, bg.sky[0]);
+  gradient.addColorStop(0.5, bg.sky[1]);
+  gradient.addColorStop(1, bg.sky[2]);
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, 800, 600);
+  
+  // Stars if enabled
+  if (bg.stars) {
+    drawStars(ctx, time, cameraX, false);
+  }
+  
+  // Draw unique elements based on secret level type
+  switch (hiddenLevelId) {
+    case 'forest-secret':
+      drawFairyGroveBackground(ctx, time, cameraX);
+      break;
+    case 'volcano-secret':
+      drawLavaCoreBackground(ctx, time, cameraX);
+      break;
+    case 'ice-secret':
+      drawFrozenTempleBackground(ctx, time, cameraX);
+      break;
+    case 'void-secret':
+      drawHeartOfDarknessBackground(ctx, time, cameraX);
+      break;
+    case 'ultimate-challenge':
+      drawGauntletBackground(ctx, time, cameraX);
+      break;
+    case 'arcane-secret':
+      drawForbiddenLibraryBackground(ctx, time, cameraX);
+      break;
+    default:
+      drawSpaceBackground(ctx, time, cameraX);
+  }
+}
+
+function drawFairyGroveBackground(ctx, time, cameraX) {
+  // Magical giant mushrooms
+  for (let i = 0; i < 5; i++) {
+    const mx = ((i * 200 - cameraX * 0.1) % 1100) - 100;
+    const mushHeight = 150 + (i % 3) * 50;
+    
+    // Stem
+    ctx.fillStyle = '#8B7355';
+    ctx.beginPath();
+    ctx.moveTo(mx + 20, 500);
+    ctx.quadraticCurveTo(mx + 15, 500 - mushHeight / 2, mx + 25, 500 - mushHeight);
+    ctx.quadraticCurveTo(mx + 35, 500 - mushHeight / 2, mx + 30, 500);
+    ctx.fill();
+    
+    // Cap
+    const capGlow = Math.sin(time * 0.05 + i) * 0.2 + 0.8;
+    ctx.fillStyle = `rgba(236, 72, 153, ${capGlow})`;
+    ctx.shadowColor = '#EC4899';
+    ctx.shadowBlur = 20;
+    ctx.beginPath();
+    ctx.ellipse(mx + 25, 500 - mushHeight, 40 + (i % 2) * 15, 25, 0, Math.PI, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    
+    // Spots
+    ctx.fillStyle = '#FDF4FF';
+    ctx.beginPath();
+    ctx.arc(mx + 15, 500 - mushHeight - 10, 5, 0, Math.PI * 2);
+    ctx.arc(mx + 35, 500 - mushHeight - 8, 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  
+  // Fairy lights (many floating orbs)
+  for (let i = 0; i < 40; i++) {
+    const fx = ((i * 47 - cameraX * 0.15 + time * 0.3) % 900 + 900) % 900 - 50;
+    const fy = 100 + Math.sin(time * 0.03 + i * 0.5) * 50 + (i % 5) * 80;
+    const pulse = Math.sin(time * 0.1 + i * 2) * 0.4 + 0.6;
+    const colors = ['#EC4899', '#8B5CF6', '#22D3EE', '#FBBF24', '#22C55E'];
+    
+    ctx.fillStyle = colors[i % 5];
+    ctx.shadowColor = colors[i % 5];
+    ctx.shadowBlur = 15 * pulse;
+    ctx.globalAlpha = pulse;
+    ctx.beginPath();
+    ctx.arc(fx, fy, 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+  ctx.shadowBlur = 0;
+  
+  // Mystical vines
+  ctx.strokeStyle = '#166534';
+  ctx.lineWidth = 3;
+  for (let i = 0; i < 6; i++) {
+    const vx = ((i * 150 - cameraX * 0.2) % 1000) - 50;
+    ctx.beginPath();
+    ctx.moveTo(vx, 0);
+    for (let j = 0; j < 10; j++) {
+      ctx.lineTo(vx + Math.sin(j * 0.8 + time * 0.02) * 20, j * 60);
+    }
+    ctx.stroke();
+  }
+}
+
+function drawLavaCoreBackground(ctx, time, cameraX) {
+  // Intense lava glow from below
+  const coreGlow = ctx.createLinearGradient(0, 300, 0, 600);
+  coreGlow.addColorStop(0, 'rgba(234, 88, 12, 0)');
+  coreGlow.addColorStop(0.5, 'rgba(234, 88, 12, 0.4)');
+  coreGlow.addColorStop(1, 'rgba(239, 68, 68, 0.9)');
+  ctx.fillStyle = coreGlow;
+  ctx.fillRect(0, 300, 800, 300);
+  
+  // Molten rock formations
+  for (let i = 0; i < 8; i++) {
+    const rx = ((i * 130 - cameraX * 0.08) % 1100) - 100;
+    const rh = 80 + (i % 3) * 40;
+    
+    ctx.fillStyle = '#1C1917';
+    ctx.beginPath();
+    ctx.moveTo(rx, 500);
+    ctx.lineTo(rx + 20, 500 - rh);
+    ctx.lineTo(rx + 50, 500 - rh + 20);
+    ctx.lineTo(rx + 70, 500);
+    ctx.fill();
+    
+    // Lava veins
+    const veinGlow = Math.sin(time * 0.1 + i) * 0.3 + 0.7;
+    ctx.strokeStyle = `rgba(249, 115, 22, ${veinGlow})`;
+    ctx.shadowColor = '#F97316';
+    ctx.shadowBlur = 10;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(rx + 25, 500 - rh + 10);
+    ctx.lineTo(rx + 35, 500 - rh / 2);
+    ctx.lineTo(rx + 30, 500);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+  
+  // Large magma bubbles
+  for (let i = 0; i < 15; i++) {
+    const bx = ((i * 80 - cameraX * 0.05) % 900 + 900) % 900 - 50;
+    const by = 550 - (time * 0.5 + i * 40) % 200;
+    const bsize = 8 + (i % 4) * 4;
+    const pulse = Math.sin(time * 0.15 + i) * 0.3 + 0.7;
+    
+    ctx.fillStyle = `rgba(251, 191, 36, ${pulse})`;
+    ctx.shadowColor = '#FBBF24';
+    ctx.shadowBlur = 15;
+    ctx.beginPath();
+    ctx.arc(bx, by, bsize, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+  
+  // Heat distortion lines
+  ctx.strokeStyle = 'rgba(239, 68, 68, 0.2)';
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 10; i++) {
+    const hx = ((i * 100 - cameraX * 0.1) % 900) - 50;
+    ctx.beginPath();
+    ctx.moveTo(hx, 500);
+    for (let j = 0; j < 6; j++) {
+      ctx.lineTo(hx + Math.sin(time * 0.1 + j) * 10, 500 - j * 50);
+    }
+    ctx.stroke();
+  }
+}
+
+function drawFrozenTempleBackground(ctx, time, cameraX) {
+  // Aurora effect
+  for (let i = 0; i < 4; i++) {
+    const auroraY = 50 + i * 40;
+    const wave = Math.sin(time * 0.02 + i) * 30;
+    const auroraGrad = ctx.createLinearGradient(0, auroraY - 20, 0, auroraY + 40);
+    const colors = ['rgba(34, 211, 238, 0.3)', 'rgba(139, 92, 246, 0.2)', 'rgba(34, 211, 238, 0.3)'];
+    auroraGrad.addColorStop(0, 'transparent');
+    auroraGrad.addColorStop(0.5, colors[i % 3]);
+    auroraGrad.addColorStop(1, 'transparent');
+    
+    ctx.fillStyle = auroraGrad;
+    ctx.beginPath();
+    ctx.moveTo(0, auroraY + wave);
+    for (let x = 0; x <= 800; x += 20) {
+      ctx.lineTo(x, auroraY + Math.sin(x * 0.01 + time * 0.03 + i) * 20 + wave);
+    }
+    ctx.lineTo(800, auroraY + 60);
+    ctx.lineTo(0, auroraY + 60);
+    ctx.fill();
+  }
+  
+  // Ice pillars/temple columns
+  for (let i = 0; i < 6; i++) {
+    const px = ((i * 180 - cameraX * 0.12) % 1200) - 100;
+    const ph = 200 + (i % 2) * 80;
+    
+    ctx.fillStyle = 'rgba(186, 230, 253, 0.6)';
+    ctx.shadowColor = '#38BDF8';
+    ctx.shadowBlur = 15;
+    ctx.beginPath();
+    ctx.moveTo(px, 500);
+    ctx.lineTo(px + 10, 500 - ph);
+    ctx.lineTo(px + 40, 500 - ph);
+    ctx.lineTo(px + 50, 500);
+    ctx.fill();
+    
+    // Ice crystal top
+    ctx.fillStyle = '#E0F2FE';
+    ctx.beginPath();
+    ctx.moveTo(px + 25, 500 - ph - 30);
+    ctx.lineTo(px + 5, 500 - ph);
+    ctx.lineTo(px + 45, 500 - ph);
+    ctx.closePath();
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+  
+  // Floating ice shards
+  for (let i = 0; i < 20; i++) {
+    const sx = ((i * 60 - cameraX * 0.2) % 950 + 950) % 950 - 75;
+    const sy = 150 + Math.sin(time * 0.04 + i) * 40 + (i % 4) * 80;
+    const rot = time * 0.02 + i;
+    
+    ctx.save();
+    ctx.translate(sx, sy);
+    ctx.rotate(rot);
+    ctx.fillStyle = `rgba(165, 243, 252, ${0.4 + Math.sin(time * 0.1 + i) * 0.2})`;
+    ctx.beginPath();
+    ctx.moveTo(0, -15);
+    ctx.lineTo(8, 0);
+    ctx.lineTo(0, 15);
+    ctx.lineTo(-8, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+function drawHeartOfDarknessBackground(ctx, time, cameraX) {
+  // Swirling void vortex center
+  const vortexX = 400;
+  const vortexY = 200;
+  for (let ring = 5; ring >= 0; ring--) {
+    const ringSize = 80 + ring * 30;
+    const rotation = time * (0.01 + ring * 0.005) * (ring % 2 === 0 ? 1 : -1);
+    const alpha = 0.1 + ring * 0.05;
+    
+    ctx.strokeStyle = `rgba(168, 85, 247, ${alpha})`;
+    ctx.lineWidth = 3;
+    ctx.save();
+    ctx.translate(vortexX - cameraX * 0.05, vortexY);
+    ctx.rotate(rotation);
+    ctx.beginPath();
+    ctx.arc(0, 0, ringSize, 0, Math.PI * 1.5);
+    ctx.stroke();
+    ctx.restore();
+  }
+  
+  // Dark tendrils
+  ctx.strokeStyle = 'rgba(88, 28, 135, 0.4)';
+  ctx.lineWidth = 4;
+  for (let i = 0; i < 8; i++) {
+    const angle = (i / 8) * Math.PI * 2 + time * 0.01;
+    const tx = ((vortexX - cameraX * 0.05) + Math.cos(angle) * 150);
+    const ty = vortexY + Math.sin(angle) * 100;
+    
+    ctx.beginPath();
+    ctx.moveTo(vortexX - cameraX * 0.05, vortexY);
+    ctx.quadraticCurveTo(
+      tx + Math.sin(time * 0.05 + i) * 30,
+      ty + Math.cos(time * 0.05 + i) * 30,
+      tx + Math.cos(angle) * 200,
+      ty + Math.sin(angle) * 150
+    );
+    ctx.stroke();
+  }
+  
+  // Shadow particles being pulled in
+  for (let i = 0; i < 30; i++) {
+    const angle = (i / 30) * Math.PI * 2 + time * 0.02;
+    const dist = 100 + Math.sin(time * 0.1 + i) * 50 + (i % 5) * 30;
+    const px = vortexX - cameraX * 0.05 + Math.cos(angle) * dist;
+    const py = vortexY + Math.sin(angle) * dist * 0.6;
+    const size = 2 + (i % 3);
+    
+    ctx.fillStyle = `rgba(192, 132, 252, ${0.3 + Math.sin(time * 0.15 + i) * 0.2})`;
+    ctx.beginPath();
+    ctx.arc(px, py, size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  
+  // Void rifts
+  for (let i = 0; i < 4; i++) {
+    const rx = ((i * 250 - cameraX * 0.15) % 1000) - 100;
+    const ry = 350 + (i % 2) * 80;
+    const pulse = Math.sin(time * 0.08 + i * 2) * 0.4 + 0.6;
+    
+    ctx.strokeStyle = `rgba(168, 85, 247, ${pulse})`;
+    ctx.shadowColor = '#A855F7';
+    ctx.shadowBlur = 20;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.ellipse(rx + 40, ry, 40, 15, 0.2, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+}
+
+function drawGauntletBackground(ctx, time, cameraX) {
+  // Electric grid background
+  ctx.strokeStyle = 'rgba(34, 211, 238, 0.15)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x < 20; x++) {
+    const gx = ((x * 50 - cameraX * 0.1) % 1000) - 100;
+    ctx.beginPath();
+    ctx.moveTo(gx, 0);
+    ctx.lineTo(gx, 600);
+    ctx.stroke();
+  }
+  for (let y = 0; y < 12; y++) {
+    ctx.beginPath();
+    ctx.moveTo(0, y * 50);
+    ctx.lineTo(800, y * 50);
+    ctx.stroke();
+  }
+  
+  // Pulsing nodes at intersections
+  for (let i = 0; i < 15; i++) {
+    const nx = ((i * 100 - cameraX * 0.1) % 900 + 900) % 900 - 50;
+    const ny = (i * 70) % 550 + 25;
+    const pulse = Math.sin(time * 0.1 + i * 1.5) * 0.5 + 0.5;
+    
+    ctx.fillStyle = `rgba(34, 211, 238, ${pulse})`;
+    ctx.shadowColor = '#22D3EE';
+    ctx.shadowBlur = 10 * pulse;
+    ctx.beginPath();
+    ctx.arc(nx, ny, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+  
+  // Electric arcs
+  for (let i = 0; i < 5; i++) {
+    const ax = ((i * 200 - cameraX * 0.15 + time * 2) % 1000) - 100;
+    const ay = 100 + (i % 3) * 150;
+    
+    if (Math.sin(time * 0.2 + i * 3) > 0.7) {
+      ctx.strokeStyle = '#22D3EE';
+      ctx.shadowColor = '#22D3EE';
+      ctx.shadowBlur = 20;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(ax, ay);
+      for (let seg = 0; seg < 5; seg++) {
+        ctx.lineTo(ax + seg * 30 + (Math.random() - 0.5) * 20, ay + (Math.random() - 0.5) * 30);
+      }
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+  }
+  
+  // Tech panels
+  for (let i = 0; i < 4; i++) {
+    const px = ((i * 250 - cameraX * 0.08) % 1100) - 100;
+    ctx.fillStyle = 'rgba(30, 41, 59, 0.6)';
+    ctx.strokeStyle = 'rgba(34, 211, 238, 0.4)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(px, 400, 100, 80, 5);
+    ctx.fill();
+    ctx.stroke();
+    
+    // Screen glow
+    const screenGlow = Math.sin(time * 0.15 + i) * 0.3 + 0.5;
+    ctx.fillStyle = `rgba(16, 185, 129, ${screenGlow})`;
+    ctx.fillRect(px + 10, 410, 80, 30);
+  }
+}
+
+function drawForbiddenLibraryBackground(ctx, time, cameraX) {
+  // Floating bookshelves
+  for (let i = 0; i < 5; i++) {
+    const bx = ((i * 200 - cameraX * 0.1) % 1100) - 100;
+    const by = 200 + (i % 2) * 150 + Math.sin(time * 0.02 + i) * 10;
+    
+    // Shelf
+    ctx.fillStyle = '#3D2914';
+    ctx.fillRect(bx, by, 120, 80);
+    ctx.fillStyle = '#5D4024';
+    ctx.fillRect(bx, by, 120, 5);
+    ctx.fillRect(bx, by + 75, 120, 5);
+    
+    // Books
+    for (let b = 0; b < 8; b++) {
+      const bookColor = ['#6B21A8', '#1E40AF', '#065F46', '#9A3412', '#7C2D12'][b % 5];
+      ctx.fillStyle = bookColor;
+      ctx.fillRect(bx + 5 + b * 14, by + 10, 12, 60);
+    }
+  }
+  
+  // Glowing runes/symbols
+  for (let i = 0; i < 12; i++) {
+    const rx = ((i * 100 - cameraX * 0.15 + Math.sin(time * 0.01 + i) * 20) % 950 + 950) % 950 - 75;
+    const ry = 80 + (i % 4) * 120 + Math.sin(time * 0.03 + i * 2) * 15;
+    const pulse = Math.sin(time * 0.08 + i * 1.5) * 0.4 + 0.6;
+    
+    ctx.strokeStyle = `rgba(167, 139, 250, ${pulse})`;
+    ctx.shadowColor = '#A78BFA';
+    ctx.shadowBlur = 15 * pulse;
+    ctx.lineWidth = 2;
+    
+    ctx.save();
+    ctx.translate(rx, ry);
+    ctx.rotate(time * 0.01 + i);
+    
+    // Random rune pattern
+    ctx.beginPath();
+    if (i % 3 === 0) {
+      ctx.arc(0, 0, 15, 0, Math.PI * 2);
+      ctx.moveTo(-10, -10);
+      ctx.lineTo(10, 10);
+      ctx.moveTo(10, -10);
+      ctx.lineTo(-10, 10);
+    } else if (i % 3 === 1) {
+      ctx.moveTo(0, -15);
+      ctx.lineTo(15, 10);
+      ctx.lineTo(-15, 10);
+      ctx.closePath();
+    } else {
+      ctx.rect(-10, -10, 20, 20);
+      ctx.arc(0, 0, 8, 0, Math.PI * 2);
+    }
+    ctx.stroke();
+    ctx.restore();
+    ctx.shadowBlur = 0;
+  }
+  
+  // Floating pages
+  for (let i = 0; i < 15; i++) {
+    const px = ((i * 80 - cameraX * 0.2 + time * 0.5) % 900 + 900) % 900 - 50;
+    const py = 100 + Math.sin(time * 0.04 + i * 0.7) * 80 + (i % 3) * 100;
+    const rot = Math.sin(time * 0.03 + i) * 0.5;
+    
+    ctx.save();
+    ctx.translate(px, py);
+    ctx.rotate(rot);
+    ctx.fillStyle = `rgba(254, 252, 232, ${0.5 + Math.sin(time * 0.1 + i) * 0.2})`;
+    ctx.fillRect(-10, -15, 20, 30);
+    // Text lines
+    ctx.fillStyle = 'rgba(88, 28, 135, 0.3)';
+    for (let line = 0; line < 4; line++) {
+      ctx.fillRect(-7, -12 + line * 7, 14, 2);
+    }
+    ctx.restore();
+  }
+  
+  // Mystical fog
+  const fogGrad = ctx.createLinearGradient(0, 450, 0, 600);
+  fogGrad.addColorStop(0, 'rgba(99, 102, 241, 0)');
+  fogGrad.addColorStop(1, 'rgba(99, 102, 241, 0.25)');
+  ctx.fillStyle = fogGrad;
+  ctx.fillRect(0, 450, 800, 150);
+}
+
 function drawSpaceBackground(ctx, time, cameraX) {
   // Deep space gradient
   const gradient = ctx.createLinearGradient(0, 0, 0, 600);
