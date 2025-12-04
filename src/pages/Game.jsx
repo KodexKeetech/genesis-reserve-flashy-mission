@@ -257,6 +257,9 @@ export default function Game() {
     soundManager.init();
   }, []);
 
+  // Key to force GameEngine remount on full restart
+  const [gameKey, setGameKey] = useState(0);
+
   const handleRestart = useCallback(() => {
     // Reset input to prevent auto-movement
     gameInputRef.current = {
@@ -273,19 +276,16 @@ export default function Game() {
     // Clear checkpoint data on full restart
     setCheckpointData(null);
     setRespawnAtCheckpoint(false);
-    setGameState('playing');
     setScore(0);
     setHealth(100);
     setSessionScraps(0);
     setSessionCrystals(0);
     // Keep using the same gun
     setStartingGun(currentGun);
-    // Force level re-render by toggling
-    setLevel(prev => {
-      setTimeout(() => setLevel(prev), 0);
-      return -999;
-    });
-  }, [currentGun, level]);
+    // Force GameEngine remount to regenerate level
+    setGameKey(prev => prev + 1);
+    setGameState('playing');
+  }, [currentGun]);
 
   const handleNextLevel = useCallback(() => {
     // Reset input to prevent auto-movement
@@ -469,6 +469,7 @@ export default function Game() {
         )}
         {gameState === 'playing' && (
               <GameEngine
+                key={gameKey}
                 currentLevel={level}
                 onScoreChange={handleScoreChange}
                 onHealthChange={handleHealthChange}
