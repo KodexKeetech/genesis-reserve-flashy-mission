@@ -2966,24 +2966,44 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           powerUp.collected = true;
           
           // Play power-up sound
-                          soundManager.playPowerUp();
+          soundManager.playPowerUp();
 
-                          // Apply power-up effect
-                          const duration = POWERUP_TYPES[powerUp.type].duration;
-                          player.powerUps[powerUp.type] = duration;
+          // Apply power-up effect
+          const powerUpInfo = POWERUP_TYPES[powerUp.type];
+          if (powerUpInfo) {
+            const duration = powerUpInfo.duration;
+            player.powerUps[powerUp.type] = duration;
 
-                          // Special handling for shield
-                          if (powerUp.type === 'SHIELD') {
-                            player.powerUps.shieldHealth = 3;
-                          }
+            // Special handling for shield
+            if (powerUp.type === 'SHIELD') {
+              player.powerUps.shieldHealth = 3;
+            }
 
-                          state.score += 75;
-                          onScoreChange(state.score);
+            state.score += 75;
+            onScoreChange(state.score);
 
-                          // Enhanced power-up collect effect
-                          createPowerUpCollectEffect(particles, powerUp.x + powerUp.width / 2, powerUp.y + powerUp.height / 2, POWERUP_TYPES[powerUp.type].color);
-                        }
-                      }
+            // Enhanced power-up collect effect
+            createPowerUpCollectEffect(particles, powerUp.x + powerUp.width / 2, powerUp.y + powerUp.height / 2, powerUpInfo.color);
+          } else if (powerUp.type === 'HEAL') {
+            // Heal player
+            player.health = Math.min(player.health + 30, player.maxHealth);
+            onHealthChange(player.health);
+            state.score += 50;
+            onScoreChange(state.score);
+            // Heal particles
+            for (let i = 0; i < 10; i++) {
+              particles.push({
+                x: powerUp.x + powerUp.width / 2,
+                y: powerUp.y + powerUp.height / 2,
+                velocityX: (Math.random() - 0.5) * 4,
+                velocityY: -Math.random() * 4,
+                life: 25,
+                color: '#22C55E'
+              });
+            }
+          }
+        }
+      }
       
       // Update collectibles
       for (const collectible of collectibles) {
@@ -4419,6 +4439,9 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         const px = powerUp.x - state.cameraX;
         const bobY = powerUp.y + Math.sin(time * 0.12 + powerUp.bobOffset) * 6;
         const powerUpInfo = POWERUP_TYPES[powerUp.type];
+        
+        // Skip if unknown power-up type
+        if (!powerUpInfo) continue;
         
         // Outer glow ring
         ctx.strokeStyle = powerUpInfo.color;
