@@ -5260,65 +5260,70 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         }
       }
       
-      // Draw goal - Purple Portal
-      const goalX = state.goalX - state.cameraX;
-      if (goalX < 850) {
-        const portalCenterX = goalX + 30;
-        const portalCenterY = 420;
-        const portalWidth = 50;
-        const portalHeight = 80;
+      // Draw goal - Purple Portal (only show on boss levels after boss is defeated, or always on non-boss levels)
+      const isBoss = isBossLevel(currentLevel);
+      const shouldShowPortal = !isBoss || (isBoss && state.boss === null);
+      
+      if (shouldShowPortal) {
+        const goalX = state.goalX - state.cameraX;
+        if (goalX < 850 && goalX > -100) {
+          const portalCenterX = goalX + 30;
+          const portalCenterY = 420;
+          const portalWidth = 50;
+          const portalHeight = 80;
 
-        // Outer glow
-        ctx.shadowColor = '#A855F7';
-        ctx.shadowBlur = 30 + Math.sin(time * 0.1) * 10;
+          // Outer glow
+          ctx.shadowColor = '#A855F7';
+          ctx.shadowBlur = 30 + Math.sin(time * 0.1) * 10;
 
-        // Portal frame (dark purple)
-        ctx.strokeStyle = '#581C87';
-        ctx.lineWidth = 8;
-        ctx.beginPath();
-        ctx.ellipse(portalCenterX, portalCenterY, portalWidth, portalHeight, 0, 0, Math.PI * 2);
-        ctx.stroke();
-
-        // Inner portal swirl
-        const gradient = ctx.createRadialGradient(portalCenterX, portalCenterY, 0, portalCenterX, portalCenterY, portalWidth);
-        gradient.addColorStop(0, '#E9D5FF');
-        gradient.addColorStop(0.3, '#C084FC');
-        gradient.addColorStop(0.6, '#A855F7');
-        gradient.addColorStop(1, '#7C3AED');
-
-        ctx.fillStyle = gradient;
-        ctx.beginPath();
-        ctx.ellipse(portalCenterX, portalCenterY, portalWidth - 5, portalHeight - 5, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Swirling effect
-        ctx.save();
-        ctx.translate(portalCenterX, portalCenterY);
-        ctx.rotate(time * 0.05);
-        for (let i = 0; i < 3; i++) {
-          const angle = (i / 3) * Math.PI * 2 + time * 0.03;
-          const spiralX = Math.cos(angle) * (portalWidth - 20);
-          const spiralY = Math.sin(angle) * (portalHeight - 25);
-          ctx.fillStyle = `rgba(233, 213, 255, ${0.6 - i * 0.15})`;
+          // Portal frame (dark purple)
+          ctx.strokeStyle = '#581C87';
+          ctx.lineWidth = 8;
           ctx.beginPath();
-          ctx.arc(spiralX, spiralY, 8 - i * 2, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        ctx.restore();
+          ctx.ellipse(portalCenterX, portalCenterY, portalWidth, portalHeight, 0, 0, Math.PI * 2);
+          ctx.stroke();
 
-        // Floating particles around portal
-        for (let i = 0; i < 5; i++) {
-          const particleAngle = (i / 5) * Math.PI * 2 + time * 0.02;
-          const particleRadius = portalWidth + 15 + Math.sin(time * 0.1 + i) * 5;
-          const px = portalCenterX + Math.cos(particleAngle) * particleRadius;
-          const py = portalCenterY + Math.sin(particleAngle) * (particleRadius * 0.6);
-          ctx.fillStyle = '#C084FC';
+          // Inner portal swirl
+          const gradient = ctx.createRadialGradient(portalCenterX, portalCenterY, 0, portalCenterX, portalCenterY, portalWidth);
+          gradient.addColorStop(0, '#E9D5FF');
+          gradient.addColorStop(0.3, '#C084FC');
+          gradient.addColorStop(0.6, '#A855F7');
+          gradient.addColorStop(1, '#7C3AED');
+
+          ctx.fillStyle = gradient;
           ctx.beginPath();
-          ctx.arc(px, py, 3, 0, Math.PI * 2);
+          ctx.ellipse(portalCenterX, portalCenterY, portalWidth - 5, portalHeight - 5, 0, 0, Math.PI * 2);
           ctx.fill();
-        }
 
-        ctx.shadowBlur = 0;
+          // Swirling effect
+          ctx.save();
+          ctx.translate(portalCenterX, portalCenterY);
+          ctx.rotate(time * 0.05);
+          for (let i = 0; i < 3; i++) {
+            const angle = (i / 3) * Math.PI * 2 + time * 0.03;
+            const spiralX = Math.cos(angle) * (portalWidth - 20);
+            const spiralY = Math.sin(angle) * (portalHeight - 25);
+            ctx.fillStyle = `rgba(233, 213, 255, ${0.6 - i * 0.15})`;
+            ctx.beginPath();
+            ctx.arc(spiralX, spiralY, 8 - i * 2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.restore();
+
+          // Floating particles around portal
+          for (let i = 0; i < 5; i++) {
+            const particleAngle = (i / 5) * Math.PI * 2 + time * 0.02;
+            const particleRadius = portalWidth + 15 + Math.sin(time * 0.1 + i) * 5;
+            const px = portalCenterX + Math.cos(particleAngle) * particleRadius;
+            const py = portalCenterY + Math.sin(particleAngle) * (particleRadius * 0.6);
+            ctx.fillStyle = '#C084FC';
+            ctx.beginPath();
+            ctx.arc(px, py, 3, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          ctx.shadowBlur = 0;
+        }
       }
       
       animationId = requestAnimationFrame(gameLoop);
