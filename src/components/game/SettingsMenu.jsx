@@ -1,11 +1,12 @@
 import React from 'react';
 import { Volume2, VolumeX, Zap, Sparkles, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import ControlsConfig from './ControlsConfig';
 
 export default function SettingsMenu({ settings, onSettingsChange, onClose }) {
   return (
-    <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 rounded-xl">
-      <div className="bg-slate-900 border border-purple-500/50 rounded-xl p-6 w-80 max-w-[90%]">
+    <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 rounded-xl overflow-y-auto">
+      <div className="bg-slate-900 border border-purple-500/50 rounded-xl p-6 w-96 max-w-[95%] max-h-[90%] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-white">Settings</h2>
           <Button variant="ghost" size="icon" onClick={onClose} className="text-slate-400 hover:text-white">
@@ -76,6 +77,16 @@ export default function SettingsMenu({ settings, onSettingsChange, onClose }) {
               Off
             </Button>
           </div>
+        </div>
+
+        {/* Controls */}
+        <div className="mb-6">
+          <label className="text-slate-300 text-sm mb-2 block">Controls</label>
+          <ControlsConfig 
+            keybinds={settings.keybinds}
+            gamepadBinds={settings.gamepadBinds}
+            touchBinds={settings.touchBinds}
+          />
         </div>
 
         <Button onClick={onClose} className="w-full bg-gradient-to-r from-purple-600 to-blue-600">

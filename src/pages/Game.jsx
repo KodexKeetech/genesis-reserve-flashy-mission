@@ -61,7 +61,37 @@ export default function Game() {
   
   const [gameSettings, setGameSettings] = useState(() => {
     const saved = localStorage.getItem('jeff_settings');
-    return saved ? JSON.parse(saved) : { sound: true, graphics: 'high', particles: true };
+    const defaults = {
+      sound: true,
+      graphics: 'high',
+      particles: true,
+      keybinds: {
+        moveLeft: ['ArrowLeft', 'KeyA'],
+        moveRight: ['ArrowRight', 'KeyD'],
+        jump: ['ArrowUp', 'KeyW', 'Space'],
+        dash: ['ShiftLeft', 'ShiftRight'],
+        switchSpell: ['KeyQ'],
+        aoeBlast: ['KeyE'],
+        reflectShield: ['KeyR'],
+        hover: ['KeyF'],
+      },
+      gamepadBinds: {
+        move: 'L-Stick',
+        aim: 'R-Stick',
+        jump: 'A',
+        dash: 'LT',
+        cast: 'RT / X',
+        switchSpell: 'Y',
+        aoeBlast: 'LB',
+        reflectShield: 'RB',
+      },
+      touchBinds: {}
+    };
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return { ...defaults, ...parsed };
+    }
+    return defaults;
   });
   
   const gameInputRef = useRef({
