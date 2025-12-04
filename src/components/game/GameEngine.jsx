@@ -25,7 +25,7 @@ const POWERUP_TYPES = {
   SHIELD: { color: '#3B82F6', icon: '🛡️', duration: 400, name: 'Shield' }
 };
 
-export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel, onPowerUpChange, onAbilityCooldowns, onScrapsEarned, onCrystalsEarned, onCoinAmmoChange, savedCoinAmmo, playerUpgrades, unlockedAbilities, abilityUpgrades, gameInput, startingGun = 0, gameSettings = { sound: true, graphics: 'high', particles: true }, onGunChange }) {
+export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel, onPowerUpChange, onAbilityCooldowns, onScrapsEarned, onCrystalsEarned, onCoinAmmoChange, savedCoinAmmo, playerUpgrades, unlockedAbilities, abilityUpgrades, gameInput, startingGun = 0, gameSettings = { sound: true, graphics: 'high', particles: true }, onGunChange, onCheckpointActivated, continueFromCheckpoint }) {
   const canvasRef = useRef(null);
   const mouseRef = useRef({ x: 400, y: 300 }); // Track mouse position relative to canvas
   const gameStateRef = useRef({
@@ -2700,6 +2700,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           state.checkpointActivated = true;
           state.checkpoint.activated = true;
           soundManager.playPowerUp();
+          // Notify parent about checkpoint activation
+          if (onCheckpointActivated) {
+            onCheckpointActivated({ ...state.checkpoint });
+          }
           // Checkpoint activation particles
           for (let i = 0; i < 20; i++) {
             particles.push({
@@ -2711,6 +2715,27 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
               color: '#3B82F6'
             });
           }
+        }
+      }
+      
+      // Handle continue from checkpoint
+      if (continueFromCheckpoint && state.checkpoint && state.checkpointActivated) {
+        player.x = state.checkpoint.x;
+        player.y = state.checkpoint.y - player.height - 10;
+        player.velocityX = 0;
+        player.velocityY = 0;
+        player.invincible = true;
+        player.invincibleTimer = 120;
+        // Respawn particles
+        for (let i = 0; i < 15; i++) {
+          particles.push({
+            x: player.x + player.width / 2,
+            y: player.y + player.height / 2,
+            velocityX: (Math.random() - 0.5) * 5,
+            velocityY: (Math.random() - 0.5) * 5,
+            life: 25,
+            color: '#3B82F6'
+          });
         }
       }
       
