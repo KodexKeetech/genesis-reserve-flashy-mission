@@ -314,11 +314,50 @@ export const HIDDEN_LEVELS = {
   }
 };
 
+// Secret level background themes based on parent biome
+const SECRET_BACKGROUNDS = {
+  'forest-secret': {
+    sky: ['#0D1F12', '#1A3D20', '#0D1F12'],
+    stars: true,
+    particles: 'fairy'
+  },
+  'volcano-secret': {
+    sky: ['#1A0505', '#3D0A0A', '#1A0505'],
+    stars: false,
+    particles: 'magma'
+  },
+  'ice-secret': {
+    sky: ['#0A1A2E', '#1A3050', '#0A1A2E'],
+    stars: true,
+    particles: 'aurora'
+  },
+  'void-secret': {
+    sky: ['#050510', '#0A0A20', '#050510'],
+    stars: true,
+    particles: 'darkMatter'
+  },
+  'ultimate-challenge': {
+    sky: ['#0F0A1A', '#1A1030', '#0F0A1A'],
+    stars: true,
+    particles: 'electric'
+  },
+  'arcane-secret': {
+    sky: ['#100820', '#1A1040', '#100820'],
+    stars: true,
+    particles: 'runic'
+  }
+};
+
 export function getBiomeForLevel(level, hiddenLevelId = null) {
   // Handle hidden/secret levels
   if (hiddenLevelId && HIDDEN_LEVELS[hiddenLevelId]) {
     const hiddenLevel = HIDDEN_LEVELS[hiddenLevelId];
     const baseBiome = BIOMES[hiddenLevel.biome];
+    const secretBg = SECRET_BACKGROUNDS[hiddenLevelId] || {
+      sky: ['#020817', '#0A0F1F', '#020817'],
+      stars: true,
+      particles: 'cosmic'
+    };
     return { 
       key: 'secret', 
       ...baseBiome, 
@@ -326,11 +365,7 @@ export function getBiomeForLevel(level, hiddenLevelId = null) {
       hiddenLevelId,
       name: hiddenLevel.name,
       difficulty: hiddenLevel.difficulty,
-      background: {
-        sky: ['#020817', '#0A0F1F', '#020817'],
-        stars: true,
-        particles: 'cosmic'
-      }
+      background: secretBg
     };
   }
 
