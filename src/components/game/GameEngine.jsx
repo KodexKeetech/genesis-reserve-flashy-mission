@@ -2284,66 +2284,165 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           // Keep boss in arena
           boss.x = Math.max(350, Math.min(boss.x, 750));
           
+          // Initialize boss-specific state
+          if (boss.attackPattern === undefined) boss.attackPattern = 0;
+          if (boss.jumpCooldown === undefined) boss.jumpCooldown = 0;
+          if (boss.specialAttackCooldown === undefined) boss.specialAttackCooldown = 0;
+          if (boss.hoverY === undefined) boss.hoverY = boss.y;
+          if (boss.onGround === undefined) boss.onGround = true;
+          
+          // Update jump cooldown
+          if (boss.jumpCooldown > 0) boss.jumpCooldown--;
+          if (boss.specialAttackCooldown > 0) boss.specialAttackCooldown--;
+          
+          // Apply gravity for jumping bosses
+          if (boss.type === 'magmaGolem') {
+            if (!boss.onGround) {
+              boss.velocityY = (boss.velocityY || 0) + 0.5;
+              boss.y += boss.velocityY;
+              if (boss.y >= 400) {
+                boss.y = 400;
+                boss.velocityY = 0;
+                boss.onGround = true;
+                // Ground slam damage
+                for (let i = 0; i < 8; i++) {
+                  particles.push({
+                    x: boss.x + boss.width / 2 + (Math.random() - 0.5) * 60,
+                    y: boss.y + boss.height,
+                    velocityX: (Math.random() - 0.5) * 8,
+                    velocityY: -Math.random() * 5,
+                    life: 30,
+                    color: '#F97316'
+                  });
+                }
+                soundManager.createOscillator('sine', 80, 0.3, 0.4);
+              }
+            }
+          }
+          
+          // Storm Titan hover behavior
+          if (boss.type === 'stormTitan') {
+            // Hover above player
+            const targetY = Math.min(150, player.y - 150);
+            boss.hoverY += (targetY - boss.hoverY) * 0.02;
+            boss.y = boss.hoverY + Math.sin(time * 0.05) * 15;
+            
+            // Track player X more aggressively
+            const targetX = player.x - 25;
+            boss.x += (targetX - boss.x) * 0.03;
+            boss.x = Math.max(350, Math.min(boss.x, 750));
+          }
+          
           // Boss attacks
           if (boss.attackCooldown <= 0) {
             boss.isAttacking = true;
+            boss.attackPattern = (boss.attackPattern + 1) % 3;
             
             // Different attacks based on boss type
             if (boss.type === 'treant') {
-              // Spawn root hazards
-              for (let i = 0; i < 3; i++) {
-                state.hazards.push({
-                  x: 350 + i * 150,
-                  y: 480,
-                  width: 40,
-                  height: 30,
-                  life: 120,
-                  damage: 20,
-                  type: 'root'
-                });
-              }
-              // Throw leaves at player
-              const leafCount = boss.health < boss.maxHealth / 2 ? 5 : 3;
-              for (let i = 0; i < leafCount; i++) {
-                const angle = (Math.PI / 4) + (i * Math.PI / (leafCount * 2));
-                state.enemyProjectiles.push({
-                  x: boss.x + boss.width / 2,
-                  y: boss.y + 20,
-                  velocityX: Math.cos(angle) * dirToPlayer * 5,
-                  velocityY: -Math.sin(angle) * 4 + 2,
-                  width: 20,
-                  height: 12,
-                  life: 150,
-                  type: 'leaf'
-                });
+              if (boss.attackPattern === 0) {
+                // Spawn root hazards
+                for (let i = 0; i < 3; i++) {
+                  state.hazards.push({
+                    x: 350 + i * 150,
+                    y: 480,
+                    width: 40,
+                    height: 30,
+                    life: 120,
+                    damage: 20,
+                    type: 'root'
+                  });
+                }
+                // Throw leaves at player (spread)
+                const leafCount = boss.health < boss.maxHealth / 2 ? 5 : 3;
+                for (let i = 0; i < leafCount; i++) {
+                  const angle = (Math.PI / 4) + (i * Math.PI / (leafCount * 2));
+                  state.enemyProjectiles.push({
+                    x: boss.x + boss.width / 2,
+                    y: boss.y + 20,
+                    velocityX: Math.cos(angle) * dirToPlayer * 5,
+                    velocityY: -Math.sin(angle) * 4 + 2,
+                    width: 20,
+                    height: 12,
+                    life: 150,
+                    type: 'leaf'
+                  });
+                }
+              } else {
+                // Straight leaf shot attack - fires directly at player
+                const straightLeafCount = boss.health < boss.maxHealth / 2 ? 4 : 2;
+                for (let i = 0; i < straightLeafCount; i++) {
+                  state.enemyProjectiles.push({
+                    x: boss.x + boss.width / 2,
+                    y: boss.y + 30 + i * 15,
+                    velocityX: dirToPlayer * 7,
+                    velocityY: 0,
+                    width: 25,
+                    height: 10,
+                    life: 120,
+                    type: 'leaf'
+                  });
+                }
               }
               soundManager.createOscillator('sine', 300, 0.2, 0.3);
+              
             } else if (boss.type === 'magmaGolem') {
-              // Fire projectiles in spread
-              for (let i = -1; i <= 1; i++) {
+              if (boss.attackPattern === 0 && boss.onGround && boss.jumpCooldown <= 0) {
+                // Jump attack!
+                boss.velocityY = -15;
+                boss.onGround = false;
+                boss.jumpCooldown = 120;
+                soundManager.createOscillator('sine', 150, 0.3, 0.2);
+              } else {
+                // Fire projectiles in spread
+                const spreadCount = boss.health < boss.maxHealth / 2 ? 5 : 3;
+                for (let i = 0; i < spreadCount; i++) {
+                  const spreadAngle = (i - Math.floor(spreadCount / 2)) * 0.4;
+                  state.enemyProjectiles.push({
+                    x: boss.x + boss.width / 2,
+                    y: boss.y + 30,
+                    velocityX: dirToPlayer * 4,
+                    velocityY: spreadAngle * 3,
+                    width: 16,
+                    height: 16,
+                    life: 100,
+                    type: 'fireball'
+                  });
+                }
+              }
+              soundManager.createOscillator('triangle', 200, 0.2, 0.3);
+              
+            } else if (boss.type === 'frostWyrm') {
+              if (boss.attackPattern === 0) {
+                // Ice breath - wide projectile
                 state.enemyProjectiles.push({
                   x: boss.x + boss.width / 2,
-                  y: boss.y + 30,
-                  velocityX: dirToPlayer * 4,
-                  velocityY: i * 2,
-                  width: 16,
-                  height: 16,
-                  life: 100,
-                  type: 'fireball'
+                  y: boss.y + 50,
+                  velocityX: dirToPlayer * 6,
+                  velocityY: 0,
+                  width: 60,
+                  height: 30,
+                  life: 60,
+                  type: 'iceBreath'
                 });
+              } else {
+                // Icicle rain attack - drops icicles from above
+                const icicleCount = boss.health < boss.maxHealth / 2 ? 6 : 4;
+                for (let i = 0; i < icicleCount; i++) {
+                  state.enemyProjectiles.push({
+                    x: 350 + i * (400 / icicleCount) + Math.random() * 30,
+                    y: 50,
+                    velocityX: 0,
+                    velocityY: 4 + Math.random() * 2,
+                    width: 15,
+                    height: 30,
+                    life: 180,
+                    type: 'icicle'
+                  });
+                }
               }
-            } else if (boss.type === 'frostWyrm') {
-              // Ice breath - wide projectile
-              state.enemyProjectiles.push({
-                x: boss.x + boss.width / 2,
-                y: boss.y + 50,
-                velocityX: dirToPlayer * 6,
-                velocityY: 0,
-                width: 60,
-                height: 30,
-                life: 60,
-                type: 'iceBreath'
-              });
+              soundManager.createOscillator('sine', 400, 0.15, 0.3);
+              
             } else if (boss.type === 'voidLord') {
               // Teleport and spawn void zones
               boss.x = player.x + (Math.random() > 0.5 ? 100 : -100);
@@ -2357,9 +2456,123 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                 damage: 25,
                 life: 180
               });
+              // Teleport particles
+              for (let i = 0; i < 15; i++) {
+                particles.push({
+                  x: boss.x + boss.width / 2,
+                  y: boss.y + boss.height / 2,
+                  velocityX: (Math.random() - 0.5) * 8,
+                  velocityY: (Math.random() - 0.5) * 8,
+                  life: 25,
+                  color: '#A855F7'
+                });
+              }
+              soundManager.createOscillator('sawtooth', 150, 0.2, 0.3);
+              
+            } else if (boss.type === 'stormTitan') {
+              // Storm Titan - vertical lightning attacks
+              // Create lightning bolts that track player position
+              const lightningCount = boss.health < boss.maxHealth / 2 ? 4 : 2;
+              for (let i = 0; i < lightningCount; i++) {
+                const targetX = player.x + (i - lightningCount / 2 + 0.5) * 80;
+                state.enemyProjectiles.push({
+                  x: targetX,
+                  y: boss.y + boss.height,
+                  velocityX: 0,
+                  velocityY: 8,
+                  width: 20,
+                  height: 400,
+                  life: 40,
+                  type: 'lightning'
+                });
+                // Lightning warning flash
+                for (let j = 0; j < 5; j++) {
+                  particles.push({
+                    x: targetX,
+                    y: boss.y + boss.height + j * 50,
+                    velocityX: (Math.random() - 0.5) * 3,
+                    velocityY: 0,
+                    life: 15,
+                    color: '#FBBF24'
+                  });
+                }
+              }
+              soundManager.createOscillator('sawtooth', 100, 0.4, 0.2);
+              soundManager.createOscillator('square', 800, 0.2, 0.1);
+              
+            } else if (boss.type === 'pharaohKing') {
+              // Summon scarabs and throw curse projectiles
+              const curseCount = boss.health < boss.maxHealth / 2 ? 5 : 3;
+              for (let i = 0; i < curseCount; i++) {
+                const angle = (i / curseCount) * Math.PI - Math.PI / 2;
+                state.enemyProjectiles.push({
+                  x: boss.x + boss.width / 2,
+                  y: boss.y + 40,
+                  velocityX: Math.cos(angle) * 4,
+                  velocityY: Math.sin(angle) * 4 + 2,
+                  width: 18,
+                  height: 18,
+                  life: 120,
+                  type: 'curse'
+                });
+              }
+              soundManager.createOscillator('sine', 250, 0.2, 0.4);
+              
+            } else if (boss.type === 'crystalQueen') {
+              // Crystal shards that bounce
+              const shardCount = boss.health < boss.maxHealth / 2 ? 6 : 4;
+              for (let i = 0; i < shardCount; i++) {
+                const angle = (i / shardCount) * Math.PI * 2;
+                state.enemyProjectiles.push({
+                  x: boss.x + boss.width / 2,
+                  y: boss.y + boss.height / 2,
+                  velocityX: Math.cos(angle) * 5,
+                  velocityY: Math.sin(angle) * 5,
+                  width: 15,
+                  height: 15,
+                  life: 150,
+                  type: 'crystal',
+                  bounces: 2
+                });
+              }
+              soundManager.createOscillator('sine', 600, 0.15, 0.3);
+              
+            } else if (boss.type === 'omegaPrime') {
+              // Laser beam and missile barrage
+              if (boss.attackPattern === 0) {
+                // Sweeping laser
+                state.enemyProjectiles.push({
+                  x: boss.x + boss.width / 2,
+                  y: boss.y + 55,
+                  velocityX: 0,
+                  velocityY: 8,
+                  width: 30,
+                  height: 300,
+                  life: 60,
+                  type: 'laser'
+                });
+              } else {
+                // Homing missiles
+                const missileCount = boss.health < boss.maxHealth / 2 ? 4 : 2;
+                for (let i = 0; i < missileCount; i++) {
+                  state.enemyProjectiles.push({
+                    x: boss.x + 20 + i * 30,
+                    y: boss.y,
+                    velocityX: dirToPlayer * 3,
+                    velocityY: -2,
+                    width: 12,
+                    height: 12,
+                    life: 180,
+                    type: 'missile',
+                    targetX: player.x,
+                    targetY: player.y
+                  });
+                }
+              }
+              soundManager.createOscillator('square', 300, 0.2, 0.2);
             }
             
-            boss.attackCooldown = boss.health < boss.maxHealth / 2 ? 60 : 90;
+            boss.attackCooldown = boss.health < boss.maxHealth / 2 ? 50 : 80;
             setTimeout(() => { if (state.boss) state.boss.isAttacking = false; }, 500);
           }
         }
