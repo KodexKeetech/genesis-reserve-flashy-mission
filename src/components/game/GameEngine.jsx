@@ -514,9 +514,25 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       state.goalX = currentX + 300;
       
       // Add checkpoint at middle of level (non-boss levels only)
+      // Find a platform near the middle to place checkpoint above
+      const midX = state.levelWidth / 2;
+      let checkpointY = 400;
+      let checkpointPlatform = null;
+      for (const platform of state.platforms) {
+        if (platform.type !== 'obstacle' && 
+            platform.x <= midX && platform.x + platform.width >= midX) {
+          if (!checkpointPlatform || platform.y < checkpointPlatform.y) {
+            checkpointPlatform = platform;
+          }
+        }
+      }
+      if (checkpointPlatform) {
+        checkpointY = checkpointPlatform.y - 60;
+      }
+      
       state.checkpoint = {
-        x: state.levelWidth / 2,
-        y: 450,
+        x: midX - 20,
+        y: checkpointY,
         width: 40,
         height: 60,
         activated: false
@@ -2677,9 +2693,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         return;
       }
       
-      // Check checkpoint collision
+      // Check checkpoint activation (passing the vertical line)
       if (state.checkpoint && !state.checkpointActivated) {
-        if (checkCollision(player, state.checkpoint)) {
+        const checkpointCenterX = state.checkpoint.x + state.checkpoint.width / 2;
+        if (player.x + player.width / 2 >= checkpointCenterX) {
           state.checkpointActivated = true;
           state.checkpoint.activated = true;
           soundManager.playPowerUp();
@@ -2699,34 +2716,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       
       // Check lose condition
       if (player.health <= 0) {
-        // Respawn at checkpoint if activated
-        if (state.checkpointActivated && state.checkpoint) {
-          player.x = state.checkpoint.x;
-          player.y = state.checkpoint.y - player.height;
-          player.health = Math.floor(player.maxHealth * 0.5);
-          player.velocityX = 0;
-          player.velocityY = 0;
-          player.invincible = true;
-          player.invincibleTimer = 120;
-          onHealthChange(player.health);
-          soundManager.playPowerUp();
-          // Respawn particles
-          for (let i = 0; i < 15; i++) {
-            particles.push({
-              x: player.x + player.width / 2,
-              y: player.y + player.height / 2,
-              velocityX: (Math.random() - 0.5) * 5,
-              velocityY: (Math.random() - 0.5) * 5,
-              life: 25,
-              color: '#3B82F6'
-            });
-          }
-        } else {
-          soundManager.playGameOver();
-          state.gameRunning = false;
-          onGameOver();
-          return;
-        }
+        soundManager.playGameOver();
+        state.gameRunning = false;
+        onGameOver();
+        return;
       }
       
       // RENDER - Use biome-specific background
