@@ -1520,16 +1520,16 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       // Calculate effective speed (with power-up)
       const effectiveSpeed = player.powerUps.SPEED > 0 ? MOVE_SPEED * 1.8 : MOVE_SPEED;
       
-      // Get touch input
-      const touch = touchInput?.current || { move: { x: 0, y: 0 }, jump: false, dash: false, cast: false, switch: false };
+      // Get input (keyboard, touch, or gamepad)
+      const input = gameInput?.current || { move: { x: 0, y: 0 }, aim: { x: 0, y: 0 }, jump: false, dash: false, cast: false, switch: false, aoeBlast: false, reflectShield: false, hover: false };
 
-      // Handle dashing (keyboard or touch)
-      const touchDashCooldown = Math.floor(BASE_DASH_COOLDOWN * (1 - ((playerUpgrades || {}).dashEfficiency || 0) * 0.1));
-      if (touch.dash && !player.isDashing && player.dashCooldown <= 0) {
-      player.isDashing = true;
-      player.dashTimer = DASH_DURATION;
-      player.dashDirection = player.facingRight ? 1 : -1;
-      player.dashCooldown = touchDashCooldown;
+      // Handle dashing (keyboard or gamepad/touch)
+      const dashCooldownValue = Math.floor(BASE_DASH_COOLDOWN * (1 - ((playerUpgrades || {}).dashEfficiency || 0) * 0.1));
+      if (input.dash && !lastInputDash && !player.isDashing && player.dashCooldown <= 0) {
+        player.isDashing = true;
+        player.dashTimer = DASH_DURATION;
+        player.dashDirection = player.facingRight ? 1 : -1;
+        player.dashCooldown = dashCooldownValue;
         soundManager.playDash();
         for (let i = 0; i < 15; i++) {
           state.particles.push({
@@ -1542,6 +1542,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           });
         }
       }
+      lastInputDash = input.dash;
 
       if (player.isDashing) {
         player.dashTimer--;
@@ -1551,12 +1552,12 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           player.isDashing = false;
         }
       } else {
-        // Normal player input (keyboard or touch)
-        const touchMoveX = touch.move?.x || 0;
-        if (keys['ArrowLeft'] || keys['KeyA'] || touchMoveX < -0.3) {
+        // Normal player input (keyboard or gamepad/touch)
+        const moveX = input.move?.x || 0;
+        if (keys['ArrowLeft'] || keys['KeyA'] || moveX < -0.3) {
           player.velocityX = -effectiveSpeed;
           player.facingRight = false;
-        } else if (keys['ArrowRight'] || keys['KeyD'] || touchMoveX > 0.3) {
+        } else if (keys['ArrowRight'] || keys['KeyD'] || moveX > 0.3) {
           player.velocityX = effectiveSpeed;
           player.facingRight = true;
         } else {
@@ -1569,8 +1570,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         player.dashCooldown--;
       }
       
-      // Jump and double jump (keyboard or touch)
-      const jumpKeyPressed = keys['ArrowUp'] || keys['KeyW'] || keys['Space'] || touch.jump;
+      // Jump and double jump (keyboard or gamepad/touch)
+      const jumpKeyPressed = keys['ArrowUp'] || keys['KeyW'] || keys['Space'] || (input.jump && !lastInputJump);
       if (jumpKeyPressed && !player.jumpKeyHeld) {
         if (player.onGround) {
           player.velocityY = JUMP_FORCE;
@@ -1613,20 +1614,41 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         }
       }
       player.jumpKeyHeld = jumpKeyPressed;
+      lastInputJump = input.jump;
 
-      // Handle touch cast - aim toward touch aim position or forward
-      if (touch.cast && !lastTouchCast) {
-        const touchAimX = touch.aimX !== undefined ? touch.aimX : (player.facingRight ? 800 : 0);
-        const touchAimY = touch.aimY !== undefined ? touch.aimY : (player.y + player.height / 2);
-        doCast(touchAimX, touchAimY);
+      // Handle cast (gamepad/touch)
+      if (input.cast && !lastInputCast) {
+        const aimX = input.aim?.x || 0;
+        const aimY = input.aim?.y || 0;
+        if (aimX !== 0 || aimY !== 0) {
+          doCast(aimX, aimY, true);
+        } else {
+          doCast(player.facingRight ? 1 : -1, 0, true);
+        }
       }
-      lastTouchCast = touch.cast;
+      lastInputCast = input.cast;
 
-      // Handle touch switch spell
-                  if (touch.switch && !lastTouchSwitch) {
-                    player.selectedProjectile = (player.selectedProjectile + 1) % 3;
-                  }
-                  lastTouchSwitch = touch.switch;
+      // Handle switch spell (gamepad/touch)
+      if (input.switch && !lastInputSwitch) {
+        player.selectedProjectile = (player.selectedProjectile + 1) % 3;
+      }
+      lastInputSwitch = input.switch;
+
+      // Handle special abilities (gamepad)
+      if (input.aoeBlast && !lastInputAoe) {
+        handleAoeBlast();
+      }
+      lastInputAoe = input.aoeBlast;
+
+      if (input.reflectShield && !lastInputReflect) {
+        handleReflectShield();
+      }
+      lastInputReflect = input.reflectShield;
+
+      if (input.hover && !lastInputHover) {
+        handleHover();
+      }
+      lastInputHover = input.hover;
       
       // Track landing for squash effect
       const wasOnGround = player.onGround;
