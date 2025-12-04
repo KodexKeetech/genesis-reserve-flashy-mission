@@ -2316,21 +2316,16 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       const state = gameStateRef.current;
       if (!state.gameRunning) return;
       
-      // Fixed timestep logic
+      // Fixed timestep logic for consistent game speed
+      if (!currentTime) currentTime = performance.now();
       const deltaTime = currentTime - lastFrameTime;
       lastFrameTime = currentTime;
       
-      // Clamp delta to prevent spiral of death on slow frames
+      // Clamp delta to prevent issues on slow frames
       accumulator += Math.min(deltaTime, FRAME_TIME * 3);
       
-      // Only update game logic when enough time has passed
-      if (accumulator < FRAME_TIME) {
-        animationId = requestAnimationFrame(gameLoop);
-        return;
-      }
-      
-      // Process fixed updates (may run multiple times to catch up)
-      while (accumulator >= FRAME_TIME) {
+      // Only update when enough time has passed
+      if (accumulator >= FRAME_TIME) {
         accumulator -= FRAME_TIME;
         time++;
       const { player, platforms, enemies, projectiles, particles, collectibles, keys } = state;
@@ -4560,7 +4555,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         onGameOver();
         return;
       }
-      } // end of fixed timestep update loop
+      } // end of fixed timestep check
       
       // RENDER - Use biome-specific background
       if (state.biome) {
