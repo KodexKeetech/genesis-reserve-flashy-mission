@@ -131,7 +131,12 @@ export default function Game() {
       switch: input.switch,
       aoeBlast: input.aoeBlast,
       reflectShield: input.reflectShield,
-      hover: input.hover
+      hover: input.hover,
+      timeSlow: input.timeSlow,
+      chainLightning: input.chainLightning,
+      shadowClone: input.shadowClone,
+      magneticPull: input.magneticPull,
+      teleport: input.teleport
     };
     setGamepadConnected(true);
   }, []);

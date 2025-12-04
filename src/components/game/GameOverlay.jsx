@@ -52,6 +52,7 @@ const VICTORY_BACKGROUNDS = [
 export default function GameOverlay({ type, score, level, onRestart, onNextLevel, onStart, onLoadGame, hasCheckpoint, onContinueFromCheckpoint, difficulty, onDifficultyChange }) {
   const [hasSavedGame, setHasSavedGame] = useState(false);
   const [selectedDifficulty, setSelectedDifficulty] = useState(difficulty || 'medium');
+  const [selectedButton, setSelectedButton] = useState(0);
   
   // Randomly select a background image when level complete
   const victoryBackground = useMemo(() => {
@@ -62,6 +63,95 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
     const saved = localStorage.getItem('jeff_save_game');
     setHasSavedGame(!!saved);
   }, []);
+
+  // Gamepad support for menu navigation
+  useEffect(() => {
+    let lastDpadUp = false;
+    let lastDpadDown = false;
+    let lastAButton = false;
+    let lastDpadLeft = false;
+    let lastDpadRight = false;
+
+    const pollGamepad = () => {
+      const gamepads = navigator.getGamepads();
+      let gamepad = null;
+      for (let i = 0; i < gamepads.length; i++) {
+        if (gamepads[i]) {
+          gamepad = gamepads[i];
+          break;
+        }
+      }
+      if (!gamepad) return;
+
+      const buttons = gamepad.buttons;
+      const axes = gamepad.axes;
+      
+      // D-pad or left stick for navigation
+      const dpadUp = buttons[12]?.pressed || axes[1] < -0.5;
+      const dpadDown = buttons[13]?.pressed || axes[1] > 0.5;
+      const dpadLeft = buttons[14]?.pressed || axes[0] < -0.5;
+      const dpadRight = buttons[15]?.pressed || axes[0] > 0.5;
+      const aButton = buttons[0]?.pressed;
+      const startButton = buttons[9]?.pressed;
+
+      // Navigate up
+      if (dpadUp && !lastDpadUp) {
+        setSelectedButton(prev => Math.max(0, prev - 1));
+      }
+      // Navigate down
+      if (dpadDown && !lastDpadDown) {
+        setSelectedButton(prev => prev + 1);
+      }
+      
+      // Difficulty selection with left/right
+      if (type === 'tutorial') {
+        const diffKeys = Object.keys(DIFFICULTY_MODES);
+        const currentIdx = diffKeys.indexOf(selectedDifficulty);
+        if (dpadLeft && !lastDpadLeft && currentIdx > 0) {
+          const newDiff = diffKeys[currentIdx - 1];
+          setSelectedDifficulty(newDiff);
+          localStorage.setItem('jeff_difficulty', newDiff);
+          if (onDifficultyChange) onDifficultyChange(newDiff);
+        }
+        if (dpadRight && !lastDpadRight && currentIdx < diffKeys.length - 1) {
+          const newDiff = diffKeys[currentIdx + 1];
+          setSelectedDifficulty(newDiff);
+          localStorage.setItem('jeff_difficulty', newDiff);
+          if (onDifficultyChange) onDifficultyChange(newDiff);
+        }
+      }
+
+      // Select with A button or Start
+      if ((aButton && !lastAButton) || (startButton && !buttons[9]?.pressed)) {
+        handleGamepadSelect();
+      }
+
+      lastDpadUp = dpadUp;
+      lastDpadDown = dpadDown;
+      lastDpadLeft = dpadLeft;
+      lastDpadRight = dpadRight;
+      lastAButton = aButton;
+    };
+
+    const handleGamepadSelect = () => {
+      if (type === 'tutorial') {
+        if (selectedButton === 0) onStart?.();
+        else if (selectedButton === 1) onNextLevel?.();
+      } else if (type === 'levelComplete') {
+        if (selectedButton === 0) onNextLevel?.();
+      } else if (type === 'gameOver') {
+        if (hasCheckpoint && selectedButton === 0) onContinueFromCheckpoint?.();
+        else if (hasCheckpoint && selectedButton === 1) onRestart?.();
+        else if (!hasCheckpoint && selectedButton === 0) onRestart?.();
+      } else if (type === 'start') {
+        if (selectedButton === 0) onStart?.();
+        else if (selectedButton === 1 && hasSavedGame) onLoadGame?.();
+      }
+    };
+
+    const interval = setInterval(pollGamepad, 16);
+    return () => clearInterval(interval);
+  }, [type, selectedButton, selectedDifficulty, hasCheckpoint, hasSavedGame, onStart, onNextLevel, onRestart, onContinueFromCheckpoint, onLoadGame, onDifficultyChange]);
 
   const handleDifficultySelect = (diff) => {
     setSelectedDifficulty(diff);
@@ -146,7 +236,7 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
           <div className="flex flex-col gap-2 md:gap-3">
             <Button
               onClick={onStart}
-              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold px-4 md:px-8 py-2 md:py-5 text-sm md:text-lg rounded-lg md:rounded-xl shadow-lg shadow-purple-500/30"
+              className={`bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold px-4 md:px-8 py-2 md:py-5 text-sm md:text-lg rounded-lg md:rounded-xl shadow-lg shadow-purple-500/30 ${selectedButton === 0 ? 'ring-2 ring-white ring-offset-2 ring-offset-slate-900' : ''}`}
             >
               <Play className="w-4 h-4 md:w-5 md:h-5 mr-2" />
               Start Tutorial
@@ -155,7 +245,7 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
             <Button
               onClick={onNextLevel}
               variant="outline"
-              className="border-slate-600 text-slate-400 hover:text-white hover:bg-slate-800 font-medium px-4 md:px-6 py-2 md:py-4 text-sm rounded-lg md:rounded-xl"
+              className={`border-slate-600 text-slate-400 hover:text-white hover:bg-slate-800 font-medium px-4 md:px-6 py-2 md:py-4 text-sm rounded-lg md:rounded-xl ${selectedButton === 1 ? 'ring-2 ring-white ring-offset-2 ring-offset-slate-900' : ''}`}
             >
               Skip →
             </Button>
@@ -260,7 +350,7 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
               <Button
                 onClick={onContinueFromCheckpoint}
                 size="lg"
-                className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400 text-white font-bold px-8 py-6 text-xl rounded-xl shadow-lg shadow-blue-500/30"
+                className={`bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400 text-white font-bold px-8 py-6 text-xl rounded-xl shadow-lg shadow-blue-500/30 ${selectedButton === 0 ? 'ring-2 ring-white' : ''}`}
               >
                 <Play className="w-6 h-6 mr-2" />
                 Continue from Checkpoint
@@ -270,7 +360,7 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
             <Button
               onClick={onRestart}
               size="lg"
-              className={hasCheckpoint ? "bg-slate-700 text-white hover:bg-slate-600 font-bold px-8 py-4 text-lg rounded-xl" : "bg-white text-red-900 hover:bg-red-100 font-bold px-8 py-6 text-xl rounded-xl"}
+              className={`${hasCheckpoint ? "bg-slate-700 text-white hover:bg-slate-600 font-bold px-8 py-4 text-lg rounded-xl" : "bg-white text-red-900 hover:bg-red-100 font-bold px-8 py-6 text-xl rounded-xl"} ${(hasCheckpoint && selectedButton === 1) || (!hasCheckpoint && selectedButton === 0) ? 'ring-2 ring-white' : ''}`}
             >
               <RotateCcw className="w-6 h-6 mr-2" />
               {hasCheckpoint ? "Restart Level" : "Try Again"}
@@ -407,7 +497,7 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
               <Button
                 onClick={onNextLevel}
                 size="lg"
-                className="bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 hover:from-yellow-400 hover:via-orange-400 hover:to-yellow-400 text-black font-bold px-10 py-6 text-xl rounded-2xl shadow-2xl shadow-yellow-500/40 border-2 border-yellow-300/50"
+                className={`bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 hover:from-yellow-400 hover:via-orange-400 hover:to-yellow-400 text-black font-bold px-10 py-6 text-xl rounded-2xl shadow-2xl shadow-yellow-500/40 border-2 border-yellow-300/50 ${selectedButton === 0 ? 'ring-4 ring-white' : ''}`}
               >
                 <Sparkles className="w-6 h-6 mr-2" />
                 Continue Adventure

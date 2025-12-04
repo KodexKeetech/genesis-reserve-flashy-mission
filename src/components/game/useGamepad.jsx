@@ -57,6 +57,23 @@ export default function useGamepad(onInput) {
     const ltJustPressed = ltValue > 0.5 && !(prev.lt > 0.5);
     const rtJustPressed = rtValue > 0.5 && !(prev.rt > 0.5);
 
+    // D-pad for additional abilities
+    const dpadUp = buttons[12]?.pressed;
+    const dpadDown = buttons[13]?.pressed;
+    const dpadLeft = buttons[14]?.pressed;
+    const dpadRight = buttons[15]?.pressed;
+    const bPressed = buttons[1]?.pressed;
+    const leftStickPress = buttons[10]?.pressed;
+    const rightStickPress = buttons[11]?.pressed;
+    
+    const dpadUpJustPressed = dpadUp && !prev.dpadUp;
+    const dpadDownJustPressed = dpadDown && !prev.dpadDown;
+    const dpadLeftJustPressed = dpadLeft && !prev.dpadLeft;
+    const dpadRightJustPressed = dpadRight && !prev.dpadRight;
+    const bJustPressed = bPressed && !prev.b;
+    const leftStickJustPressed = leftStickPress && !prev.leftStick;
+    const rightStickJustPressed = rightStickPress && !prev.rightStick;
+
     // Send input to game
     onInput({
       move: { x: moveX, y: moveY },
@@ -67,7 +84,13 @@ export default function useGamepad(onInput) {
       switch: yJustPressed,
       aoeBlast: lbJustPressed,
       reflectShield: rbJustPressed,
-      hover: buttons[3]?.pressed && buttons[0]?.pressed // Y + A for hover
+      hover: buttons[3]?.pressed && buttons[0]?.pressed, // Y + A for hover
+      // New ability bindings
+      timeSlow: dpadUpJustPressed,           // D-pad Up
+      chainLightning: dpadRightJustPressed,   // D-pad Right
+      shadowClone: dpadDownJustPressed,       // D-pad Down
+      magneticPull: dpadLeftJustPressed,      // D-pad Left
+      teleport: bJustPressed                  // B button
     });
 
     // Store previous button states
@@ -78,7 +101,14 @@ export default function useGamepad(onInput) {
       lb: lbPressed,
       rb: rbPressed,
       lt: ltValue,
-      rt: rtValue
+      rt: rtValue,
+      dpadUp,
+      dpadDown,
+      dpadLeft,
+      dpadRight,
+      b: bPressed,
+      leftStick: leftStickPress,
+      rightStick: rightStickPress
     };
   }, [onInput]);
 

@@ -2502,6 +2502,23 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         handleHover();
       }
       lastInputHover = input.hover;
+
+      // New ability gamepad inputs
+      if (input.timeSlow) {
+        handleTimeSlow();
+      }
+      if (input.chainLightning) {
+        handleChainLightning();
+      }
+      if (input.shadowClone) {
+        handleShadowClone();
+      }
+      if (input.magneticPull) {
+        handleMagneticPull();
+      }
+      if (input.teleport) {
+        handleTeleport();
+      }
       
       // Track landing for squash effect
       const wasOnGround = player.onGround;
