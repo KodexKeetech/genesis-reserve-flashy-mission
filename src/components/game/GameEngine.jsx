@@ -2792,7 +2792,111 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.lineTo(8, 0);
           ctx.stroke();
           ctx.restore();
-          continue; // Skip the normal projectile drawing
+          continue;
+        } else if (proj.type === 'lightning') {
+          // Draw lightning bolt
+          ctx.strokeStyle = '#FBBF24';
+          ctx.shadowColor = '#FBBF24';
+          ctx.shadowBlur = 30;
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.moveTo(px, proj.y);
+          for (let seg = 0; seg < 8; seg++) {
+            const segY = proj.y + seg * 40;
+            const offsetX = (Math.random() - 0.5) * 20;
+            ctx.lineTo(px + offsetX, segY);
+          }
+          ctx.stroke();
+          // Inner white core
+          ctx.strokeStyle = '#FEF3C7';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+          continue;
+        } else if (proj.type === 'icicle') {
+          // Draw falling icicle
+          ctx.fillStyle = '#A5F3FC';
+          ctx.shadowColor = '#22D3EE';
+          ctx.shadowBlur = 10;
+          ctx.beginPath();
+          ctx.moveTo(px, proj.y);
+          ctx.lineTo(px + 8, proj.y + 10);
+          ctx.lineTo(px + 5, proj.y + 30);
+          ctx.lineTo(px - 5, proj.y + 30);
+          ctx.lineTo(px - 8, proj.y + 10);
+          ctx.closePath();
+          ctx.fill();
+          ctx.shadowBlur = 0;
+          continue;
+        } else if (proj.type === 'curse') {
+          // Draw curse orb
+          ctx.fillStyle = '#CA8A04';
+          ctx.shadowColor = '#EAB308';
+          ctx.shadowBlur = 15;
+          ctx.beginPath();
+          ctx.arc(px, proj.y, 9, 0, Math.PI * 2);
+          ctx.fill();
+          // Ankh symbol
+          ctx.strokeStyle = '#78350F';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(px, proj.y - 2, 3, 0, Math.PI * 2);
+          ctx.moveTo(px, proj.y + 1);
+          ctx.lineTo(px, proj.y + 6);
+          ctx.moveTo(px - 3, proj.y + 3);
+          ctx.lineTo(px + 3, proj.y + 3);
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+          continue;
+        } else if (proj.type === 'crystal') {
+          // Draw crystal shard
+          ctx.save();
+          ctx.translate(px, proj.y);
+          ctx.rotate(time * 0.2);
+          ctx.fillStyle = '#E879F9';
+          ctx.shadowColor = '#F472B6';
+          ctx.shadowBlur = 12;
+          ctx.beginPath();
+          ctx.moveTo(0, -10);
+          ctx.lineTo(6, 0);
+          ctx.lineTo(0, 10);
+          ctx.lineTo(-6, 0);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+          ctx.shadowBlur = 0;
+          continue;
+        } else if (proj.type === 'laser') {
+          // Draw laser beam
+          ctx.fillStyle = `rgba(239, 68, 68, ${0.7 + Math.sin(time * 0.5) * 0.3})`;
+          ctx.shadowColor = '#EF4444';
+          ctx.shadowBlur = 25;
+          ctx.fillRect(px - 15, proj.y, 30, 300);
+          // Inner core
+          ctx.fillStyle = '#FCA5A5';
+          ctx.fillRect(px - 8, proj.y, 16, 300);
+          ctx.fillStyle = '#FEE2E2';
+          ctx.fillRect(px - 3, proj.y, 6, 300);
+          ctx.shadowBlur = 0;
+          continue;
+        } else if (proj.type === 'missile') {
+          // Draw homing missile
+          ctx.fillStyle = '#475569';
+          ctx.shadowColor = '#10B981';
+          ctx.shadowBlur = 8;
+          ctx.beginPath();
+          ctx.ellipse(px, proj.y, 6, 10, 0, 0, Math.PI * 2);
+          ctx.fill();
+          // Exhaust
+          ctx.fillStyle = '#F97316';
+          ctx.beginPath();
+          ctx.moveTo(px - 3, proj.y + 8);
+          ctx.lineTo(px, proj.y + 15 + Math.random() * 5);
+          ctx.lineTo(px + 3, proj.y + 8);
+          ctx.closePath();
+          ctx.fill();
+          ctx.shadowBlur = 0;
+          continue;
         }
         
         ctx.fillStyle = color;
