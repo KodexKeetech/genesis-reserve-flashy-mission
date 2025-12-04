@@ -160,7 +160,12 @@ export default function Game() {
           setMagicScraps(user.magicScraps);
         }
         if (user.unlockedAbilities) {
-          setUnlockedAbilities(user.unlockedAbilities);
+          setUnlockedAbilities({
+            aoeBlast: false, reflectShield: false, hover: false, 
+            timeSlow: false, chainLightning: false, shadowClone: false, 
+            magneticPull: false, teleport: false,
+            ...user.unlockedAbilities
+          });
         }
         if (user.abilityUpgrades) {
           setAbilityUpgrades(user.abilityUpgrades);
