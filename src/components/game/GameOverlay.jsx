@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Trophy, RotateCcw, Play, Sparkles, Save, FolderOpen, Star } from 'lucide-react';
+import { Trophy, RotateCcw, Play, Sparkles, Save, FolderOpen, Star, Shield, Flame, Skull } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { DIFFICULTY_MODES } from './BiomeConfig';
 
 const VICTORY_BACKGROUNDS = [
   'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692c28c6355507b7b2161062/3d2f3538c_Victoyart1.jpg',
