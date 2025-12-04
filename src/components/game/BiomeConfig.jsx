@@ -230,6 +230,35 @@ export const BIOMES = {
       health: 60,
       color: '#10B981'
     }
+  },
+
+  arcane: {
+    name: 'Arcane Sanctum',
+    levels: [25, 26, 27],
+    bossLevel: 27,
+    background: {
+      sky: ['#1E1B4B', '#312E81', '#4338CA'],
+      stars: true,
+      particles: 'arcaneSparkle'
+    },
+    platforms: {
+      ground: { fill: '#312E81', top: '#818CF8', accent: '#A5B4FC' },
+      normal: { fill: '#3730A3', highlight: '#4F46E5' },
+      magic: { fill: '#8B5CF6', glow: '#A78BFA' },
+      arcane: { fill: '#6366F1', enchanted: true }
+    },
+    enemiesByLevel: {
+      25: ['runeConstruct', 'phantomWisp'],
+      26: ['runeConstruct', 'phantomWisp', 'spellweaver'],
+      27: ['runeConstruct', 'phantomWisp', 'spellweaver', 'illusionist']
+    },
+    hazards: ['arcaneRune', 'illusionTrap'],
+    boss: {
+      name: 'The Arcanist',
+      type: 'arcanist',
+      health: 70,
+      color: '#8B5CF6'
+    }
   }
 };
 
@@ -274,6 +303,14 @@ export const HIDDEN_LEVELS = {
     biome: 'techno',
     difficulty: 5,
     rewards: { scraps: 1000, crystals: 10 }
+  },
+  'arcane-secret': {
+    name: 'Forbidden Library',
+    unlockedBy: 'Defeat The Arcanist without using special abilities',
+    afterLevel: 27,
+    biome: 'arcane',
+    difficulty: 4,
+    rewards: { scraps: 600, crystals: 7 }
   }
 };
 
@@ -355,5 +392,5 @@ export function getAvailableHiddenLevels(highestLevel, unlockedSecrets = []) {
 
 // Check if a level has a secret exit
 export function hasSecretExit(level) {
-  return [2, 5, 8, 11, 14, 17, 20, 23].includes(level);
+  return [2, 5, 8, 11, 14, 17, 20, 23, 26].includes(level);
 }
