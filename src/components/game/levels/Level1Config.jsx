@@ -1,10 +1,11 @@
+
 // Level 1: Enchanted Forest - Whispering Woods
 // A carefully crafted introduction to the game mechanics
 
 export const LEVEL_1_CONFIG = {
   name: "Whispering Woods",
   biome: "forest",
-  levelWidth: 2800,
+  levelWidth: 3500,
   
   // Custom terrain sections - hand-designed for learning curve
   sections: [
@@ -13,183 +14,167 @@ export const LEVEL_1_CONFIG = {
       type: 'start',
       x: 0,
       platforms: [
-        { x: 0, y: 500, width: 400, height: 100, type: 'ground' },
-        // Gentle stone steps upward
-        { x: 320, y: 460, width: 80, height: 20, type: 'normal', style: 'mossy_stone' },
-        { x: 420, y: 420, width: 80, height: 20, type: 'normal', style: 'mossy_stone' },
+        { x: 0, y: 500, width: 500, height: 100, type: 'ground' },
+        { x: 400, y: 440, width: 80, height: 20, type: 'normal', style: 'mossy_stone' },
+        { x: 520, y: 400, width: 80, height: 20, type: 'normal', style: 'mossy_stone' },
+        { x: 650, y: 500, width: 250, height: 100, type: 'ground' },
       ],
       enemies: [
-        { type: 'slime', x: 200, y: 470, variant: 'forest' }
+        { type: 'slime', x: 250, y: 470, variant: 'forest' },
+        { type: 'slime', x: 700, y: 470, variant: 'forest' }
       ],
       collectibles: [
         { type: 'coin', x: 100, y: 450 },
         { type: 'coin', x: 150, y: 450 },
-        { type: 'coin', x: 360, y: 420 },
-        { type: 'coin', x: 460, y: 380 },
+        { type: 'coin', x: 200, y: 450 },
+        { type: 'coin', x: 440, y: 400 },
+        { type: 'coin', x: 560, y: 360 },
+        { type: 'coin', x: 750, y: 450 },
       ],
       decorations: [
         { type: 'mushroom_cluster', x: 50, y: 500 },
-        { type: 'fern', x: 280, y: 500 },
-        { type: 'glowing_flower', x: 380, y: 460 },
+        { type: 'fern', x: 350, y: 500 },
+        { type: 'glowing_flower', x: 480, y: 420 },
       ]
     },
     
-    // Section 2: First Jump Challenge - Single jumps
+    // Section 2: First Jump Challenge
     {
       type: 'jump_intro',
-      x: 500,
+      x: 900,
       platforms: [
-        { x: 500, y: 400, width: 120, height: 100, type: 'ground' },
-        { x: 680, y: 400, width: 80, height: 20, type: 'normal', style: 'wooden_log' },
-        { x: 820, y: 380, width: 100, height: 20, type: 'normal', style: 'mossy_stone' },
+        { x: 900, y: 480, width: 120, height: 20, type: 'normal' },
+        { x: 1080, y: 450, width: 80, height: 20, type: 'normal', style: 'wooden_log' },
+        { x: 1220, y: 420, width: 100, height: 20, type: 'normal', style: 'mossy_stone' },
+        { x: 1380, y: 500, width: 200, height: 100, type: 'ground' },
       ],
       enemies: [
-        { type: 'slime', x: 530, y: 370, variant: 'forest' }
+        { type: 'slime', x: 940, y: 450, variant: 'forest' },
+        { type: 'bat', x: 1150, y: 350, variant: 'forest', behavior: 'patrol_wide' }
       ],
       collectibles: [
-        { type: 'coin', x: 600, y: 350 },
-        { type: 'coin', x: 720, y: 360 },
-        { type: 'coin', x: 870, y: 340 },
+        { type: 'coin', x: 1020, y: 410 },
+        { type: 'coin', x: 1120, y: 400 },
+        { type: 'coin', x: 1270, y: 370 },
+        { type: 'coin', x: 1450, y: 450 },
       ],
       decorations: [
-        { type: 'hanging_vines', x: 700, y: 200 },
-        { type: 'tree_roots', x: 500, y: 500 },
+        { type: 'hanging_vines', x: 1100, y: 200 },
+        { type: 'tree_roots', x: 900, y: 500 },
       ]
     },
     
     // Section 3: Double Jump Introduction
     {
       type: 'double_jump_intro',
-      x: 920,
+      x: 1580,
       platforms: [
-        { x: 920, y: 360, width: 100, height: 20, type: 'normal' },
-        // Wider gap - requires double jump
-        { x: 1120, y: 340, width: 60, height: 20, type: 'normal', style: 'small_stone' },
-        { x: 1240, y: 320, width: 120, height: 20, type: 'normal' },
+        { x: 1580, y: 450, width: 100, height: 20, type: 'normal' },
+        { x: 1780, y: 400, width: 60, height: 20, type: 'normal', style: 'small_stone' },
+        { x: 1920, y: 350, width: 120, height: 20, type: 'normal' },
+        { x: 2100, y: 500, width: 200, height: 100, type: 'ground' },
       ],
       enemies: [
-        { type: 'bat', x: 1050, y: 280, variant: 'forest', behavior: 'patrol_wide' }
+        { type: 'bat', x: 1850, y: 300, variant: 'forest', behavior: 'patrol_wide' }
       ],
       collectibles: [
-        { type: 'coin', x: 1000, y: 300 },
-        { type: 'coin', x: 1150, y: 280 },
-        { type: 'coin', x: 1300, y: 260 },
+        { type: 'coin', x: 1680, y: 400 },
+        { type: 'coin', x: 1810, y: 350 },
+        { type: 'coin', x: 1980, y: 300 },
+        { type: 'scrap', x: 2000, y: 300 },
       ],
       hints: [
-        { x: 950, y: 320, text: "Double Jump!", showOnce: true }
+        { x: 1620, y: 410, text: "Double Jump!", showOnce: true }
       ],
       decorations: [
-        { type: 'floating_spores', x: 1100, y: 300 },
+        { type: 'floating_spores', x: 1800, y: 350 },
       ]
     },
     
     // Section 4: Giant Mushroom Area - Vertical exploration
     {
       type: 'mushroom_tower',
-      x: 1360,
+      x: 2300,
       platforms: [
-        { x: 1360, y: 500, width: 200, height: 100, type: 'ground' },
-        // Giant mushroom tiers
-        { x: 1380, y: 420, width: 100, height: 25, type: 'magic', style: 'mushroom_cap' },
-        { x: 1420, y: 340, width: 80, height: 20, type: 'magic', style: 'mushroom_cap' },
-        { x: 1360, y: 260, width: 120, height: 25, type: 'magic', style: 'mushroom_cap' },
-        // Side platform
-        { x: 1520, y: 380, width: 80, height: 20, type: 'normal' },
+        { x: 2300, y: 500, width: 250, height: 100, type: 'ground' },
+        { x: 2350, y: 420, width: 100, height: 25, type: 'magic', style: 'mushroom_cap' },
+        { x: 2400, y: 340, width: 80, height: 20, type: 'magic', style: 'mushroom_cap' },
+        { x: 2320, y: 260, width: 120, height: 25, type: 'magic', style: 'mushroom_cap' },
+        { x: 2500, y: 380, width: 80, height: 20, type: 'normal' },
+        { x: 2600, y: 500, width: 200, height: 100, type: 'ground' },
       ],
       enemies: [
-        { type: 'slime', x: 1400, y: 470, variant: 'forest' },
-        { type: 'bat', x: 1480, y: 300, variant: 'forest', behavior: 'perch_ambush' }
+        { type: 'slime', x: 2380, y: 470, variant: 'forest' },
+        { type: 'bat', x: 2480, y: 280, variant: 'forest', behavior: 'perch_ambush' }
       ],
       collectibles: [
-        { type: 'coin', x: 1430, y: 380 },
-        { type: 'coin', x: 1460, y: 300 },
-        { type: 'coin', x: 1420, y: 220 },
-        { type: 'scrap', x: 1400, y: 220 }, // Reward for climbing
-      ],
-      decorations: [
-        { type: 'giant_mushroom_stem', x: 1400, y: 260, height: 240 },
-        { type: 'fireflies', x: 1400, y: 300, count: 5 },
-      ]
-    },
-    
-    // Section 5: Crumbling Logs - Timing challenge
-    {
-      type: 'crumbling_challenge',
-      x: 1600,
-      platforms: [
-        { x: 1600, y: 400, width: 80, height: 20, type: 'normal' },
-        { x: 1720, y: 380, width: 70, height: 15, type: 'crumbling', crumbleTime: 45 },
-        { x: 1830, y: 360, width: 70, height: 15, type: 'crumbling', crumbleTime: 45 },
-        { x: 1940, y: 340, width: 100, height: 20, type: 'normal' },
-      ],
-      enemies: [
-        { type: 'slime', x: 1960, y: 310, variant: 'forest' }
-      ],
-      collectibles: [
-        { type: 'coin', x: 1755, y: 340 },
-        { type: 'coin', x: 1865, y: 320 },
-        { type: 'coin', x: 1990, y: 300 },
-      ],
-      decorations: [
-        { type: 'fallen_leaves', x: 1700, y: 380 },
-      ]
-    },
-    
-    // Section 6: Combat Arena - Multiple enemies
-    {
-      type: 'combat_arena',
-      x: 2040,
-      platforms: [
-        { x: 2040, y: 500, width: 350, height: 100, type: 'ground' },
-        { x: 2100, y: 400, width: 80, height: 20, type: 'normal' },
-        { x: 2250, y: 380, width: 80, height: 20, type: 'normal' },
-        { x: 2180, y: 300, width: 100, height: 20, type: 'magic' },
-      ],
-      enemies: [
-        { type: 'slime', x: 2100, y: 470, variant: 'forest' },
-        { type: 'slime', x: 2280, y: 470, variant: 'forest' },
-        { type: 'bat', x: 2200, y: 250, variant: 'forest', behavior: 'dive_attack' },
-      ],
-      collectibles: [
-        { type: 'coin', x: 2140, y: 360 },
-        { type: 'coin', x: 2290, y: 340 },
-        { type: 'coin', x: 2230, y: 260 },
-        { type: 'heart', x: 2180, y: 260 }, // Health pickup before final stretch
+        { type: 'coin', x: 2400, y: 380 },
+        { type: 'coin', x: 2440, y: 300 },
+        { type: 'coin', x: 2380, y: 220 },
+        { type: 'scrap', x: 2360, y: 220 },
+        { type: 'coin', x: 2650, y: 450 },
       ],
       powerUps: [
-        { type: 'SPEED', x: 2350, y: 450 }
+        { type: 'SPEED', x: 2540, y: 340 }
       ],
       decorations: [
-        { type: 'ancient_tree', x: 2300, y: 200 },
-        { type: 'glowing_runes', x: 2350, y: 480 }, // Secret hint
+        { type: 'giant_mushroom_stem', x: 2380, y: 260, height: 240 },
+        { type: 'fireflies', x: 2400, y: 300, count: 5 },
       ]
     },
     
-    // Section 7: Final Stretch to Portal
+    // Section 5: Combat Arena
+    {
+      type: 'combat_arena',
+      x: 2800,
+      platforms: [
+        { x: 2800, y: 500, width: 400, height: 100, type: 'ground' },
+        { x: 2870, y: 400, width: 80, height: 20, type: 'normal' },
+        { x: 3050, y: 380, width: 80, height: 20, type: 'normal' },
+        { x: 2960, y: 300, width: 100, height: 20, type: 'magic' },
+      ],
+      enemies: [
+        { type: 'slime', x: 2880, y: 470, variant: 'forest' },
+        { type: 'slime', x: 3080, y: 470, variant: 'forest' },
+        { type: 'bat', x: 2980, y: 250, variant: 'forest', behavior: 'dive_attack' },
+      ],
+      collectibles: [
+        { type: 'coin', x: 2910, y: 360 },
+        { type: 'coin', x: 3090, y: 340 },
+        { type: 'coin', x: 3010, y: 260 },
+        { type: 'heart', x: 2960, y: 260 },
+      ],
+      decorations: [
+        { type: 'ancient_tree', x: 3100, y: 200 },
+      ]
+    },
+    
+    // Section 6: Final Stretch to Portal
     {
       type: 'finale',
-      x: 2400,
+      x: 3200,
       platforms: [
-        { x: 2400, y: 450, width: 100, height: 20, type: 'normal' },
-        { x: 2550, y: 420, width: 150, height: 80, type: 'ground' },
+        { x: 3200, y: 450, width: 100, height: 20, type: 'normal' },
+        { x: 3350, y: 420, width: 150, height: 80, type: 'ground' },
       ],
       enemies: [],
       collectibles: [
-        { type: 'coin', x: 2450, y: 400 },
-        { type: 'coin', x: 2500, y: 380 },
-        { type: 'scrap', x: 2620, y: 370 },
+        { type: 'coin', x: 3250, y: 400 },
+        { type: 'coin', x: 3300, y: 380 },
+        { type: 'scrap', x: 3420, y: 370 },
       ],
-      portal: { x: 2600, y: 340 },
+      portal: { x: 3400, y: 340 },
       decorations: [
-        { type: 'portal_glow', x: 2600, y: 340 },
-        { type: 'ancient_archway', x: 2560, y: 320 },
+        { type: 'portal_glow', x: 3400, y: 340 },
+        { type: 'ancient_archway', x: 3360, y: 320 },
+        { type: 'glowing_runes', x: 3350, y: 400 },
       ]
     }
   ],
   
   // Secret area hint (accessible in later playthrough)
   secretHint: {
-    triggerLocation: { x: 2350, y: 480 },
+    triggerLocation: { x: 2350, y: 220 },
     hintText: "The runes whisper of a hidden grove...",
     unlocksLevel: 'forest-secret'
   },
@@ -222,7 +207,7 @@ export const LEVEL_1_ENEMY_BEHAVIORS = {
       hopTowardsPlayer: true,
       hopRange: 100,
       hopCooldown: 120,
-      stickyTrail: false, // Disabled for level 1 simplicity
+      stickyTrail: false,
     }
   },
   bat: {
