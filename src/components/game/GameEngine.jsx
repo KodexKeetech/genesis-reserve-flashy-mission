@@ -2338,13 +2338,20 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             boss.isAttacking = true;
             boss.attackPattern = (boss.attackPattern + 1) % 3;
             
+            // Calculate direction to player for aiming
+            const dx = player.x - (boss.x + boss.width / 2);
+            const dy = player.y - (boss.y + boss.height / 2);
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const aimX = dist > 0 ? dx / dist : dirToPlayer;
+            const aimY = dist > 0 ? dy / dist : 0;
+            
             // Different attacks based on boss type
             if (boss.type === 'treant') {
               if (boss.attackPattern === 0) {
-                // Spawn root hazards
+                // Spawn root hazards near player
                 for (let i = 0; i < 3; i++) {
                   state.hazards.push({
-                    x: 350 + i * 150,
+                    x: player.x - 60 + i * 60,
                     y: 480,
                     width: 40,
                     height: 30,
@@ -2353,15 +2360,15 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                     type: 'root'
                   });
                 }
-                // Throw leaves at player (spread)
+                // Throw leaves at player (spread) - aim toward player
                 const leafCount = boss.health < boss.maxHealth / 2 ? 5 : 3;
                 for (let i = 0; i < leafCount; i++) {
-                  const angle = (Math.PI / 4) + (i * Math.PI / (leafCount * 2));
+                  const spreadAngle = (i - leafCount / 2 + 0.5) * 0.3;
                   state.enemyProjectiles.push({
                     x: boss.x + boss.width / 2,
                     y: boss.y + 20,
-                    velocityX: Math.cos(angle) * dirToPlayer * 5,
-                    velocityY: -Math.sin(angle) * 4 + 2,
+                    velocityX: aimX * 5 + spreadAngle * 2,
+                    velocityY: aimY * 5 + spreadAngle,
                     width: 20,
                     height: 12,
                     life: 150,
@@ -2375,8 +2382,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                   state.enemyProjectiles.push({
                     x: boss.x + boss.width / 2,
                     y: boss.y + 30 + i * 15,
-                    velocityX: dirToPlayer * 7,
-                    velocityY: 0,
+                    velocityX: aimX * 7,
+                    velocityY: aimY * 7,
                     width: 25,
                     height: 10,
                     life: 120,
@@ -2394,15 +2401,15 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                 boss.jumpCooldown = 120;
                 soundManager.createOscillator('sine', 150, 0.3, 0.2);
               } else {
-                // Fire projectiles in spread
+                // Fire projectiles in spread - aim toward player
                 const spreadCount = boss.health < boss.maxHealth / 2 ? 5 : 3;
                 for (let i = 0; i < spreadCount; i++) {
-                  const spreadAngle = (i - Math.floor(spreadCount / 2)) * 0.4;
+                  const spreadAngle = (i - Math.floor(spreadCount / 2)) * 0.3;
                   state.enemyProjectiles.push({
                     x: boss.x + boss.width / 2,
                     y: boss.y + 30,
-                    velocityX: dirToPlayer * 4,
-                    velocityY: spreadAngle * 3,
+                    velocityX: aimX * 4 + spreadAngle * dirToPlayer,
+                    velocityY: aimY * 4 + spreadAngle,
                     width: 16,
                     height: 16,
                     life: 100,
@@ -2414,23 +2421,23 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
               
             } else if (boss.type === 'frostWyrm') {
               if (boss.attackPattern === 0) {
-                // Ice breath - wide projectile
+                // Ice breath - aimed at player
                 state.enemyProjectiles.push({
                   x: boss.x + boss.width / 2,
                   y: boss.y + 50,
-                  velocityX: dirToPlayer * 6,
-                  velocityY: 0,
+                  velocityX: aimX * 6,
+                  velocityY: aimY * 3,
                   width: 60,
                   height: 30,
                   life: 60,
                   type: 'iceBreath'
                 });
               } else {
-                // Icicle rain attack - drops icicles from above
+                // Icicle rain attack - drops icicles centered on player
                 const icicleCount = boss.health < boss.maxHealth / 2 ? 6 : 4;
                 for (let i = 0; i < icicleCount; i++) {
                   state.enemyProjectiles.push({
-                    x: 350 + i * (400 / icicleCount) + Math.random() * 30,
+                    x: player.x - 100 + i * (200 / icicleCount) + Math.random() * 30,
                     y: 50,
                     velocityX: 0,
                     velocityY: 4 + Math.random() * 2,
@@ -2501,15 +2508,15 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
               soundManager.createOscillator('square', 800, 0.2, 0.1);
               
             } else if (boss.type === 'pharaohKing') {
-              // Summon scarabs and throw curse projectiles
+              // Throw curse projectiles aimed at player with spread
               const curseCount = boss.health < boss.maxHealth / 2 ? 5 : 3;
               for (let i = 0; i < curseCount; i++) {
-                const angle = (i / curseCount) * Math.PI - Math.PI / 2;
+                const spreadAngle = (i - curseCount / 2 + 0.5) * 0.4;
                 state.enemyProjectiles.push({
                   x: boss.x + boss.width / 2,
                   y: boss.y + 40,
-                  velocityX: Math.cos(angle) * 4,
-                  velocityY: Math.sin(angle) * 4 + 2,
+                  velocityX: aimX * 4 + spreadAngle * dirToPlayer,
+                  velocityY: aimY * 4 + spreadAngle,
                   width: 18,
                   height: 18,
                   life: 120,
@@ -2519,15 +2526,26 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
               soundManager.createOscillator('sine', 250, 0.2, 0.4);
               
             } else if (boss.type === 'crystalQueen') {
-              // Crystal shards that bounce
+              // Crystal shards - some aimed at player, some radial
               const shardCount = boss.health < boss.maxHealth / 2 ? 6 : 4;
               for (let i = 0; i < shardCount; i++) {
-                const angle = (i / shardCount) * Math.PI * 2;
+                let vx, vy;
+                if (i < 2) {
+                  // First 2 shards aim directly at player
+                  const spread = (i - 0.5) * 0.3;
+                  vx = aimX * 5 + spread;
+                  vy = aimY * 5 + spread;
+                } else {
+                  // Rest are radial
+                  const angle = ((i - 2) / (shardCount - 2)) * Math.PI * 2;
+                  vx = Math.cos(angle) * 4;
+                  vy = Math.sin(angle) * 4;
+                }
                 state.enemyProjectiles.push({
                   x: boss.x + boss.width / 2,
                   y: boss.y + boss.height / 2,
-                  velocityX: Math.cos(angle) * 5,
-                  velocityY: Math.sin(angle) * 5,
+                  velocityX: vx,
+                  velocityY: vy,
                   width: 15,
                   height: 15,
                   life: 150,
@@ -2540,9 +2558,9 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             } else if (boss.type === 'omegaPrime') {
               // Laser beam and missile barrage
               if (boss.attackPattern === 0) {
-                // Sweeping laser
+                // Laser aimed at player position
                 state.enemyProjectiles.push({
-                  x: boss.x + boss.width / 2,
+                  x: player.x,
                   y: boss.y + 55,
                   velocityX: 0,
                   velocityY: 8,
@@ -2552,14 +2570,14 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                   type: 'laser'
                 });
               } else {
-                // Homing missiles
+                // Homing missiles aimed at player
                 const missileCount = boss.health < boss.maxHealth / 2 ? 4 : 2;
                 for (let i = 0; i < missileCount; i++) {
                   state.enemyProjectiles.push({
                     x: boss.x + 20 + i * 30,
                     y: boss.y,
-                    velocityX: dirToPlayer * 3,
-                    velocityY: -2,
+                    velocityX: aimX * 3,
+                    velocityY: aimY * 3 - 1,
                     width: 12,
                     height: 12,
                     life: 180,
@@ -2572,7 +2590,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
               soundManager.createOscillator('square', 300, 0.2, 0.2);
             }
             
-            boss.attackCooldown = boss.health < boss.maxHealth / 2 ? 50 : 80;
+            // Slower attack cooldowns for later bosses (level 12+)
+            const baseCooldown = currentLevel >= 12 ? 100 : 80;
+            const enragedCooldown = currentLevel >= 12 ? 70 : 50;
+            boss.attackCooldown = boss.health < boss.maxHealth / 2 ? enragedCooldown : baseCooldown;
             setTimeout(() => { if (state.boss) state.boss.isAttacking = false; }, 500);
           }
         }
