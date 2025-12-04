@@ -21,10 +21,10 @@ export default function AbilityShop() {
     try {
       const userData = await base44.auth.me();
       if (!userData.unlockedAbilities) {
-        userData.unlockedAbilities = { aoeBlast: false, reflectShield: false, hover: false };
+        userData.unlockedAbilities = { aoeBlast: false, reflectShield: false, hover: false, timeSlow: false, chainLightning: false, shadowClone: false, magneticPull: false, teleport: false };
       }
       if (!userData.abilityUpgrades) {
-        userData.abilityUpgrades = { aoeBlastPower: 0, aoeBlastRadius: 0, reflectDuration: 0, hoverDuration: 0 };
+        userData.abilityUpgrades = { aoeBlastPower: 0, aoeBlastRadius: 0, reflectDuration: 0, hoverDuration: 0, timeSlowDuration: 0, chainLightningDamage: 0, chainLightningChains: 0, shadowCloneDuration: 0, magneticPullRadius: 0, teleportDistance: 0, teleportCooldown: 0 };
       }
       if (!userData.arcaneCrystals) {
         userData.arcaneCrystals = 0;
