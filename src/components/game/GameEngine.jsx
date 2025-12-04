@@ -189,14 +189,19 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       state.platforms.push({ x: 650, y: 380, width: 100, height: 20, type: 'magic' });
       state.platforms.push({ x: 500, y: 280, width: 120, height: 20, type: 'normal' });
       
+      // Calculate boss difficulty multiplier for harder boss levels
+      const hardBossLevels = [15, 18, 21, 24];
+      const isHardBoss = hardBossLevels.includes(level);
+      const healthMultiplier = isHardBoss ? 1.5 : 1;
+      
       // Spawn boss
       state.boss = {
         x: 650,
         y: 400,
         width: 100,
         height: 100,
-        health: biome.boss.health,
-        maxHealth: biome.boss.health,
+        health: Math.floor(biome.boss.health * healthMultiplier),
+        maxHealth: Math.floor(biome.boss.health * healthMultiplier),
         type: biome.boss.type,
         name: biome.boss.name,
         phase: 1,
@@ -204,7 +209,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         isAttacking: false,
         velocityX: 0,
         velocityY: 0,
-        frozen: 0
+        frozen: 0,
+        isHardBoss: isHardBoss
       };
       
       state.levelWidth = 1200;
@@ -537,6 +543,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         height: 60,
         activated: false
       };
+      state.checkpointActivated = false;
+    } else {
+      // Boss levels don't have checkpoints
+      state.checkpoint = null;
       state.checkpointActivated = false;
     }
     
@@ -2674,9 +2684,16 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
               soundManager.createOscillator('square', 300, 0.2, 0.2);
             }
             
-            // Slower attack cooldowns for later bosses (level 12+)
-            const baseCooldown = currentLevel >= 12 ? 100 : 80;
-            const enragedCooldown = currentLevel >= 12 ? 70 : 50;
+            // Slower attack cooldowns for later bosses (level 12+), faster for hard bosses
+            let baseCooldown = currentLevel >= 12 ? 100 : 80;
+            let enragedCooldown = currentLevel >= 12 ? 70 : 50;
+            
+            // Hard bosses attack faster
+            if (boss.isHardBoss) {
+              baseCooldown = Math.floor(baseCooldown * 0.7);
+              enragedCooldown = Math.floor(enragedCooldown * 0.6);
+            }
+            
             boss.attackCooldown = boss.health < boss.maxHealth / 2 ? enragedCooldown : baseCooldown;
             setTimeout(() => { if (state.boss) state.boss.isAttacking = false; }, 500);
           }

@@ -56,6 +56,7 @@ export default function Game() {
   const [coinAmmo, setCoinAmmo] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
   const [checkpointData, setCheckpointData] = useState(null);
+  const [isCheckpointActivated, setIsCheckpointActivated] = useState(false);
   const [respawnAtCheckpoint, setRespawnAtCheckpoint] = useState(false);
   
   const [startingGun, setStartingGun] = useState(0);
@@ -275,6 +276,7 @@ export default function Game() {
     };
     // Clear checkpoint data on full restart
     setCheckpointData(null);
+    setIsCheckpointActivated(false);
     setRespawnAtCheckpoint(false);
     setScore(0);
     setHealth(100);
@@ -302,6 +304,8 @@ export default function Game() {
     };
     setLevel(prev => prev + 1);
     setHealth(100);
+    setCheckpointData(null);
+    setIsCheckpointActivated(false);
     setGameState('playing');
   }, []);
 
@@ -334,6 +338,7 @@ export default function Game() {
 
   const handleCheckpointActivated = useCallback((checkpoint) => {
     setCheckpointData(checkpoint);
+    setIsCheckpointActivated(true);
   }, []);
 
   const handleGameOver = useCallback(() => {
@@ -518,7 +523,7 @@ export default function Game() {
               level={level}
               onRestart={handleRestart}
               onNextLevel={handleNextLevel}
-              hasCheckpoint={!!checkpointData}
+              hasCheckpoint={isCheckpointActivated && !!checkpointData}
               onContinueFromCheckpoint={handleContinueFromCheckpoint}
             />
           </div>
