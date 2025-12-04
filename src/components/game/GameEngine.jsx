@@ -1793,6 +1793,21 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       if (e.code === 'KeyF') {
         handleHover();
       }
+      if (e.code === 'KeyT') {
+        handleTimeSlow();
+      }
+      if (e.code === 'KeyG') {
+        handleChainLightning();
+      }
+      if (e.code === 'KeyC') {
+        handleShadowClone();
+      }
+      if (e.code === 'KeyV') {
+        handleMagneticPull();
+      }
+      if (e.code === 'KeyX') {
+        handleTeleport();
+      }
     };
 
     window.addEventListener('keydown', handleKeyDownWithDash);
