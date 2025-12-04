@@ -976,6 +976,15 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     canvas.addEventListener('click', handleClick);
     canvas.addEventListener('mousemove', handleMouseMove);
 
+    // Check if gamepad is already connected on mount
+    const gamepads = navigator.getGamepads();
+    for (let i = 0; i < gamepads.length; i++) {
+      if (gamepads[i]) {
+        console.log('Gamepad already connected:', gamepads[i].id);
+        break;
+      }
+    }
+
     const checkCollision = (a, b) => {
       return a.x < b.x + b.width &&
              a.x + a.width > b.x &&
@@ -1661,10 +1670,11 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           player.velocityY += GRAVITY * 0.1; // Very light gravity
           
           // Allow vertical control while hovering
-          if (keys['ArrowUp'] || keys['KeyW'] || keys['Space']) {
+          const moveY = input.move?.y || 0;
+          if (keys['ArrowUp'] || keys['KeyW'] || keys['Space'] || moveY < -0.3) {
             player.velocityY -= 0.5;
           }
-          if (keys['ArrowDown'] || keys['KeyS']) {
+          if (keys['ArrowDown'] || keys['KeyS'] || moveY > 0.3) {
             player.velocityY += 0.5;
           }
           player.velocityY = Math.max(-4, Math.min(4, player.velocityY));
