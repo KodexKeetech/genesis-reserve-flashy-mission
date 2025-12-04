@@ -490,6 +490,7 @@ export default function Game() {
                 key={gameKey}
                 currentLevel={level}
                 hiddenLevelId={hiddenLevelId}
+                difficulty={difficulty}
                 onScoreChange={handleScoreChange}
                 onHealthChange={handleHealthChange}
                 onLevelComplete={handleLevelComplete}
