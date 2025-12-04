@@ -1,5 +1,11 @@
 // Background and particle rendering for different biomes
 export function drawBackground(ctx, biome, time, cameraX) {
+  // Handle arcane biome
+  if (biome.key === 'arcane') {
+    drawArcaneBackground(ctx, time, cameraX);
+    return;
+  }
+  
   const { background } = biome;
   
   // Sky gradient
