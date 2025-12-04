@@ -1520,6 +1520,262 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       soundManager.createOscillator('sine', 400, 0.15, 0.2);
     };
 
+    const handleTimeSlow = () => {
+      const state = gameStateRef.current;
+      const player = state.player;
+      if (!unlockedAbilities?.timeSlow) return;
+      if (player.specialAbilities.timeSlow.cooldown > 0) return;
+      if (player.specialAbilities.timeSlow.active) return;
+
+      const stats = getAbilityStats('timeSlow', abilityUpgrades);
+      
+      player.specialAbilities.timeSlow.active = true;
+      player.specialAbilities.timeSlow.timer = stats.duration;
+      player.specialAbilities.timeSlow.cooldown = stats.baseCooldown;
+      
+      // Visual effect - time distortion particles
+      for (let i = 0; i < 20; i++) {
+        const angle = (i / 20) * Math.PI * 2;
+        state.particles.push({
+          x: player.x + player.width / 2 + Math.cos(angle) * 80,
+          y: player.y + player.height / 2 + Math.sin(angle) * 80,
+          velocityX: -Math.cos(angle) * 2,
+          velocityY: -Math.sin(angle) * 2,
+          life: 30,
+          color: '#FBBF24'
+        });
+      }
+      
+      soundManager.createOscillator('sine', 300, 0.2, 0.5);
+    };
+
+    const handleChainLightning = () => {
+      const state = gameStateRef.current;
+      const player = state.player;
+      if (!unlockedAbilities?.chainLightning) return;
+      if (player.specialAbilities.chainLightning.cooldown > 0) return;
+
+      const stats = getAbilityStats('chainLightning', abilityUpgrades);
+      
+      // Find enemies to chain through
+      const playerCenterX = player.x + player.width / 2;
+      const playerCenterY = player.y + player.height / 2;
+      
+      let hitEnemies = [];
+      let currentX = playerCenterX;
+      let currentY = playerCenterY;
+      
+      for (let chain = 0; chain < stats.maxChains; chain++) {
+        let closestEnemy = null;
+        let closestDist = stats.chainRange;
+        
+        for (const enemy of state.enemies) {
+          if (hitEnemies.includes(enemy)) continue;
+          const ex = enemy.x + enemy.width / 2;
+          const ey = enemy.y + enemy.height / 2;
+          const dist = Math.sqrt(Math.pow(ex - currentX, 2) + Math.pow(ey - currentY, 2));
+          if (dist < closestDist) {
+            closestDist = dist;
+            closestEnemy = enemy;
+          }
+        }
+        
+        if (closestEnemy) {
+          // Draw lightning to this enemy
+          const ex = closestEnemy.x + closestEnemy.width / 2;
+          const ey = closestEnemy.y + closestEnemy.height / 2;
+          
+          // Lightning particles
+          for (let i = 0; i < 5; i++) {
+            const t = i / 5;
+            state.particles.push({
+              x: currentX + (ex - currentX) * t,
+              y: currentY + (ey - currentY) * t + (Math.random() - 0.5) * 20,
+              velocityX: (Math.random() - 0.5) * 2,
+              velocityY: (Math.random() - 0.5) * 2,
+              life: 15,
+              color: '#FCD34D'
+            });
+          }
+          
+          // Damage enemy
+          closestEnemy.health -= stats.damage;
+          if (closestEnemy.health <= 0) {
+            soundManager.playEnemyDefeat();
+            const idx = state.enemies.indexOf(closestEnemy);
+            if (idx > -1) state.enemies.splice(idx, 1);
+            state.score += 100;
+            onScoreChange(state.score);
+          }
+          
+          hitEnemies.push(closestEnemy);
+          currentX = ex;
+          currentY = ey;
+        } else {
+          break;
+        }
+      }
+      
+      // Also damage boss if nearby
+      if (state.boss) {
+        const bx = state.boss.x + state.boss.width / 2;
+        const by = state.boss.y + state.boss.height / 2;
+        const dist = Math.sqrt(Math.pow(bx - playerCenterX, 2) + Math.pow(by - playerCenterY, 2));
+        if (dist < stats.chainRange) {
+          state.boss.health -= stats.damage;
+          soundManager.playEnemyHit();
+        }
+      }
+      
+      player.specialAbilities.chainLightning.cooldown = stats.baseCooldown;
+      soundManager.createOscillator('sawtooth', 200, 0.3, 0.2);
+      soundManager.createOscillator('square', 800, 0.15, 0.1);
+    };
+
+    const handleShadowClone = () => {
+      const state = gameStateRef.current;
+      const player = state.player;
+      if (!unlockedAbilities?.shadowClone) return;
+      if (player.specialAbilities.shadowClone.cooldown > 0) return;
+      if (player.specialAbilities.shadowClone.active) return;
+
+      const stats = getAbilityStats('shadowClone', abilityUpgrades);
+      
+      player.specialAbilities.shadowClone.active = true;
+      player.specialAbilities.shadowClone.timer = stats.duration;
+      player.specialAbilities.shadowClone.cooldown = stats.baseCooldown;
+      player.specialAbilities.shadowClone.cloneX = player.x + (player.facingRight ? -50 : 50);
+      player.specialAbilities.shadowClone.cloneY = player.y;
+      
+      // Spawn particles
+      for (let i = 0; i < 15; i++) {
+        state.particles.push({
+          x: player.specialAbilities.shadowClone.cloneX + 24,
+          y: player.specialAbilities.shadowClone.cloneY + 32,
+          velocityX: (Math.random() - 0.5) * 5,
+          velocityY: (Math.random() - 0.5) * 5,
+          life: 20,
+          color: '#6366F1'
+        });
+      }
+      
+      soundManager.createOscillator('sine', 350, 0.15, 0.3);
+    };
+
+    const handleMagneticPull = () => {
+      const state = gameStateRef.current;
+      const player = state.player;
+      if (!unlockedAbilities?.magneticPull) return;
+      if (player.specialAbilities.magneticPull.cooldown > 0) return;
+
+      const stats = getAbilityStats('magneticPull', abilityUpgrades);
+      
+      const playerCenterX = player.x + player.width / 2;
+      const playerCenterY = player.y + player.height / 2;
+      
+      // Pull collectibles
+      for (const collectible of state.collectibles) {
+        if (collectible.collected) continue;
+        const dx = collectible.x - playerCenterX;
+        const dy = collectible.y - playerCenterY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < stats.radius) {
+          collectible.x = playerCenterX - 12;
+          collectible.y = playerCenterY - 12;
+        }
+      }
+      
+      // Pull power-ups
+      for (const powerUp of state.powerUpItems) {
+        if (powerUp.collected) continue;
+        const dx = powerUp.x - playerCenterX;
+        const dy = powerUp.y - playerCenterY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < stats.radius) {
+          powerUp.x = playerCenterX - 14;
+          powerUp.y = playerCenterY - 14;
+        }
+      }
+      
+      // Pull enemies slightly (stagger them)
+      for (const enemy of state.enemies) {
+        const dx = enemy.x - playerCenterX;
+        const dy = enemy.y - playerCenterY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < stats.radius && dist > 50) {
+          enemy.x -= (dx / dist) * 30;
+          enemy.y -= (dy / dist) * 15;
+        }
+      }
+      
+      // Visual effect
+      for (let i = 0; i < 25; i++) {
+        const angle = (i / 25) * Math.PI * 2;
+        const r = stats.radius;
+        state.particles.push({
+          x: playerCenterX + Math.cos(angle) * r,
+          y: playerCenterY + Math.sin(angle) * r,
+          velocityX: -Math.cos(angle) * 5,
+          velocityY: -Math.sin(angle) * 5,
+          life: 20,
+          color: '#EC4899'
+        });
+      }
+      
+      player.specialAbilities.magneticPull.cooldown = stats.baseCooldown;
+      soundManager.createOscillator('sine', 150, 0.25, 0.3);
+    };
+
+    const handleTeleport = () => {
+      const state = gameStateRef.current;
+      const player = state.player;
+      if (!unlockedAbilities?.teleport) return;
+      if (player.specialAbilities.teleport.cooldown > 0) return;
+
+      const stats = getAbilityStats('teleport', abilityUpgrades);
+      
+      const oldX = player.x;
+      const oldY = player.y;
+      
+      // Teleport in facing direction
+      const teleportDir = player.facingRight ? 1 : -1;
+      player.x += teleportDir * stats.distance;
+      
+      // Keep player in bounds
+      player.x = Math.max(0, Math.min(player.x, state.levelWidth - player.width));
+      
+      // Particles at old location
+      for (let i = 0; i < 15; i++) {
+        state.particles.push({
+          x: oldX + player.width / 2,
+          y: oldY + player.height / 2,
+          velocityX: (Math.random() - 0.5) * 6,
+          velocityY: (Math.random() - 0.5) * 6,
+          life: 20,
+          color: '#8B5CF6'
+        });
+      }
+      
+      // Particles at new location
+      for (let i = 0; i < 15; i++) {
+        state.particles.push({
+          x: player.x + player.width / 2,
+          y: player.y + player.height / 2,
+          velocityX: (Math.random() - 0.5) * 6,
+          velocityY: (Math.random() - 0.5) * 6,
+          life: 20,
+          color: '#A78BFA'
+        });
+      }
+      
+      // Brief invincibility
+      player.invincible = true;
+      player.invincibleTimer = 15;
+      
+      player.specialAbilities.teleport.cooldown = stats.cooldown || stats.baseCooldown;
+      soundManager.createOscillator('sine', 600, 0.15, 0.15);
+    };
+
     const handleKeyDownWithDash = (e) => {
       handleKeyDown(e);
       if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
