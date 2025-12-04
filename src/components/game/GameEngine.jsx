@@ -2792,8 +2792,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             }
           }
           enemy.facingRight = player.x > enemy.x;
-        } else {
-          // Level 1 enhanced enemy behaviors
+        }
+        // Level 1 enhanced enemy behaviors
         else if (enemy.type === 'slime' && enemy.hopTowardsPlayer) {
           // Slime with hop-towards-player behavior
           enemy.x += enemy.velocityX;
