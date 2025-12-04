@@ -2986,7 +2986,9 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           } else {
             // Play damage sound
             soundManager.playDamage();
-            player.health -= 20;
+            const diffSettingsForDamage = getDifficultySettings(currentLevel, difficulty);
+            const damageAmount = Math.floor(20 * diffSettingsForDamage.playerDamageTakenMult);
+            player.health -= damageAmount;
             player.invincible = true;
             player.invincibleTimer = 60;
             player.velocityY = -8;
