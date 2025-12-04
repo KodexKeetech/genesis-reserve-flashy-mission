@@ -848,7 +848,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     state.bossNoDamage = true;
     state.cameraX = 0;
 
-    }, [startingGun]);
+    }, [startingGun, hiddenLevelId]);
 
   // Track if we need to respawn at checkpoint after level generation
   const pendingCheckpointRespawnRef = useRef(false);
