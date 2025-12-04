@@ -1228,6 +1228,12 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     const ctx = canvas.getContext('2d');
     let animationId;
     let time = 0;
+    
+    // Fixed timestep for consistent game speed across devices
+    const TARGET_FPS = 60;
+    const FRAME_TIME = 1000 / TARGET_FPS;
+    let lastFrameTime = performance.now();
+    let accumulator = 0;
 
     const handleKeyDown = (e) => {
       gameStateRef.current.keys[e.code] = true;
@@ -2306,11 +2312,27 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       ctx.restore();
     };
 
-    const gameLoop = () => {
+    const gameLoop = (currentTime) => {
       const state = gameStateRef.current;
       if (!state.gameRunning) return;
       
-      time++;
+      // Fixed timestep logic
+      const deltaTime = currentTime - lastFrameTime;
+      lastFrameTime = currentTime;
+      
+      // Clamp delta to prevent spiral of death on slow frames
+      accumulator += Math.min(deltaTime, FRAME_TIME * 3);
+      
+      // Only update game logic when enough time has passed
+      if (accumulator < FRAME_TIME) {
+        animationId = requestAnimationFrame(gameLoop);
+        return;
+      }
+      
+      // Process fixed updates (may run multiple times to catch up)
+      while (accumulator >= FRAME_TIME) {
+        accumulator -= FRAME_TIME;
+        time++;
       const { player, platforms, enemies, projectiles, particles, collectibles, keys } = state;
       
       // Update power-up timers
@@ -5726,10 +5748,12 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         }
       }
       
+      } // end of fixed timestep while loop
+      
       animationId = requestAnimationFrame(gameLoop);
     };
 
-    gameLoop();
+    animationId = requestAnimationFrame(gameLoop);
 
     return () => {
       cancelAnimationFrame(animationId);
