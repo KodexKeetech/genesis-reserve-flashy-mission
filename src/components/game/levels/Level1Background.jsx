@@ -163,13 +163,11 @@ function drawLightShafts(ctx, offsetX, canvasWidth, canvasHeight, time) {
 }
 
 function drawNearTrees(ctx, offsetX, canvasWidth, time) {
-  // Left frame tree
-  const leftTreeX = -30 - (offsetX % 100);
-  drawDetailedTree(ctx, leftTreeX, 100, 400, time, true);
+  // Left frame tree - static position
+  drawDetailedTree(ctx, -30, 100, 400, time, true);
   
-  // Right frame tree
-  const rightTreeX = canvasWidth - 50 - (offsetX % 120);
-  drawDetailedTree(ctx, rightTreeX, 120, 380, time, false);
+  // Right frame tree - static position
+  drawDetailedTree(ctx, canvasWidth - 50, 120, 380, time, false);
 }
 
 function drawDetailedTree(ctx, x, y, height, time, isLeft) {
