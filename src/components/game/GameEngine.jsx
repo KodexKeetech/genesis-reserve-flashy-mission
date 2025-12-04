@@ -25,7 +25,9 @@ const POWERUP_TYPES = {
   SHIELD: { color: '#3B82F6', icon: '🛡️', duration: 400, name: 'Shield' }
 };
 
-export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel, onPowerUpChange, onAbilityCooldowns, onScrapsEarned, onCrystalsEarned, onCoinAmmoChange, savedCoinAmmo, playerUpgrades, unlockedAbilities, abilityUpgrades, gameInput, startingGun = 0, gameSettings = { sound: true, graphics: 'high', particles: true }, onGunChange, onCheckpointActivated, respawnAtCheckpoint, onRespawnComplete, savedCheckpoint }) {
+import { HIDDEN_LEVELS } from './BiomeConfig';
+
+export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel, hiddenLevelId, onPowerUpChange, onAbilityCooldowns, onScrapsEarned, onCrystalsEarned, onCoinAmmoChange, savedCoinAmmo, playerUpgrades, unlockedAbilities, abilityUpgrades, gameInput, startingGun = 0, gameSettings = { sound: true, graphics: 'high', particles: true }, onGunChange, onCheckpointActivated, respawnAtCheckpoint, onRespawnComplete, savedCheckpoint }) {
   const canvasRef = useRef(null);
   const mouseRef = useRef({ x: 400, y: 300 }); // Track mouse position relative to canvas
   const gameStateRef = useRef({
@@ -108,6 +110,169 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         state.enemyProjectiles = [];
         state.environmentalHazards = [];
         state.boss = null;
+
+        // Hidden level generation
+        if (hiddenLevelId && HIDDEN_LEVELS[hiddenLevelId]) {
+          const hiddenLevel = HIDDEN_LEVELS[hiddenLevelId];
+          const biome = getBiomeForLevel(hiddenLevel.afterLevel);
+          state.biome = biome;
+          
+          const difficultyMult = hiddenLevel.difficulty;
+          state.levelWidth = 3000;
+          state.goalX = 2900;
+          
+          // Generate challenging terrain
+          let currentX = 0;
+          state.platforms.push({ x: 0, y: 500, width: 300, height: 100, type: 'ground' });
+          currentX = 300;
+          
+          // More sections for hidden levels
+          const sectionCount = 10;
+          const biomePlatformType = biome.key === 'volcano' ? 'lava' : 
+                                     biome.key === 'ice' ? 'ice' : 
+                                     biome.key === 'void' ? 'void' : 'magic';
+          
+          for (let section = 0; section < sectionCount; section++) {
+            const sectionType = section % 5;
+            
+            if (sectionType === 0) {
+              // Challenging gap with small platform
+              const gapWidth = 180;
+              state.platforms.push({ x: currentX + gapWidth / 2 - 30, y: 380, width: 60, height: 20, type: biomePlatformType });
+              state.platforms.push({ x: currentX + gapWidth, y: 500, width: 200, height: 100, type: 'ground' });
+              currentX += gapWidth + 200;
+            } else if (sectionType === 1) {
+              // Vertical climb
+              for (let step = 0; step < 5; step++) {
+                state.platforms.push({ x: currentX + step * 70, y: 450 - step * 60, width: 80, height: 20, type: step % 2 === 0 ? 'normal' : biomePlatformType });
+              }
+              currentX += 400;
+            } else if (sectionType === 2) {
+              // Narrow platforms
+              for (let i = 0; i < 4; i++) {
+                state.platforms.push({ x: currentX + i * 100, y: 400 + (i % 2) * 50, width: 50, height: 20, type: 'normal' });
+              }
+              state.platforms.push({ x: currentX + 400, y: 500, width: 150, height: 100, type: 'ground' });
+              currentX += 550;
+            } else if (sectionType === 3) {
+              // Obstacle course
+              state.platforms.push({ x: currentX, y: 500, width: 400, height: 100, type: 'ground' });
+              state.platforms.push({ x: currentX + 80, y: 420, width: 50, height: 80, type: 'obstacle' });
+              state.platforms.push({ x: currentX + 200, y: 400, width: 50, height: 100, type: 'obstacle' });
+              state.platforms.push({ x: currentX + 320, y: 380, width: 50, height: 120, type: 'obstacle' });
+              currentX += 400;
+            } else {
+              // Mixed platforms
+              state.platforms.push({ x: currentX, y: 350, width: 80, height: 20, type: biomePlatformType });
+              state.platforms.push({ x: currentX + 120, y: 420, width: 100, height: 20, type: 'normal' });
+              state.platforms.push({ x: currentX + 260, y: 500, width: 200, height: 100, type: 'ground' });
+              currentX += 460;
+            }
+          }
+          
+          state.platforms.push({ x: currentX, y: 500, width: 400, height: 100, type: 'ground' });
+          state.levelWidth = currentX + 400;
+          state.goalX = currentX + 300;
+          
+          // More enemies for hidden levels
+          const enemyCount = Math.floor(15 * difficultyMult);
+          const levelEnemies = getEnemiesForLevel(hiddenLevel.afterLevel);
+          
+          for (let i = 0; i < enemyCount; i++) {
+            const enemyX = 350 + (i * (state.levelWidth - 500) / enemyCount);
+            const nearbyPlatform = state.platforms.find(p => 
+              p.x <= enemyX && p.x + p.width >= enemyX && p.type !== 'obstacle'
+            );
+            
+            const enemyType = levelEnemies[i % levelEnemies.length];
+            let enemyY = nearbyPlatform ? nearbyPlatform.y - 40 : 460;
+            
+            if (['diver', 'bat', 'lavaBat', 'snowOwl', 'shadowBat'].includes(enemyType)) {
+              enemyY = 150 + Math.random() * 100;
+            }
+            
+            const maxHealth = Math.ceil((enemyType === 'bomber' ? 3 : 2) * difficultyMult);
+            
+            state.enemies.push({
+              x: enemyX,
+              y: enemyY,
+              width: 40,
+              height: 40,
+              velocityX: (Math.random() > 0.5 ? 1 : -1) * (2 + difficultyMult * 0.5),
+              velocityY: 0,
+              type: enemyType,
+              health: maxHealth,
+              maxHealth: maxHealth,
+              patrolStart: enemyX - 80,
+              patrolEnd: enemyX + 80,
+              shootCooldown: 0,
+              diveState: 'patrol',
+              originalY: enemyY,
+              bombCooldown: 0,
+              facingRight: Math.random() > 0.5,
+              canDodge: true,
+              dodgeCooldown: 0,
+              isEnraged: false
+            });
+          }
+          
+          // More collectibles
+          const collectibleCount = 20;
+          for (let i = 0; i < collectibleCount; i++) {
+            const collectX = 150 + (i * (state.levelWidth - 300) / collectibleCount);
+            state.collectibles.push({
+              x: collectX + Math.random() * 50,
+              y: 250 - Math.random() * 150,
+              width: 24,
+              height: 24,
+              collected: false,
+              bobOffset: Math.random() * Math.PI * 2
+            });
+          }
+          
+          // Power-ups
+          const powerUpTypes = Object.keys(POWERUP_TYPES);
+          for (let i = 0; i < 6; i++) {
+            state.powerUpItems.push({
+              x: 250 + (i * (state.levelWidth - 400) / 6),
+              y: 200 - Math.random() * 100,
+              width: 28,
+              height: 28,
+              collected: false,
+              type: powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)],
+              bobOffset: Math.random() * Math.PI * 2
+            });
+          }
+          
+          // No checkpoint in hidden levels
+          state.checkpoint = null;
+          state.checkpointActivated = false;
+          
+          // Reset player
+          const upgrades = playerUpgrades || {};
+          const bonusHealth = (upgrades.maxHealth || 0) * 20;
+          state.player.x = 100;
+          state.player.y = 400;
+          state.player.velocityX = 0;
+          state.player.velocityY = 0;
+          state.player.health = 100 + bonusHealth;
+          state.player.maxHealth = 100 + bonusHealth;
+          state.player.canDoubleJump = true;
+          state.player.hasDoubleJumped = false;
+          state.player.dashCooldown = 0;
+          state.player.isDashing = false;
+          state.player.powerUps = { SPEED: 0, INVINCIBILITY: 0, POWER_SHOT: 0, SHIELD: 0, shieldHealth: 0 };
+          state.player.selectedProjectile = startingGun;
+          state.player.coinAmmo = savedCoinAmmo || 0;
+          state.player.specialAbilities = {
+            aoeBlast: { cooldown: 0, active: false },
+            reflectShield: { cooldown: 0, active: false, timer: 0 },
+            hover: { cooldown: 0, active: false, timer: 0 }
+          };
+          state.bossNoDamage = true;
+          state.cameraX = 0;
+          return;
+        }
 
         // Tutorial level (level 0)
         if (level === 0) {

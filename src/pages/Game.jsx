@@ -19,12 +19,15 @@ export default function Game() {
   const urlParams = new URLSearchParams(window.location.search);
   const shouldContinue = urlParams.get('continue') === 'true';
   const startLevelParam = urlParams.get('startLevel');
+  const hiddenLevelParam = urlParams.get('hiddenLevel');
   
   const startLevelParamInit = new URLSearchParams(window.location.search).get('startLevel');
-  const [gameState, setGameState] = useState(startLevelParamInit ? 'playing' : 'tutorial'); // tutorial, playing, gameOver, levelComplete
+  const hiddenLevelInit = new URLSearchParams(window.location.search).get('hiddenLevel');
+  const [gameState, setGameState] = useState(startLevelParamInit || hiddenLevelInit ? 'playing' : 'tutorial'); // tutorial, playing, gameOver, levelComplete
+  const [hiddenLevelId, setHiddenLevelId] = useState(hiddenLevelInit || null);
   const [score, setScore] = useState(0);
   const [health, setHealth] = useState(100);
-  const [level, setLevel] = useState(startLevelParamInit ? parseInt(startLevelParamInit, 10) : 0); // Start at 0 for tutorial
+  const [level, setLevel] = useState(startLevelParamInit ? parseInt(startLevelParamInit, 10) : (hiddenLevelInit ? 100 : 0)); // Start at 0 for tutorial, 100+ for hidden
   const [powerUps, setPowerUps] = useState({});
   const [abilityCooldowns, setAbilityCooldowns] = useState({
     dashCooldown: 0,
@@ -481,6 +484,7 @@ export default function Game() {
               <GameEngine
                 key={gameKey}
                 currentLevel={level}
+                hiddenLevelId={hiddenLevelId}
                 onScoreChange={handleScoreChange}
                 onHealthChange={handleHealthChange}
                 onLevelComplete={handleLevelComplete}
