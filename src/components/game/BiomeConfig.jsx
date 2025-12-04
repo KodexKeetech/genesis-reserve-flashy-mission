@@ -314,7 +314,26 @@ export const HIDDEN_LEVELS = {
   }
 };
 
-export function getBiomeForLevel(level) {
+export function getBiomeForLevel(level, hiddenLevelId = null) {
+  // Handle hidden/secret levels
+  if (hiddenLevelId && HIDDEN_LEVELS[hiddenLevelId]) {
+    const hiddenLevel = HIDDEN_LEVELS[hiddenLevelId];
+    const baseBiome = BIOMES[hiddenLevel.biome];
+    return { 
+      key: 'secret', 
+      ...baseBiome, 
+      isHidden: true,
+      hiddenLevelId,
+      name: hiddenLevel.name,
+      difficulty: hiddenLevel.difficulty,
+      background: {
+        sky: ['#020817', '#0A0F1F', '#020817'],
+        stars: true,
+        particles: 'cosmic'
+      }
+    };
+  }
+
   for (const [key, biome] of Object.entries(BIOMES)) {
     if (biome.levels.includes(level)) {
       return { key, ...biome };
