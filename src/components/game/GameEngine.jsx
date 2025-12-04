@@ -1027,8 +1027,9 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           enemyY = nearbyPlatform.y - 45;
         }
         
-        // Calculate max health based on type
-        const maxHealth = enemyType === 'bomber' ? 3 : (enemyType === 'voidWalker' ? 4 : 2);
+        // Calculate max health based on type and difficulty
+        const baseHealth = enemyType === 'bomber' ? 3 : (enemyType === 'voidWalker' ? 4 : 2);
+        const maxHealth = Math.ceil(baseHealth * diffSettings.enemyHealthMultiplier);
         
         // Create patrol path for patrolling enemies
         const hasPatrolPath = ['slime', 'fireSlime', 'iceSlime', 'voidSlime'].includes(enemyType);
