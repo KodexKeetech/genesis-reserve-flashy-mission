@@ -2673,6 +2673,16 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         }
       }
       
+      // Calculate time slow effect
+      const isTimeSlowed = player.specialAbilities.timeSlow.active;
+      const timeSlowMult = isTimeSlowed ? 0.3 : 1;
+      
+      // Update shadow clone if active
+      if (player.specialAbilities.shadowClone.active) {
+        // Clone bobs and faces player direction
+        player.specialAbilities.shadowClone.cloneY = player.y + Math.sin(time * 0.1) * 5;
+      }
+      
       // Update enemies
       for (const enemy of enemies) {
         // Handle frozen state
@@ -2685,6 +2695,21 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             }
           }
           continue; // Skip AI while frozen
+        }
+        
+        // Shadow clone distraction - enemies target clone instead of player
+        let targetX = player.x;
+        let targetY = player.y;
+        if (player.specialAbilities.shadowClone.active) {
+          const cloneX = player.specialAbilities.shadowClone.cloneX;
+          const cloneY = player.specialAbilities.shadowClone.cloneY;
+          const distToPlayer = Math.sqrt(Math.pow(enemy.x - player.x, 2) + Math.pow(enemy.y - player.y, 2));
+          const distToClone = Math.sqrt(Math.pow(enemy.x - cloneX, 2) + Math.pow(enemy.y - cloneY, 2));
+          // 70% chance to target clone if closer or similar distance
+          if (distToClone <= distToPlayer * 1.2 || Math.random() < 0.7) {
+            targetX = cloneX;
+            targetY = cloneY;
+          }
         }
         
         // Check for enrage state (low health)
