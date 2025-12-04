@@ -6,9 +6,9 @@ export function drawBackground(ctx, biome, time, cameraX) {
     return;
   }
   
-  // Handle secret/hidden levels with space background
+  // Handle secret/hidden levels with unique backgrounds
   if (biome.key === 'secret' || biome.isHidden) {
-    drawSpaceBackground(ctx, time, cameraX);
+    drawSecretBackground(ctx, biome, time, cameraX);
     return;
   }
   
