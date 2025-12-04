@@ -85,6 +85,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     environmentalHazards: [],
     checkpoint: null,
     checkpointActivated: false,
+    respawnHandled: false,
     boss: null,
     keys: {},
     score: 0,
@@ -2718,8 +2719,9 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         }
       }
       
-      // Handle respawn at checkpoint
-      if (respawnAtCheckpoint && state.checkpoint && state.checkpointActivated) {
+      // Handle respawn at checkpoint (only once when flag is set)
+      if (respawnAtCheckpoint && state.checkpoint && state.checkpointActivated && !state.respawnHandled) {
+        state.respawnHandled = true;
         player.x = state.checkpoint.x;
         player.y = state.checkpoint.y - player.height - 10;
         player.velocityX = 0;
@@ -2744,6 +2746,11 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         if (onRespawnComplete) {
           onRespawnComplete();
         }
+      }
+      
+      // Reset respawn handled flag when respawnAtCheckpoint becomes false
+      if (!respawnAtCheckpoint && state.respawnHandled) {
+        state.respawnHandled = false;
       }
       
       // Check lose condition
