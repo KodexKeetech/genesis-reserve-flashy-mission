@@ -25,7 +25,7 @@ const POWERUP_TYPES = {
   SHIELD: { color: '#3B82F6', icon: '🛡️', duration: 400, name: 'Shield' }
 };
 
-export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel, onPowerUpChange, onAbilityCooldowns, onScrapsEarned, onCrystalsEarned, onCoinAmmoChange, savedCoinAmmo, playerUpgrades, unlockedAbilities, abilityUpgrades, gameInput, startingGun = 0, gameSettings = { sound: true, graphics: 'high', particles: true }, onGunChange, onCheckpointActivated, respawnAtCheckpoint, onRespawnComplete }) {
+export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel, onPowerUpChange, onAbilityCooldowns, onScrapsEarned, onCrystalsEarned, onCoinAmmoChange, savedCoinAmmo, playerUpgrades, unlockedAbilities, abilityUpgrades, gameInput, startingGun = 0, gameSettings = { sound: true, graphics: 'high', particles: true }, onGunChange, onCheckpointActivated, respawnAtCheckpoint, onRespawnComplete, savedCheckpoint }) {
   const canvasRef = useRef(null);
   const mouseRef = useRef({ x: 400, y: 300 }); // Track mouse position relative to canvas
   const gameStateRef = useRef({
@@ -85,7 +85,6 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     environmentalHazards: [],
     checkpoint: null,
     checkpointActivated: false,
-    respawnHandled: false,
     boss: null,
     keys: {},
     score: 0,
@@ -672,8 +671,38 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     state.bossNoDamage = true;
     state.cameraX = 0;
 
+    // If we have a saved checkpoint and are respawning, restore it and position player there
+    if (savedCheckpoint && respawnAtCheckpoint) {
+      state.checkpoint = { ...savedCheckpoint, activated: true };
+      state.checkpointActivated = true;
+      
+      // Find platform under checkpoint to spawn player on solid ground
+      let spawnY = savedCheckpoint.y - state.player.height - 10;
+      for (const platform of state.platforms) {
+        if (platform.type !== 'obstacle' &&
+            platform.x <= savedCheckpoint.x + 20 && 
+            platform.x + platform.width >= savedCheckpoint.x + 20 &&
+            platform.y > savedCheckpoint.y) {
+          spawnY = platform.y - state.player.height;
+          break;
+        }
+      }
+      
+      state.player.x = savedCheckpoint.x;
+      state.player.y = spawnY;
+      state.player.health = Math.floor(state.player.maxHealth * 0.5);
+      state.player.invincible = true;
+      state.player.invincibleTimer = 120;
+      state.cameraX = Math.max(0, state.player.x - 400);
+      onHealthChange(state.player.health);
+      
+      // Notify that respawn is complete
+      if (onRespawnComplete) {
+        onRespawnComplete();
+      }
+    }
 
-    }, [startingGun]);
+    }, [startingGun, savedCheckpoint, respawnAtCheckpoint, onHealthChange, onRespawnComplete]);
 
   useEffect(() => {
     generateLevel(currentLevel);
@@ -2719,39 +2748,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         }
       }
       
-      // Handle respawn at checkpoint (only once when flag is set)
-      if (respawnAtCheckpoint && state.checkpoint && state.checkpointActivated && !state.respawnHandled) {
-        state.respawnHandled = true;
-        player.x = state.checkpoint.x;
-        player.y = state.checkpoint.y - player.height - 10;
-        player.velocityX = 0;
-        player.velocityY = 0;
-        player.health = Math.floor(player.maxHealth * 0.5);
-        player.invincible = true;
-        player.invincibleTimer = 120;
-        onHealthChange(player.health);
-        // Respawn particles
-        for (let i = 0; i < 15; i++) {
-          particles.push({
-            x: player.x + player.width / 2,
-            y: player.y + player.height / 2,
-            velocityX: (Math.random() - 0.5) * 5,
-            velocityY: (Math.random() - 0.5) * 5,
-            life: 25,
-            color: '#3B82F6'
-          });
-        }
-        soundManager.playPowerUp();
-        // Notify parent that respawn is complete
-        if (onRespawnComplete) {
-          onRespawnComplete();
-        }
-      }
-      
-      // Reset respawn handled flag when respawnAtCheckpoint becomes false
-      if (!respawnAtCheckpoint && state.respawnHandled) {
-        state.respawnHandled = false;
-      }
+
       
       // Check lose condition
       if (player.health <= 0) {

@@ -345,6 +345,9 @@ export default function Game() {
     saveGunPreference(currentGun);
   }, [sessionScraps, sessionCrystals, saveScraps, currentGun, saveGunPreference]);
 
+  // Use a ref to store checkpoint data that persists across re-renders
+  const checkpointRef = useRef(null);
+
   const handleContinueFromCheckpoint = useCallback(() => {
     // Reset input to prevent auto-movement
     gameInputRef.current = {
@@ -358,10 +361,12 @@ export default function Game() {
       reflectShield: false,
       hover: false
     };
+    // Store checkpoint data in ref so it persists
+    checkpointRef.current = checkpointData;
     setHealth(50);
     setRespawnAtCheckpoint(true);
     setGameState('playing');
-  }, []);
+  }, [checkpointData]);
 
   const handleRespawnComplete = useCallback(() => {
     setRespawnAtCheckpoint(false);
@@ -491,6 +496,7 @@ export default function Game() {
                 onCheckpointActivated={handleCheckpointActivated}
                 respawnAtCheckpoint={respawnAtCheckpoint}
                 onRespawnComplete={handleRespawnComplete}
+                savedCheckpoint={checkpointRef.current}
               />
             )}
 
