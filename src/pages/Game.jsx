@@ -226,13 +226,17 @@ export default function Game() {
   }, []);
 
   const handleRestart = useCallback(() => {
-    // Reset touch input to prevent auto-movement
-    touchInputRef.current = {
+    // Reset input to prevent auto-movement
+    gameInputRef.current = {
       move: { x: 0, y: 0 },
+      aim: { x: 0, y: 0 },
       jump: false,
       dash: false,
       cast: false,
-      switch: false
+      switch: false,
+      aoeBlast: false,
+      reflectShield: false,
+      hover: false
     };
     setGameState('playing');
     setScore(0);
@@ -244,13 +248,17 @@ export default function Game() {
   }, [currentGun]);
 
   const handleNextLevel = useCallback(() => {
-    // Reset touch input to prevent auto-movement
-    touchInputRef.current = {
+    // Reset input to prevent auto-movement
+    gameInputRef.current = {
       move: { x: 0, y: 0 },
+      aim: { x: 0, y: 0 },
       jump: false,
       dash: false,
       cast: false,
-      switch: false
+      switch: false,
+      aoeBlast: false,
+      reflectShield: false,
+      hover: false
     };
     setLevel(prev => prev + 1);
     setHealth(100);

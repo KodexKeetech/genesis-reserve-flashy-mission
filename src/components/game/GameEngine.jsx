@@ -25,7 +25,7 @@ const POWERUP_TYPES = {
   SHIELD: { color: '#3B82F6', icon: '🛡️', duration: 400, name: 'Shield' }
 };
 
-export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel, onPowerUpChange, onAbilityCooldowns, onScrapsEarned, onCrystalsEarned, onCoinAmmoChange, savedCoinAmmo, playerUpgrades, unlockedAbilities, abilityUpgrades, touchInput, startingGun = 0, gameSettings = { sound: true, graphics: 'high', particles: true }, onGunChange }) {
+export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel, onPowerUpChange, onAbilityCooldowns, onScrapsEarned, onCrystalsEarned, onCoinAmmoChange, savedCoinAmmo, playerUpgrades, unlockedAbilities, abilityUpgrades, gameInput, startingGun = 0, gameSettings = { sound: true, graphics: 'high', particles: true }, onGunChange }) {
   const canvasRef = useRef(null);
   const mouseRef = useRef({ x: 400, y: 300 }); // Track mouse position relative to canvas
   const gameStateRef = useRef({
@@ -665,11 +665,16 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       gameStateRef.current.keys[e.code] = false;
     };
 
-    // Track touch cast state to prevent spam
-    let lastTouchCast = false;
-    let lastTouchSwitch = false;
+    // Track input state to prevent spam
+    let lastInputCast = false;
+    let lastInputSwitch = false;
+    let lastInputJump = false;
+    let lastInputDash = false;
+    let lastInputAoe = false;
+    let lastInputReflect = false;
+    let lastInputHover = false;
 
-    const doCast = (aimX, aimY) => {
+    const doCast = (aimX, aimY, isGamepadAim = false) => {
       const state = gameStateRef.current;
       const player = state.player;
       const upgrades = playerUpgrades || {};
@@ -688,16 +693,28 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         }
 
         // Calculate direction to aim point
-        const playerCenterX = player.x - state.cameraX + player.width / 2;
-        const playerCenterY = player.y + player.height / 2;
-        const dx = aimX - playerCenterX;
-        const dy = aimY - playerCenterY;
+        let dx, dy;
+        if (isGamepadAim) {
+          dx = aimX;
+          dy = aimY;
+          if (dx === 0 && dy === 0) {
+            dx = player.facingRight ? 1 : -1;
+            dy = 0;
+          }
+        } else {
+          const playerCenterX = player.x - state.cameraX + player.width / 2;
+          const playerCenterY = player.y + player.height / 2;
+          dx = aimX - playerCenterX;
+          dy = aimY - playerCenterY;
+        }
         const dist = Math.sqrt(dx * dx + dy * dy);
-        const dirX = dist > 0 ? dx / dist : 1;
+        const dirX = dist > 0 ? dx / dist : (player.facingRight ? 1 : -1);
         const dirY = dist > 0 ? dy / dist : 0;
 
         // Update facing direction based on aim
-        player.facingRight = dx >= 0;
+        if (!isGamepadAim || dx !== 0 || dy !== 0) {
+          player.facingRight = dx >= 0;
+        }
 
         // Consume coin ammo if using coin gun
         if (isCoin) {
