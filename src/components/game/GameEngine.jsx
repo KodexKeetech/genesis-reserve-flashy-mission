@@ -298,7 +298,12 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           state.player.specialAbilities = {
             aoeBlast: { cooldown: 0, active: false },
             reflectShield: { cooldown: 0, active: false, timer: 0 },
-            hover: { cooldown: 0, active: false, timer: 0 }
+            hover: { cooldown: 0, active: false, timer: 0 },
+            timeSlow: { cooldown: 0, active: false, timer: 0 },
+            chainLightning: { cooldown: 0, active: false },
+            shadowClone: { cooldown: 0, active: false, timer: 0, cloneX: 0, cloneY: 0 },
+            magneticPull: { cooldown: 0, active: false },
+            teleport: { cooldown: 0, active: false }
           };
           state.bossNoDamage = true;
           state.cameraX = 0;
@@ -359,7 +364,12 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           state.player.specialAbilities = {
             aoeBlast: { cooldown: 0, active: false },
             reflectShield: { cooldown: 0, active: false, timer: 0 },
-            hover: { cooldown: 0, active: false, timer: 0 }
+            hover: { cooldown: 0, active: false, timer: 0 },
+            timeSlow: { cooldown: 0, active: false, timer: 0 },
+            chainLightning: { cooldown: 0, active: false },
+            shadowClone: { cooldown: 0, active: false, timer: 0, cloneX: 0, cloneY: 0 },
+            magneticPull: { cooldown: 0, active: false },
+            teleport: { cooldown: 0, active: false }
           };
           state.cameraX = 0;
           return;
@@ -525,7 +535,12 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           state.player.specialAbilities = {
             aoeBlast: { cooldown: 0, active: false },
             reflectShield: { cooldown: 0, active: false, timer: 0 },
-            hover: { cooldown: 0, active: false, timer: 0 }
+            hover: { cooldown: 0, active: false, timer: 0 },
+            timeSlow: { cooldown: 0, active: false, timer: 0 },
+            chainLightning: { cooldown: 0, active: false },
+            shadowClone: { cooldown: 0, active: false, timer: 0, cloneX: 0, cloneY: 0 },
+            magneticPull: { cooldown: 0, active: false },
+            teleport: { cooldown: 0, active: false }
           };
           state.bossNoDamage = true;
           state.cameraX = 0;
