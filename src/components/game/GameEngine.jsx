@@ -1096,7 +1096,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     
     // Generate power-ups on platforms
     const powerUpTypes = Object.keys(POWERUP_TYPES);
-    const powerUpCount = 4 + level;
+    const powerUpCount = collectibleCountSettings.powerUpCount;
     for (let i = 0; i < powerUpCount; i++) {
       const puX = 250 + (i * (state.levelWidth - 400) / powerUpCount);
       state.powerUpItems.push({
