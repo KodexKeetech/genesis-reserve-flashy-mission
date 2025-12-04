@@ -5,6 +5,8 @@ import { drawBackground, drawPlatform, drawEnvironmentalHazard } from './Backgro
 import { drawEnemy, drawBoss } from './EnemyRenderer';
 import { createImpactEffect, createDamageEffect, createExplosionEffect, createMagicCastEffect, createPowerUpCollectEffect, createCoinCollectEffect, createEnemyDeathEffect, createBossHitEffect, createBossDeathEffect, createAmbientParticle, drawParticle, drawAmbientParticle, drawProjectileTrail, drawEnemyProjectileTrail } from './ParticleEffects';
 import { getAbilityStats, SPECIAL_ABILITIES } from './AbilitySystem';
+import { LEVEL_1_CONFIG, LEVEL_1_ENEMY_BEHAVIORS } from './levels/Level1Config';
+import { drawLevel1Background, drawLevel1Decoration } from './levels/Level1Background';
 
 const GRAVITY = 0.6;
 const JUMP_FORCE = -13;
@@ -330,6 +332,163 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             reflectShield: { cooldown: 0, active: false, timer: 0 },
             hover: { cooldown: 0, active: false, timer: 0 }
           };
+          state.cameraX = 0;
+          return;
+        }
+
+        // LEVEL 1 - Hand-crafted Enchanted Forest introduction
+        if (level === 1) {
+          const biome = getBiomeForLevel(1);
+          state.biome = biome;
+          state.biome.customLevel = true; // Flag for custom background
+          state.levelWidth = LEVEL_1_CONFIG.levelWidth;
+          state.decorations = [];
+          
+          // Load platforms, enemies, collectibles from config
+          for (const section of LEVEL_1_CONFIG.sections) {
+            // Add platforms
+            for (const plat of section.platforms || []) {
+              state.platforms.push({ ...plat });
+            }
+            
+            // Add enemies with enhanced behaviors
+            for (const enemy of section.enemies || []) {
+              const behaviorConfig = LEVEL_1_ENEMY_BEHAVIORS[enemy.type]?.[enemy.variant];
+              const behavior = behaviorConfig?.[enemy.behavior] || behaviorConfig || {};
+              
+              state.enemies.push({
+                x: enemy.x,
+                y: enemy.y,
+                width: 40,
+                height: 40,
+                velocityX: (behavior.speed || 1) * (Math.random() > 0.5 ? 1 : -1),
+                velocityY: 0,
+                type: enemy.type,
+                health: 2,
+                maxHealth: 2,
+                patrolStart: enemy.x - (behavior.patrolRange || 80),
+                patrolEnd: enemy.x + (behavior.patrolRange || 80),
+                frozen: 0,
+                facingRight: true,
+                // Enhanced behaviors
+                behavior: enemy.behavior,
+                hopTowardsPlayer: behavior.hopTowardsPlayer || false,
+                hopRange: behavior.hopRange || 100,
+                hopCooldown: 0,
+                hopMaxCooldown: behavior.hopCooldown || 120,
+                startPerched: behavior.startPerched || false,
+                isPerched: behavior.startPerched || false,
+                activationRange: behavior.activationRange || 150,
+                diveRange: behavior.diveRange || 120,
+                diveSpeed: behavior.diveSpeed || 4,
+                diveCooldown: 0,
+                diveMaxCooldown: behavior.diveCooldown || 180,
+                amplitude: behavior.amplitude || 30,
+                frequency: behavior.frequency || 0.05,
+                originalY: enemy.y
+              });
+            }
+            
+            // Add collectibles
+            for (const col of section.collectibles || []) {
+              if (col.type === 'coin') {
+                state.collectibles.push({
+                  x: col.x,
+                  y: col.y,
+                  width: 24,
+                  height: 24,
+                  collected: false,
+                  bobOffset: Math.random() * Math.PI * 2
+                });
+              } else if (col.type === 'scrap') {
+                state.collectibles.push({
+                  x: col.x,
+                  y: col.y,
+                  width: 24,
+                  height: 24,
+                  collected: false,
+                  bobOffset: Math.random() * Math.PI * 2,
+                  isScrap: true,
+                  value: 10
+                });
+              } else if (col.type === 'heart') {
+                state.powerUpItems.push({
+                  x: col.x,
+                  y: col.y,
+                  width: 28,
+                  height: 28,
+                  collected: false,
+                  type: 'HEAL',
+                  bobOffset: Math.random() * Math.PI * 2
+                });
+              }
+            }
+            
+            // Add power-ups
+            for (const pu of section.powerUps || []) {
+              state.powerUpItems.push({
+                x: pu.x,
+                y: pu.y,
+                width: 28,
+                height: 28,
+                collected: false,
+                type: pu.type,
+                bobOffset: Math.random() * Math.PI * 2
+              });
+            }
+            
+            // Store decorations for rendering
+            for (const dec of section.decorations || []) {
+              state.decorations.push({ ...dec });
+            }
+            
+            // Set goal from portal
+            if (section.portal) {
+              state.goalX = section.portal.x;
+            }
+          }
+          
+          // Add crumbling platforms behavior tracking
+          state.crumblingPlatforms = state.platforms
+            .filter(p => p.type === 'crumbling')
+            .map(p => ({ ...p, touched: false, crumbleTimer: p.crumbleTime || 45, originalY: p.y }));
+          
+          // Add checkpoint at middle
+          const midX = state.levelWidth / 2;
+          state.checkpoint = {
+            x: midX - 20,
+            y: 340,
+            width: 40,
+            height: 60,
+            activated: false
+          };
+          state.checkpointActivated = false;
+          
+          // Store secret hint
+          state.secretHint = LEVEL_1_CONFIG.secretHint;
+          
+          // Reset player
+          const upgrades = playerUpgrades || {};
+          const bonusHealth = (upgrades.maxHealth || 0) * 20;
+          state.player.x = 100;
+          state.player.y = 400;
+          state.player.velocityX = 0;
+          state.player.velocityY = 0;
+          state.player.health = 100 + bonusHealth;
+          state.player.maxHealth = 100 + bonusHealth;
+          state.player.canDoubleJump = true;
+          state.player.hasDoubleJumped = false;
+          state.player.dashCooldown = 0;
+          state.player.isDashing = false;
+          state.player.powerUps = { SPEED: 0, INVINCIBILITY: 0, POWER_SHOT: 0, SHIELD: 0, shieldHealth: 0 };
+          state.player.selectedProjectile = startingGun;
+          state.player.coinAmmo = savedCoinAmmo || 0;
+          state.player.specialAbilities = {
+            aoeBlast: { cooldown: 0, active: false },
+            reflectShield: { cooldown: 0, active: false, timer: 0 },
+            hover: { cooldown: 0, active: false, timer: 0 }
+          };
+          state.bossNoDamage = true;
           state.cameraX = 0;
           return;
         }
@@ -2634,9 +2793,91 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           }
           enemy.facingRight = player.x > enemy.x;
         } else {
-          // Default movement for flying enemies - more dynamic patterns
+          // Level 1 enhanced enemy behaviors
+        else if (enemy.type === 'slime' && enemy.hopTowardsPlayer) {
+          // Slime with hop-towards-player behavior
           enemy.x += enemy.velocityX;
-          if (['bat', 'lavaBat', 'snowOwl', 'shadowBat', 'gemBat', 'cloudSprite'].includes(enemy.type)) {
+          
+          // Patrol bounds
+          if (enemy.x < enemy.patrolStart || enemy.x > enemy.patrolEnd) {
+            enemy.velocityX *= -1;
+            enemy.facingRight = enemy.velocityX > 0;
+          }
+          
+          // Hop towards player when in range
+          if (enemy.hopCooldown > 0) enemy.hopCooldown--;
+          const distToPlayer = Math.abs(player.x - enemy.x);
+          if (distToPlayer < enemy.hopRange && enemy.hopCooldown <= 0) {
+            const hopDir = player.x > enemy.x ? 1 : -1;
+            enemy.velocityX = hopDir * 3;
+            enemy.facingRight = hopDir > 0;
+            enemy.hopCooldown = enemy.hopMaxCooldown;
+            // Hop particles
+            for (let i = 0; i < 4; i++) {
+              particles.push({
+                x: enemy.x + enemy.width / 2,
+                y: enemy.y + enemy.height,
+                velocityX: (Math.random() - 0.5) * 3,
+                velocityY: -Math.random() * 2,
+                life: 15,
+                color: '#22C55E'
+              });
+            }
+          }
+        }
+        else if (enemy.type === 'bat' && enemy.isPerched) {
+          // Perched bat - wait for player to approach
+          const distToPlayer = Math.sqrt(
+            Math.pow(player.x - enemy.x, 2) + Math.pow(player.y - enemy.y, 2)
+          );
+          if (distToPlayer < enemy.activationRange) {
+            enemy.isPerched = false;
+            enemy.velocityX = (player.x > enemy.x ? 1 : -1) * (enemy.diveSpeed || 2);
+            soundManager.createOscillator('sine', 600, 0.1, 0.15);
+          }
+        }
+        else if (enemy.type === 'bat' && enemy.behavior === 'dive_attack') {
+          // Bat with dive attack behavior
+          if (!enemy.diveState) enemy.diveState = 'patrol';
+          
+          if (enemy.diveState === 'patrol') {
+            enemy.x += enemy.velocityX;
+            enemy.y = enemy.originalY + Math.sin(time * enemy.frequency) * enemy.amplitude;
+            
+            if (enemy.diveCooldown > 0) enemy.diveCooldown--;
+            
+            // Check for dive opportunity
+            const distX = Math.abs(enemy.x - player.x);
+            const isAbovePlayer = enemy.y < player.y;
+            if (distX < enemy.diveRange && isAbovePlayer && enemy.diveCooldown <= 0) {
+              enemy.diveState = 'diving';
+              enemy.velocityY = enemy.diveSpeed;
+            }
+          } else if (enemy.diveState === 'diving') {
+            enemy.y += enemy.velocityY;
+            enemy.x += (player.x > enemy.x ? 1 : -1) * 1.5; // Slight tracking
+            
+            if (enemy.y > player.y + 30 || enemy.y > 480) {
+              enemy.diveState = 'returning';
+              enemy.velocityY = -2;
+            }
+          } else if (enemy.diveState === 'returning') {
+            enemy.y += enemy.velocityY;
+            if (enemy.y <= enemy.originalY) {
+              enemy.y = enemy.originalY;
+              enemy.diveState = 'patrol';
+              enemy.velocityY = 0;
+              enemy.diveCooldown = enemy.diveMaxCooldown;
+            }
+          }
+          
+          enemy.facingRight = enemy.velocityX > 0 || player.x > enemy.x;
+        }
+        // Default movement for flying enemies - more dynamic patterns
+        else if (!enemy.patrolPath) {
+          enemy.x += enemy.velocityX;
+        }
+        if (['bat', 'lavaBat', 'snowOwl', 'shadowBat', 'gemBat', 'cloudSprite'].includes(enemy.type) && !enemy.behavior) {
             // Different flying patterns per type
             if (enemy.type === 'lavaBat') {
               // Erratic fire bat - swoops down aggressively
@@ -3890,16 +4131,123 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       
       // RENDER - Use biome-specific background
       if (state.biome) {
-        drawBackground(ctx, state.biome, time, state.cameraX);
+        // Use custom level background for Level 1
+        if (currentLevel === 1 && state.biome.customLevel) {
+          drawLevel1Background(ctx, state.cameraX, 800, 600, time);
+        } else {
+          drawBackground(ctx, state.biome, time, state.cameraX);
+        }
       } else {
         ctx.fillStyle = '#0F172A';
         ctx.fillRect(0, 0, 800, 600);
+      }
+      
+      // Draw level decorations (for custom levels)
+      if (state.decorations) {
+        for (const dec of state.decorations) {
+          const dx = dec.x - state.cameraX;
+          if (dx > -100 && dx < 900) {
+            if (currentLevel === 1) {
+              drawLevel1Decoration(ctx, dec, dx, time);
+            }
+          }
+        }
+      }
+      
+      // Update crumbling platforms
+      if (state.crumblingPlatforms) {
+        for (const crumble of state.crumblingPlatforms) {
+          // Find matching platform in main array
+          const mainPlat = state.platforms.find(p => 
+            p.type === 'crumbling' && p.x === crumble.x && Math.abs(p.y - crumble.originalY) < 100
+          );
+          if (!mainPlat) continue;
+          
+          // Check if player is on it
+          const onPlatform = player.x + player.width > mainPlat.x &&
+                            player.x < mainPlat.x + mainPlat.width &&
+                            Math.abs((player.y + player.height) - mainPlat.y) < 10 &&
+                            player.onGround;
+          
+          if (onPlatform && !crumble.touched) {
+            crumble.touched = true;
+            soundManager.createOscillator('sine', 200, 0.1, 0.1);
+          }
+          
+          if (crumble.touched) {
+            crumble.crumbleTimer--;
+            // Shake effect
+            mainPlat.y = crumble.originalY + (Math.random() - 0.5) * 3;
+            
+            // Crumbling particles
+            if (crumble.crumbleTimer % 10 === 0) {
+              particles.push({
+                x: mainPlat.x + Math.random() * mainPlat.width,
+                y: mainPlat.y + mainPlat.height,
+                velocityX: (Math.random() - 0.5) * 2,
+                velocityY: Math.random() * 2,
+                life: 20,
+                color: '#8B7355'
+              });
+            }
+            
+            if (crumble.crumbleTimer <= 0) {
+              // Remove platform
+              const idx = state.platforms.indexOf(mainPlat);
+              if (idx > -1) {
+                state.platforms.splice(idx, 1);
+                // Explosion of particles
+                for (let i = 0; i < 10; i++) {
+                  particles.push({
+                    x: mainPlat.x + mainPlat.width / 2,
+                    y: mainPlat.y,
+                    velocityX: (Math.random() - 0.5) * 6,
+                    velocityY: Math.random() * -3 + 2,
+                    life: 30,
+                    color: '#6B5A43'
+                  });
+                }
+              }
+            }
+          }
+        }
       }
       
       // Draw platforms using biome renderer
       for (const platform of platforms) {
         const px = platform.x - state.cameraX;
         if (px > -platform.width && px < 800) {
+          // Draw crumbling platform with special effect
+          if (platform.type === 'crumbling') {
+            const crumbleData = state.crumblingPlatforms?.find(c => c.x === platform.x);
+            const shake = crumbleData?.touched ? (Math.random() - 0.5) * 2 : 0;
+            const opacity = crumbleData ? Math.max(0.3, crumbleData.crumbleTimer / 45) : 1;
+            
+            ctx.globalAlpha = opacity;
+            ctx.fillStyle = '#6B5A43';
+            ctx.fillRect(px + shake, platform.y, platform.width, platform.height);
+            // Wood grain
+            ctx.strokeStyle = '#5D4E37';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(px + 5 + shake, platform.y + 5);
+            ctx.lineTo(px + platform.width - 5 + shake, platform.y + 5);
+            ctx.moveTo(px + 8 + shake, platform.y + 10);
+            ctx.lineTo(px + platform.width - 8 + shake, platform.y + 10);
+            ctx.stroke();
+            // Cracks if touched
+            if (crumbleData?.touched) {
+              ctx.strokeStyle = '#4A3F2D';
+              ctx.lineWidth = 2;
+              ctx.beginPath();
+              ctx.moveTo(px + platform.width / 2 + shake, platform.y);
+              ctx.lineTo(px + platform.width / 2 - 5 + shake, platform.y + platform.height);
+              ctx.stroke();
+            }
+            ctx.globalAlpha = 1;
+            continue;
+          }
+          
           if (platform.type === 'moving') {
             // Draw moving platform with special styling
             const moveGlow = Math.sin(time * 0.1) * 0.3 + 0.7;
