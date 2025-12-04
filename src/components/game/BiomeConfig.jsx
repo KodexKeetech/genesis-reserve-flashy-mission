@@ -418,18 +418,72 @@ export function isBossLevel(level) {
   return level % 3 === 0;
 }
 
-// Difficulty scaling based on level
-export function getDifficultySettings(level) {
-  const baseMultiplier = 1 + (level - 1) * 0.1;
+// Difficulty modes configuration
+export const DIFFICULTY_MODES = {
+  easy: {
+    name: 'Easy',
+    description: 'Relaxed gameplay, more power-ups, weaker enemies',
+    color: '#22C55E',
+    enemyHealthMult: 0.6,
+    enemyDamageMult: 0.5,
+    enemySpeedMult: 0.7,
+    enemyCountMult: 0.6,
+    playerDamageTakenMult: 0.7,
+    powerUpMult: 1.5,
+    collectibleMult: 1.3,
+    bossHealthMult: 0.6,
+    levelScaling: 0.03  // How much harder each level gets
+  },
+  medium: {
+    name: 'Medium',
+    description: 'Balanced challenge for most players',
+    color: '#FBBF24',
+    enemyHealthMult: 1.0,
+    enemyDamageMult: 1.0,
+    enemySpeedMult: 1.0,
+    enemyCountMult: 1.0,
+    playerDamageTakenMult: 1.0,
+    powerUpMult: 1.0,
+    collectibleMult: 1.0,
+    bossHealthMult: 1.0,
+    levelScaling: 0.05
+  },
+  hard: {
+    name: 'Hard',
+    description: 'For experienced players seeking a real challenge',
+    color: '#EF4444',
+    enemyHealthMult: 1.4,
+    enemyDamageMult: 1.3,
+    enemySpeedMult: 1.2,
+    enemyCountMult: 1.3,
+    playerDamageTakenMult: 1.3,
+    powerUpMult: 0.7,
+    collectibleMult: 0.8,
+    bossHealthMult: 1.5,
+    levelScaling: 0.08
+  }
+};
+
+// Difficulty scaling based on level and difficulty mode
+export function getDifficultySettings(level, difficultyMode = 'medium') {
+  const mode = DIFFICULTY_MODES[difficultyMode] || DIFFICULTY_MODES.medium;
+  
+  // More gradual scaling - caps at certain levels to prevent impossible difficulty
+  const levelFactor = Math.min(level - 1, 20); // Cap scaling at level 21
+  const scaling = mode.levelScaling;
+  
+  const baseMultiplier = 1 + levelFactor * scaling;
   
   return {
-    enemyHealthMultiplier: baseMultiplier,
-    enemyDamageMultiplier: 1 + (level - 1) * 0.05,
-    enemySpeedMultiplier: 1 + (level - 1) * 0.03,
-    enemyCount: Math.min(5 + level * 2, 25),
-    collectibleCount: Math.max(12 + level, 30),
-    powerUpCount: Math.min(4 + Math.floor(level / 2), 12),
-    bossHealthMultiplier: baseMultiplier * 1.2
+    enemyHealthMultiplier: baseMultiplier * mode.enemyHealthMult,
+    enemyDamageMultiplier: (1 + levelFactor * scaling * 0.5) * mode.enemyDamageMult,
+    enemySpeedMultiplier: (1 + levelFactor * scaling * 0.4) * mode.enemySpeedMult,
+    enemyCount: Math.floor(Math.min(4 + level * 1.5, 20) * mode.enemyCountMult),
+    collectibleCount: Math.floor(Math.max(15 + level, 30) * mode.collectibleMult),
+    powerUpCount: Math.floor(Math.min(5 + Math.floor(level / 2), 12) * mode.powerUpMult),
+    bossHealthMultiplier: baseMultiplier * mode.bossHealthMult,
+    playerDamageTakenMult: mode.playerDamageTakenMult,
+    modeName: mode.name
   };
 }
 
