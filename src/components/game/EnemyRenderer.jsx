@@ -22,20 +22,42 @@ export function drawEnemy(ctx, enemy, ex, time, isFrozen, biomeKey) {
     case 'lavaBat':
     case 'snowOwl':
     case 'shadowBat':
+    case 'gemBat':
+    case 'cloudSprite':
       drawFlyer(ctx, enemy, ex, time, isFrozen);
       break;
     case 'shooter':
     case 'frostShooter':
+    case 'prismShooter':
       drawShooter(ctx, enemy, ex, time, isFrozen);
       break;
     case 'diver':
+    case 'stormHawk':
+    case 'windDancer':
       drawDiver(ctx, enemy, ex, time, isFrozen);
       break;
     case 'bomber':
       drawBomber(ctx, enemy, ex, time, isFrozen);
       break;
     case 'voidWalker':
+    case 'mirrorPhantom':
+    case 'sandWraith':
       drawVoidWalker(ctx, enemy, ex, time, isFrozen);
+      break;
+    case 'skyKnight':
+    case 'stoneSentinel':
+    case 'crystalGolem':
+    case 'securityBot':
+    case 'shieldMech':
+      drawMechEnemy(ctx, enemy, ex, time, isFrozen);
+      break;
+    case 'mummy':
+    case 'scarab':
+      drawMummy(ctx, enemy, ex, time, isFrozen);
+      break;
+    case 'laserDrone':
+    case 'hackerBot':
+      drawDrone(ctx, enemy, ex, time, isFrozen);
       break;
     default:
       drawSlime(ctx, enemy, ex, time, isFrozen);
@@ -118,8 +140,131 @@ function getFlyerColor(type, isFrozen) {
     case 'lavaBat': return { fill: '#DC2626', glow: '#EF4444', eye: '#FBBF24' };
     case 'snowOwl': return { fill: '#E0F2FE', glow: '#BAE6FD', eye: '#0EA5E9' };
     case 'shadowBat': return { fill: '#3F3F46', glow: '#71717A', eye: '#A855F7' };
+    case 'gemBat': return { fill: '#E879F9', glow: '#F472B6', eye: '#FDE68A' };
+    case 'cloudSprite': return { fill: '#E0F2FE', glow: '#BAE6FD', eye: '#0284C7' };
     default: return { fill: '#7C3AED', glow: '#A855F7', eye: '#EF4444' };
   }
+}
+
+function drawMechEnemy(ctx, enemy, ex, time, isFrozen) {
+  const colors = getMechColor(enemy.type, isFrozen);
+  const hover = isFrozen ? 0 : Math.sin(time * 0.15) * 2;
+  
+  ctx.fillStyle = colors.body;
+  ctx.shadowColor = colors.glow;
+  ctx.shadowBlur = 10;
+  
+  // Body
+  ctx.beginPath();
+  ctx.roundRect(ex + 5, enemy.y + 10 + hover, 30, 30, 4);
+  ctx.fill();
+  
+  // Head
+  ctx.fillStyle = colors.head;
+  ctx.beginPath();
+  ctx.roundRect(ex + 8, enemy.y + 2 + hover, 24, 12, 3);
+  ctx.fill();
+  
+  // Eye visor
+  ctx.fillStyle = isFrozen ? '#fff' : colors.eye;
+  ctx.shadowBlur = 8;
+  ctx.beginPath();
+  ctx.roundRect(ex + 10, enemy.y + 5 + hover, 20, 6, 2);
+  ctx.fill();
+  
+  // Legs
+  ctx.fillStyle = colors.body;
+  ctx.fillRect(ex + 10, enemy.y + 38 + hover, 6, 8);
+  ctx.fillRect(ex + 24, enemy.y + 38 + hover, 6, 8);
+}
+
+function getMechColor(type, isFrozen) {
+  if (isFrozen) return { body: '#67E8F9', head: '#A5F3FC', glow: '#67E8F9', eye: '#fff' };
+  switch (type) {
+    case 'skyKnight': return { body: '#94A3B8', head: '#CBD5E1', glow: '#38BDF8', eye: '#0284C7' };
+    case 'stoneSentinel': return { body: '#78716C', head: '#A8A29E', glow: '#CA8A04', eye: '#EAB308' };
+    case 'crystalGolem': return { body: '#A855F7', head: '#C084FC', glow: '#E879F9', eye: '#F472B6' };
+    case 'securityBot': return { body: '#334155', head: '#475569', glow: '#10B981', eye: '#22D3EE' };
+    case 'shieldMech': return { body: '#1E40AF', head: '#3B82F6', glow: '#60A5FA', eye: '#FCD34D' };
+    default: return { body: '#475569', head: '#64748B', glow: '#94A3B8', eye: '#fff' };
+  }
+}
+
+function drawMummy(ctx, enemy, ex, time, isFrozen) {
+  const sway = isFrozen ? 0 : Math.sin(time * 0.1) * 3;
+  
+  ctx.fillStyle = isFrozen ? '#67E8F9' : '#D6D3D1';
+  ctx.shadowColor = isFrozen ? '#67E8F9' : '#78716C';
+  ctx.shadowBlur = 8;
+  
+  // Body wrapped in bandages
+  ctx.beginPath();
+  ctx.roundRect(ex + 8, enemy.y + 15 + sway, 24, 28, 4);
+  ctx.fill();
+  
+  // Head
+  ctx.beginPath();
+  ctx.arc(ex + 20, enemy.y + 10 + sway, 12, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Bandage lines
+  ctx.strokeStyle = isFrozen ? '#A5F3FC' : '#A8A29E';
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 3; i++) {
+    ctx.beginPath();
+    ctx.moveTo(ex + 10, enemy.y + 20 + i * 8 + sway);
+    ctx.lineTo(ex + 30, enemy.y + 20 + i * 8 + sway);
+    ctx.stroke();
+  }
+  
+  // Glowing eyes
+  ctx.fillStyle = isFrozen ? '#fff' : '#CA8A04';
+  ctx.shadowBlur = 12;
+  ctx.beginPath();
+  ctx.arc(ex + 15, enemy.y + 8 + sway, 3, 0, Math.PI * 2);
+  ctx.arc(ex + 25, enemy.y + 8 + sway, 3, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawDrone(ctx, enemy, ex, time, isFrozen) {
+  const hover = isFrozen ? 0 : Math.sin(time * 0.2) * 4;
+  const propSpin = time * 0.5;
+  
+  ctx.fillStyle = isFrozen ? '#67E8F9' : '#475569';
+  ctx.shadowColor = isFrozen ? '#67E8F9' : '#22D3EE';
+  ctx.shadowBlur = 12;
+  
+  // Body
+  ctx.beginPath();
+  ctx.ellipse(ex + 20, enemy.y + 20 + hover, 15, 10, 0, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Propellers
+  ctx.strokeStyle = isFrozen ? '#A5F3FC' : '#94A3B8';
+  ctx.lineWidth = 2;
+  ctx.save();
+  ctx.translate(ex + 8, enemy.y + 12 + hover);
+  ctx.rotate(propSpin);
+  ctx.beginPath();
+  ctx.moveTo(-8, 0);
+  ctx.lineTo(8, 0);
+  ctx.stroke();
+  ctx.restore();
+  ctx.save();
+  ctx.translate(ex + 32, enemy.y + 12 + hover);
+  ctx.rotate(-propSpin);
+  ctx.beginPath();
+  ctx.moveTo(-8, 0);
+  ctx.lineTo(8, 0);
+  ctx.stroke();
+  ctx.restore();
+  
+  // Eye/sensor
+  ctx.fillStyle = isFrozen ? '#fff' : (enemy.type === 'hackerBot' ? '#10B981' : '#EF4444');
+  ctx.shadowBlur = 10;
+  ctx.beginPath();
+  ctx.arc(ex + 20, enemy.y + 20 + hover, 5, 0, Math.PI * 2);
+  ctx.fill();
 }
 
 function drawFlyer(ctx, enemy, ex, time, isFrozen) {
