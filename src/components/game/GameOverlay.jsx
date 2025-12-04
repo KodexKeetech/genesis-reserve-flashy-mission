@@ -49,8 +49,9 @@ const VICTORY_BACKGROUNDS = [
   'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692c28c6355507b7b2161062/135380275_Victoyart43.jpg',
 ];
 
-export default function GameOverlay({ type, score, level, onRestart, onNextLevel, onStart, onLoadGame, hasCheckpoint, onContinueFromCheckpoint }) {
+export default function GameOverlay({ type, score, level, onRestart, onNextLevel, onStart, onLoadGame, hasCheckpoint, onContinueFromCheckpoint, difficulty, onDifficultyChange }) {
   const [hasSavedGame, setHasSavedGame] = useState(false);
+  const [selectedDifficulty, setSelectedDifficulty] = useState(difficulty || 'medium');
   
   // Randomly select a background image when level complete
   const victoryBackground = useMemo(() => {
@@ -61,6 +62,18 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
     const saved = localStorage.getItem('jeff_save_game');
     setHasSavedGame(!!saved);
   }, []);
+
+  const handleDifficultySelect = (diff) => {
+    setSelectedDifficulty(diff);
+    localStorage.setItem('jeff_difficulty', diff);
+    if (onDifficultyChange) onDifficultyChange(diff);
+  };
+
+  const difficultyIcons = {
+    easy: <Shield className="w-5 h-5" />,
+    medium: <Flame className="w-5 h-5" />,
+    hard: <Skull className="w-5 h-5" />
+  };
   if (type === 'tutorial') {
     return (
       <motion.div
