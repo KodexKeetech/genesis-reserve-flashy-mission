@@ -2628,6 +2628,76 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             }
           }
           
+          // Omega Prime movement with jumping
+          if (boss.type === 'omegaPrime') {
+            // Initialize jump state if not set
+            if (boss.omegaJumpCooldown === undefined) boss.omegaJumpCooldown = 60;
+            if (boss.omegaVelocityY === undefined) boss.omegaVelocityY = 0;
+            if (boss.omegaGroundY === undefined) boss.omegaGroundY = 400;
+            if (boss.omegaOnGround === undefined) boss.omegaOnGround = true;
+            
+            // Horizontal movement - chase player
+            const omegaMoveDir = player.x > boss.x + boss.width / 2 ? 1 : -1;
+            boss.x += omegaMoveDir * 2.5;
+            boss.x = Math.max(350, Math.min(boss.x, 750));
+            
+            // Jump logic
+            boss.omegaJumpCooldown--;
+            if (boss.omegaJumpCooldown <= 0 && boss.omegaOnGround) {
+              boss.omegaOnGround = false;
+              boss.omegaVelocityY = -16;
+              boss.omegaJumpCooldown = 100 + Math.random() * 60;
+              soundManager.createOscillator('sine', 200, 0.2, 0.15);
+            }
+            
+            // Apply gravity
+            if (!boss.omegaOnGround) {
+              boss.omegaVelocityY += 0.6;
+              boss.y += boss.omegaVelocityY;
+              
+              if (boss.y >= boss.omegaGroundY) {
+                boss.y = boss.omegaGroundY;
+                boss.omegaVelocityY = 0;
+                boss.omegaOnGround = true;
+                
+                // Landing shockwave when enraged
+                if (boss.health < boss.maxHealth / 2) {
+                  state.enemyProjectiles.push({
+                    x: boss.x,
+                    y: 480,
+                    velocityX: -6,
+                    velocityY: 0,
+                    width: 35,
+                    height: 45,
+                    life: 80,
+                    type: 'shockwave'
+                  });
+                  state.enemyProjectiles.push({
+                    x: boss.x + boss.width,
+                    y: 480,
+                    velocityX: 6,
+                    velocityY: 0,
+                    width: 35,
+                    height: 45,
+                    life: 80,
+                    type: 'shockwave'
+                  });
+                  soundManager.createOscillator('sine', 80, 0.4, 0.25);
+                  for (let i = 0; i < 10; i++) {
+                    particles.push({
+                      x: boss.x + boss.width / 2 + (Math.random() - 0.5) * 80,
+                      y: boss.y + boss.height,
+                      velocityX: (Math.random() - 0.5) * 6,
+                      velocityY: -Math.random() * 4,
+                      life: 25,
+                      color: '#22D3EE'
+                    });
+                  }
+                }
+              }
+            }
+          }
+          
           // Storm Titan hover behavior
           if (boss.type === 'stormTitan') {
             // Hover above player
