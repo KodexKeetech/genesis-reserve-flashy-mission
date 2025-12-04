@@ -48,7 +48,7 @@ const VICTORY_BACKGROUNDS = [
   'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692c28c6355507b7b2161062/135380275_Victoyart43.jpg',
 ];
 
-export default function GameOverlay({ type, score, level, onRestart, onNextLevel, onStart, onLoadGame }) {
+export default function GameOverlay({ type, score, level, onRestart, onNextLevel, onStart, onLoadGame, hasCheckpoint, onContinueFromCheckpoint }) {
   const [hasSavedGame, setHasSavedGame] = useState(false);
   
   // Randomly select a background image when level complete
@@ -216,14 +216,27 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
           <p className="text-red-200 text-xl mb-2">Jeff has fallen...</p>
           <p className="text-red-300 text-2xl font-bold mb-8">Score: {score.toLocaleString()}</p>
           
-          <Button
-            onClick={onRestart}
-            size="lg"
-            className="bg-white text-red-900 hover:bg-red-100 font-bold px-8 py-6 text-xl rounded-xl"
-          >
-            <RotateCcw className="w-6 h-6 mr-2" />
-            Try Again
-          </Button>
+          <div className="flex flex-col gap-3">
+            {hasCheckpoint && (
+              <Button
+                onClick={onContinueFromCheckpoint}
+                size="lg"
+                className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400 text-white font-bold px-8 py-6 text-xl rounded-xl shadow-lg shadow-blue-500/30"
+              >
+                <Play className="w-6 h-6 mr-2" />
+                Continue from Checkpoint
+              </Button>
+            )}
+            
+            <Button
+              onClick={onRestart}
+              size="lg"
+              className={hasCheckpoint ? "bg-slate-700 text-white hover:bg-slate-600 font-bold px-8 py-4 text-lg rounded-xl" : "bg-white text-red-900 hover:bg-red-100 font-bold px-8 py-6 text-xl rounded-xl"}
+            >
+              <RotateCcw className="w-6 h-6 mr-2" />
+              {hasCheckpoint ? "Restart Level" : "Try Again"}
+            </Button>
+          </div>
         </motion.div>
       </motion.div>
     );
