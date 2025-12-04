@@ -265,6 +265,84 @@ function drawIceCrystalShape(ctx, x, y, size) {
   ctx.fill();
 }
 
+function drawArcaneBackground(ctx, time, cameraX) {
+  // Deep mystical gradient
+  const gradient = ctx.createLinearGradient(0, 0, 0, 600);
+  gradient.addColorStop(0, '#1E1B4B');
+  gradient.addColorStop(0.5, '#312E81');
+  gradient.addColorStop(1, '#4338CA');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, 800, 600);
+  
+  // Magical stars with varying sizes
+  ctx.fillStyle = '#C4B5FD';
+  for (let i = 0; i < 80; i++) {
+    const x = (i * 137 + time * 0.02 - cameraX * 0.05) % 850 - 25;
+    const y = (i * 89) % 400;
+    const twinkle = Math.sin(time * 0.05 + i) * 0.5 + 0.5;
+    const size = (i % 3) + 1;
+    ctx.globalAlpha = twinkle * 0.8;
+    ctx.beginPath();
+    ctx.arc(x, y, size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+  
+  // Floating arcane runes in background
+  for (let i = 0; i < 8; i++) {
+    const runeX = (i * 120 - cameraX * 0.1 + time * 0.3) % 900 - 50;
+    const runeY = 100 + Math.sin(time * 0.02 + i) * 30 + (i % 3) * 80;
+    const runeAlpha = 0.15 + Math.sin(time * 0.03 + i * 2) * 0.1;
+    
+    ctx.strokeStyle = `rgba(167, 139, 250, ${runeAlpha})`;
+    ctx.lineWidth = 2;
+    ctx.save();
+    ctx.translate(runeX, runeY);
+    ctx.rotate(time * 0.01 + i);
+    
+    // Draw rune symbol
+    ctx.beginPath();
+    ctx.arc(0, 0, 20, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(-15, -15);
+    ctx.lineTo(15, 15);
+    ctx.moveTo(15, -15);
+    ctx.lineTo(-15, 15);
+    ctx.stroke();
+    ctx.restore();
+  }
+  
+  // Crystal formations in background
+  for (let i = 0; i < 5; i++) {
+    const crystalX = (i * 200 - cameraX * 0.2) % 1000 - 100;
+    const crystalY = 450 + (i % 2) * 30;
+    
+    ctx.fillStyle = `rgba(99, 102, 241, 0.3)`;
+    ctx.beginPath();
+    ctx.moveTo(crystalX, crystalY);
+    ctx.lineTo(crystalX + 15, crystalY - 60 - (i % 3) * 20);
+    ctx.lineTo(crystalX + 30, crystalY);
+    ctx.closePath();
+    ctx.fill();
+    
+    ctx.fillStyle = `rgba(129, 140, 248, 0.4)`;
+    ctx.beginPath();
+    ctx.moveTo(crystalX + 25, crystalY);
+    ctx.lineTo(crystalX + 35, crystalY - 40);
+    ctx.lineTo(crystalX + 45, crystalY);
+    ctx.closePath();
+    ctx.fill();
+  }
+  
+  // Mystical fog at bottom
+  const fogGradient = ctx.createLinearGradient(0, 500, 0, 600);
+  fogGradient.addColorStop(0, 'rgba(99, 102, 241, 0)');
+  fogGradient.addColorStop(1, 'rgba(99, 102, 241, 0.3)');
+  ctx.fillStyle = fogGradient;
+  ctx.fillRect(0, 500, 800, 100);
+}
+
 function drawVoidBackground(ctx, time, cameraX) {
   // Floating islands
   ctx.fillStyle = '#3f3f46';
