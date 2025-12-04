@@ -64,46 +64,48 @@ export default function Game() {
     return saved ? JSON.parse(saved) : { sound: true, graphics: 'high', particles: true };
   });
   
-  const touchInputRef = useRef({
+  const gameInputRef = useRef({
     move: { x: 0, y: 0 },
+    aim: { x: 0, y: 0 },
     jump: false,
     dash: false,
     cast: false,
-    switch: false
+    switch: false,
+    aoeBlast: false,
+    reflectShield: false,
+    hover: false
   });
 
   const [gamepadConnected, setGamepadConnected] = useState(false);
 
   // Gamepad input handler
   const handleGamepadInput = useCallback((input) => {
-    // Update touch input ref with gamepad values (same interface)
-    touchInputRef.current.move = input.move;
-    touchInputRef.current.jump = input.jump;
-    touchInputRef.current.dash = input.dash;
-    touchInputRef.current.cast = input.cast;
-    touchInputRef.current.switch = input.switch;
-    
-    // Handle special abilities via gamepad
-    if (input.aoeBlast) {
-      // Trigger AOE blast - dispatch keyboard event
-      window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyE' }));
-      setTimeout(() => window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyE' })), 50);
-    }
-    if (input.reflectShield) {
-      window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyR' }));
-      setTimeout(() => window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyR' })), 50);
-    }
-    if (input.hover) {
-      window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyF' }));
-      setTimeout(() => window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyF' })), 50);
+    gameInputRef.current = {
+      ...gameInputRef.current,
+      move: input.move,
+      aim: input.aim,
+      jump: input.jump,
+      dash: input.dash,
+      cast: input.cast,
+      switch: input.switch,
+      aoeBlast: input.aoeBlast,
+      reflectShield: input.reflectShield,
+      hover: input.hover
+    };
+    setGamepadConnected(true);
+  }, []);
+
+  // Touch input handler
+  const handleTouchInput = useCallback((action, value) => {
+    if (action === 'move') {
+      gameInputRef.current.move = value;
+    } else {
+      gameInputRef.current[action] = value;
     }
   }, []);
 
   // Use gamepad hook
-  useGamepad((input) => {
-    handleGamepadInput(input);
-    setGamepadConnected(true);
-  });
+  useGamepad(handleGamepadInput);
 
   // Load player upgrades and scraps on mount
   useEffect(() => {
@@ -195,9 +197,7 @@ export default function Game() {
     setSessionScraps(prev => prev + scraps);
   }, []);
 
-  const handleTouchInput = useCallback((action, value) => {
-    touchInputRef.current[action] = value;
-  }, []);
+
 
   // Save settings when changed
   useEffect(() => {
@@ -409,7 +409,7 @@ export default function Game() {
                 playerUpgrades={playerUpgrades}
                 unlockedAbilities={unlockedAbilities}
                 abilityUpgrades={abilityUpgrades}
-                touchInput={touchInputRef}
+                gameInput={gameInputRef}
                 startingGun={startingGun}
                 gameSettings={gameSettings}
                 onGunChange={handleGunChange}
@@ -453,8 +453,8 @@ export default function Game() {
       </div>
 
         {/* Touch controls for mobile */}
-        {gameState === 'playing' && (
-        <TouchControls onInput={handleTouchInput} />
+        {gameState === 'playing' && !gamepadConnected && (
+          <TouchControls onInput={handleTouchInput} />
         )}
 
       {/* Shop Buttons - smaller on mobile */}
