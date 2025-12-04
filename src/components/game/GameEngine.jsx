@@ -2604,50 +2604,117 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
               soundManager.createOscillator('square', 800, 0.2, 0.1);
               
             } else if (boss.type === 'pharaohKing') {
-              // Throw curse projectiles aimed at player with spread
-              const curseCount = boss.health < boss.maxHealth / 2 ? 5 : 3;
-              for (let i = 0; i < curseCount; i++) {
-                const spreadAngle = (i - curseCount / 2 + 0.5) * 0.4;
-                state.enemyProjectiles.push({
-                  x: boss.x + boss.width / 2,
-                  y: boss.y + 40,
-                  velocityX: aimX * 4 + spreadAngle * dirToPlayer,
-                  velocityY: aimY * 4 + spreadAngle,
-                  width: 18,
-                  height: 18,
-                  life: 120,
-                  type: 'curse'
+              if (boss.attackPattern === 0) {
+                // Throw curse projectiles aimed at player with spread
+                const curseCount = boss.health < boss.maxHealth / 2 ? 5 : 3;
+                for (let i = 0; i < curseCount; i++) {
+                  const spreadAngle = (i - curseCount / 2 + 0.5) * 0.4;
+                  state.enemyProjectiles.push({
+                    x: boss.x + boss.width / 2,
+                    y: boss.y + 40,
+                    velocityX: aimX * 4 + spreadAngle * dirToPlayer,
+                    velocityY: aimY * 4 + spreadAngle,
+                    width: 18,
+                    height: 18,
+                    life: 120,
+                    type: 'curse'
+                  });
+                }
+              } else {
+                // Summon scarab swarm - wave of small projectiles from ground
+                const scarabCount = boss.health < boss.maxHealth / 2 ? 8 : 5;
+                for (let i = 0; i < scarabCount; i++) {
+                  state.enemyProjectiles.push({
+                    x: 350 + i * 60,
+                    y: 480,
+                    velocityX: (Math.random() - 0.5) * 2,
+                    velocityY: -3 - Math.random() * 2,
+                    width: 14,
+                    height: 14,
+                    life: 150,
+                    type: 'scarab'
+                  });
+                }
+                // Also spawn sand traps near player
+                state.hazards.push({
+                  x: player.x - 40,
+                  y: 470,
+                  width: 80,
+                  height: 30,
+                  life: 180,
+                  damage: 15,
+                  type: 'sandTrap'
                 });
               }
               soundManager.createOscillator('sine', 250, 0.2, 0.4);
               
             } else if (boss.type === 'crystalQueen') {
-              // Crystal shards - some aimed at player, some radial
-              const shardCount = boss.health < boss.maxHealth / 2 ? 6 : 4;
-              for (let i = 0; i < shardCount; i++) {
-                let vx, vy;
-                if (i < 2) {
-                  // First 2 shards aim directly at player
-                  const spread = (i - 0.5) * 0.3;
-                  vx = aimX * 5 + spread;
-                  vy = aimY * 5 + spread;
-                } else {
-                  // Rest are radial
-                  const angle = ((i - 2) / (shardCount - 2)) * Math.PI * 2;
-                  vx = Math.cos(angle) * 4;
-                  vy = Math.sin(angle) * 4;
+              if (boss.attackPattern === 0) {
+                // Crystal shards - some aimed at player, some radial
+                const shardCount = boss.health < boss.maxHealth / 2 ? 6 : 4;
+                for (let i = 0; i < shardCount; i++) {
+                  let vx, vy;
+                  if (i < 2) {
+                    // First 2 shards aim directly at player
+                    const spread = (i - 0.5) * 0.3;
+                    vx = aimX * 5 + spread;
+                    vy = aimY * 5 + spread;
+                  } else {
+                    // Rest are radial
+                    const angle = ((i - 2) / (shardCount - 2)) * Math.PI * 2;
+                    vx = Math.cos(angle) * 4;
+                    vy = Math.sin(angle) * 4;
+                  }
+                  state.enemyProjectiles.push({
+                    x: boss.x + boss.width / 2,
+                    y: boss.y + boss.height / 2,
+                    velocityX: vx,
+                    velocityY: vy,
+                    width: 15,
+                    height: 15,
+                    life: 150,
+                    type: 'crystal',
+                    bounces: 2
+                  });
                 }
+              } else {
+                // Crystal prison - create crystal walls that close in on player
+                const prisonWidth = boss.health < boss.maxHealth / 2 ? 120 : 180;
+                // Left crystal pillar
                 state.enemyProjectiles.push({
-                  x: boss.x + boss.width / 2,
-                  y: boss.y + boss.height / 2,
-                  velocityX: vx,
-                  velocityY: vy,
-                  width: 15,
-                  height: 15,
-                  life: 150,
-                  type: 'crystal',
-                  bounces: 2
+                  x: player.x - prisonWidth,
+                  y: 200,
+                  velocityX: 3,
+                  velocityY: 0,
+                  width: 25,
+                  height: 250,
+                  life: 80,
+                  type: 'crystalWall'
                 });
+                // Right crystal pillar
+                state.enemyProjectiles.push({
+                  x: player.x + prisonWidth,
+                  y: 200,
+                  velocityX: -3,
+                  velocityY: 0,
+                  width: 25,
+                  height: 250,
+                  life: 80,
+                  type: 'crystalWall'
+                });
+                // Rain crystals from above
+                for (let i = 0; i < 4; i++) {
+                  state.enemyProjectiles.push({
+                    x: player.x - 60 + i * 40,
+                    y: 50,
+                    velocityX: 0,
+                    velocityY: 4,
+                    width: 15,
+                    height: 25,
+                    life: 150,
+                    type: 'crystalSpike'
+                  });
+                }
               }
               soundManager.createOscillator('sine', 600, 0.15, 0.3);
               
@@ -3044,6 +3111,48 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.moveTo(px - 3, proj.y + 8);
           ctx.lineTo(px, proj.y + 15 + Math.random() * 5);
           ctx.lineTo(px + 3, proj.y + 8);
+          ctx.closePath();
+          ctx.fill();
+          ctx.shadowBlur = 0;
+          continue;
+        } else if (proj.type === 'scarab') {
+          // Draw scarab beetle
+          ctx.fillStyle = '#78350F';
+          ctx.shadowColor = '#CA8A04';
+          ctx.shadowBlur = 6;
+          ctx.beginPath();
+          ctx.ellipse(px, proj.y, 7, 5, 0, 0, Math.PI * 2);
+          ctx.fill();
+          // Wings
+          ctx.fillStyle = '#A16207';
+          ctx.beginPath();
+          ctx.ellipse(px - 4, proj.y, 3, 4, -0.3, 0, Math.PI * 2);
+          ctx.ellipse(px + 4, proj.y, 3, 4, 0.3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+          continue;
+        } else if (proj.type === 'crystalWall') {
+          // Draw crystal wall/pillar
+          ctx.fillStyle = `rgba(232, 121, 249, ${0.7 + Math.sin(time * 0.3) * 0.2})`;
+          ctx.shadowColor = '#F472B6';
+          ctx.shadowBlur = 20;
+          ctx.fillRect(px - proj.width / 2, proj.y, proj.width, proj.height);
+          // Crystal facets
+          ctx.fillStyle = '#FBBFEF';
+          ctx.fillRect(px - proj.width / 2 + 3, proj.y + 10, 6, proj.height - 20);
+          ctx.shadowBlur = 0;
+          continue;
+        } else if (proj.type === 'crystalSpike') {
+          // Draw falling crystal spike
+          ctx.fillStyle = '#E879F9';
+          ctx.shadowColor = '#F472B6';
+          ctx.shadowBlur = 10;
+          ctx.beginPath();
+          ctx.moveTo(px, proj.y);
+          ctx.lineTo(px + 8, proj.y + 12);
+          ctx.lineTo(px + 5, proj.y + 25);
+          ctx.lineTo(px - 5, proj.y + 25);
+          ctx.lineTo(px - 8, proj.y + 12);
           ctx.closePath();
           ctx.fill();
           ctx.shadowBlur = 0;
