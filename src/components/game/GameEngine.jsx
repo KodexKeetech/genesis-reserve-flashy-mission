@@ -4206,9 +4206,15 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       
       // RENDER - Use biome-specific background
       if (state.biome) {
-        // Use custom level background for Level 1
-        if (currentLevel === 1 && state.biome.customLevel) {
-          drawLevel1Background(ctx, state.cameraX, 800, 600, time);
+        // Use custom level background for hand-crafted levels
+        if (currentLevel >= 1 && currentLevel <= 9 && state.biome.customLevel) {
+          // For now, use Level 1's forest background for levels 1-3
+          // Volcano and ice levels use the standard biome renderer
+          if (currentLevel <= 3) {
+            drawLevel1Background(ctx, state.cameraX, 800, 600, time);
+          } else {
+            drawBackground(ctx, state.biome, time, state.cameraX);
+          }
         } else {
           drawBackground(ctx, state.biome, time, state.cameraX);
         }
