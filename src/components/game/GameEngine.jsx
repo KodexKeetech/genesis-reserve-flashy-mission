@@ -2405,6 +2405,53 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       // Update enemy projectiles
       for (let i = state.enemyProjectiles.length - 1; i >= 0; i--) {
         const proj = state.enemyProjectiles[i];
+        
+        // Homing missile AI - track player
+        if (proj.type === 'homingMissile') {
+          const dx = player.x - proj.x;
+          const dy = player.y - proj.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist > 0) {
+            const targetVX = (dx / dist) * 5;
+            const targetVY = (dy / dist) * 5;
+            proj.velocityX += (targetVX - proj.velocityX) * (proj.turnSpeed || 0.05);
+            proj.velocityY += (targetVY - proj.velocityY) * (proj.turnSpeed || 0.05);
+          }
+        }
+        
+        // Attack drone AI - hover and shoot
+        if (proj.type === 'attackDrone') {
+          // Move toward player but stay above
+          const dx = player.x - proj.x;
+          const targetY = player.y - 80;
+          const dy = targetY - proj.y;
+          proj.velocityX = dx * 0.02;
+          proj.velocityY = dy * 0.03;
+          proj.velocityX = Math.max(-3, Math.min(3, proj.velocityX));
+          proj.velocityY = Math.max(-2, Math.min(2, proj.velocityY));
+          
+          // Shoot at player periodically
+          proj.droneTimer = (proj.droneTimer || 0) + 1;
+          if (proj.droneTimer >= 45) {
+            proj.droneTimer = 0;
+            const shootDx = player.x - proj.x;
+            const shootDy = player.y - proj.y;
+            const shootDist = Math.sqrt(shootDx * shootDx + shootDy * shootDy);
+            if (shootDist > 0) {
+              state.enemyProjectiles.push({
+                x: proj.x,
+                y: proj.y + 10,
+                velocityX: (shootDx / shootDist) * 6,
+                velocityY: (shootDy / shootDist) * 6,
+                width: 8,
+                height: 8,
+                life: 60,
+                type: 'droneLaser'
+              });
+            }
+          }
+        }
+        
         proj.x += proj.velocityX;
         proj.y += proj.velocityY;
         proj.life--;
@@ -3518,6 +3565,20 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.moveTo(px + 15, proj.y - 5);
           ctx.lineTo(px + 20, proj.y - 10);
           ctx.stroke();
+          ctx.shadowBlur = 0;
+          continue;
+        } else if (proj.type === 'droneLaser') {
+          // Draw drone laser shot
+          ctx.fillStyle = '#EF4444';
+          ctx.shadowColor = '#EF4444';
+          ctx.shadowBlur = 12;
+          ctx.beginPath();
+          ctx.arc(px, proj.y, 4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#FCA5A5';
+          ctx.beginPath();
+          ctx.arc(px, proj.y, 2, 0, Math.PI * 2);
+          ctx.fill();
           ctx.shadowBlur = 0;
           continue;
         }
