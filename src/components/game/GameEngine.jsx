@@ -544,8 +544,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         activated: false
       };
       state.checkpointActivated = false;
-    } else {
-      // Boss levels don't have checkpoints
+    }
+    
+    // Boss levels don't have checkpoints
+    if (isBoss) {
       state.checkpoint = null;
       state.checkpointActivated = false;
     }
