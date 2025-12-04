@@ -349,6 +349,141 @@ function drawArcaneBackground(ctx, time, cameraX) {
   ctx.fillRect(0, 500, 800, 100);
 }
 
+function drawSpaceBackground(ctx, time, cameraX) {
+  // Deep space gradient
+  const gradient = ctx.createLinearGradient(0, 0, 0, 600);
+  gradient.addColorStop(0, '#020817');
+  gradient.addColorStop(0.3, '#0A0F1F');
+  gradient.addColorStop(0.6, '#0F172A');
+  gradient.addColorStop(1, '#020817');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, 800, 600);
+  
+  // Distant galaxies/nebulae
+  for (let i = 0; i < 3; i++) {
+    const nebulaX = (i * 350 - cameraX * 0.02 + 100) % 1000 - 100;
+    const nebulaY = 100 + i * 150;
+    const nebulaSize = 120 + i * 40;
+    const pulse = Math.sin(time * 0.01 + i) * 0.1 + 0.15;
+    
+    const nebulaGrad = ctx.createRadialGradient(nebulaX, nebulaY, 0, nebulaX, nebulaY, nebulaSize);
+    const colors = [
+      ['rgba(139, 92, 246, ', 'rgba(79, 70, 229, ', 'rgba(99, 102, 241, '],  // Purple/Indigo
+      ['rgba(236, 72, 153, ', 'rgba(219, 39, 119, ', 'rgba(190, 24, 93, '],   // Pink
+      ['rgba(34, 211, 238, ', 'rgba(6, 182, 212, ', 'rgba(14, 165, 233, ']    // Cyan
+    ][i];
+    nebulaGrad.addColorStop(0, colors[0] + (pulse * 0.5) + ')');
+    nebulaGrad.addColorStop(0.4, colors[1] + (pulse * 0.3) + ')');
+    nebulaGrad.addColorStop(0.7, colors[2] + (pulse * 0.1) + ')');
+    nebulaGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = nebulaGrad;
+    ctx.fillRect(nebulaX - nebulaSize, nebulaY - nebulaSize, nebulaSize * 2, nebulaSize * 2);
+  }
+  
+  // Many stars with different layers
+  for (let layer = 0; layer < 4; layer++) {
+    const parallax = 0.01 + layer * 0.02;
+    const starCount = 30 - layer * 5;
+    for (let i = 0; i < starCount; i++) {
+      const starX = ((i * 137 + layer * 200 - cameraX * parallax) % 900 + 900) % 900 - 50;
+      const starY = (i * 89 + layer * 50) % 550 + 25;
+      const twinkle = Math.sin(time * 0.06 + i * 1.5 + layer * 2) * 0.4 + 0.6;
+      const size = (i % 3) + 1 - layer * 0.2;
+      
+      // Star color based on layer
+      const colors = ['#FFFFFF', '#E0F2FE', '#DDD6FE', '#FEF3C7'];
+      ctx.fillStyle = colors[layer];
+      ctx.globalAlpha = twinkle * (0.9 - layer * 0.15);
+      ctx.beginPath();
+      ctx.arc(starX, starY, Math.max(0.5, size), 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Add cross sparkle to brighter stars
+      if (layer === 0 && i % 4 === 0) {
+        ctx.globalAlpha = twinkle * 0.4;
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.moveTo(starX - 4, starY);
+        ctx.lineTo(starX + 4, starY);
+        ctx.moveTo(starX, starY - 4);
+        ctx.lineTo(starX, starY + 4);
+        ctx.stroke();
+      }
+    }
+  }
+  ctx.globalAlpha = 1;
+  
+  // Distant planets
+  for (let i = 0; i < 2; i++) {
+    const planetX = (i * 500 + 200 - cameraX * 0.03) % 1000 - 100;
+    const planetY = 120 + i * 200;
+    const planetSize = 30 + i * 20;
+    
+    // Planet body
+    const planetGrad = ctx.createRadialGradient(
+      planetX - planetSize * 0.3, planetY - planetSize * 0.3, 0,
+      planetX, planetY, planetSize
+    );
+    const planetColors = [
+      ['#7C3AED', '#5B21B6', '#4C1D95'],
+      ['#0891B2', '#0E7490', '#155E75']
+    ][i];
+    planetGrad.addColorStop(0, planetColors[0]);
+    planetGrad.addColorStop(0.6, planetColors[1]);
+    planetGrad.addColorStop(1, planetColors[2]);
+    ctx.fillStyle = planetGrad;
+    ctx.beginPath();
+    ctx.arc(planetX, planetY, planetSize, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Planet ring for first planet
+    if (i === 0) {
+      ctx.strokeStyle = 'rgba(196, 181, 253, 0.4)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.ellipse(planetX, planetY, planetSize * 1.6, planetSize * 0.3, 0.3, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  }
+  
+  // Shooting stars occasionally
+  const shootingStarPhase = (time * 0.02) % 10;
+  if (shootingStarPhase < 1) {
+    const ssX = 100 + shootingStarPhase * 600;
+    const ssY = 50 + shootingStarPhase * 150;
+    
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 2;
+    ctx.globalAlpha = 1 - shootingStarPhase;
+    ctx.beginPath();
+    ctx.moveTo(ssX, ssY);
+    ctx.lineTo(ssX - 40, ssY - 20);
+    ctx.stroke();
+    
+    // Trail
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = (1 - shootingStarPhase) * 0.5;
+    ctx.beginPath();
+    ctx.moveTo(ssX - 40, ssY - 20);
+    ctx.lineTo(ssX - 80, ssY - 40);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+  
+  // Floating cosmic dust
+  for (let i = 0; i < 20; i++) {
+    const dustX = ((i * 67 - cameraX * 0.08 + time * 0.1) % 900 + 900) % 900 - 50;
+    const dustY = (i * 43 + Math.sin(time * 0.02 + i) * 30) % 600;
+    const dustAlpha = 0.2 + Math.sin(time * 0.05 + i * 2) * 0.1;
+    
+    ctx.fillStyle = `rgba(196, 181, 253, ${dustAlpha})`;
+    ctx.beginPath();
+    ctx.arc(dustX, dustY, 1.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
 function drawVoidBackground(ctx, time, cameraX) {
   // Floating islands
   ctx.fillStyle = '#3f3f46';
