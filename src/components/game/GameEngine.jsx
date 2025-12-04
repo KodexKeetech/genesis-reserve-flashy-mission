@@ -5261,8 +5261,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       }
       
       // Draw goal - Purple Portal (only show on boss levels after boss is defeated, or always on non-boss levels)
-      const isBoss = isBossLevel(currentLevel);
-      const shouldShowPortal = !isBoss || (isBoss && state.boss === null);
+      const isBossForPortal = isBossLevel(currentLevel);
+      const shouldShowPortal = !isBossForPortal || (isBossForPortal && state.boss === null);
       
       if (shouldShowPortal) {
         const goalX = state.goalX - state.cameraX;
