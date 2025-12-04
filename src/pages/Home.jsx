@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
-import { Play, ShoppingBag, Zap, Sparkles, Gem, FolderOpen } from 'lucide-react';
+import { Play, ShoppingBag, Zap, Sparkles, Gem, FolderOpen, Map } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 
@@ -205,6 +205,17 @@ export default function Home() {
               </Button>
             </Link>
           )}
+          
+          <Link to={createPageUrl('LevelSelect')}>
+            <Button
+              size="lg"
+              variant="outline"
+              className="w-full border-purple-500 text-purple-400 hover:bg-purple-500/20 font-bold px-8 py-4 text-base md:text-lg rounded-xl"
+            >
+              <Map className="w-4 h-4 md:w-5 md:h-5 mr-2" />
+              Level Select
+            </Button>
+          </Link>
         </div>
 
         {/* Shop Buttons */}
