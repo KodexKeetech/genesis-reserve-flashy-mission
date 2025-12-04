@@ -98,18 +98,21 @@ export default function useGamepad(onInput) {
     window.addEventListener('gamepadconnected', handleGamepadConnected);
     window.addEventListener('gamepaddisconnected', handleGamepadDisconnected);
 
-    // Check for already connected gamepads
-    const gamepads = navigator.getGamepads();
-    for (let i = 0; i < gamepads.length; i++) {
-      if (gamepads[i]) {
-        gamepadIndexRef.current = i;
-        break;
-      }
-    }
-
-    // Poll gamepad at 60fps
+    // Poll gamepad at 60fps - always poll to detect new gamepads
     let animationId;
     const poll = () => {
+      // Check for gamepads each frame (needed for some browsers)
+      const gamepads = navigator.getGamepads();
+      if (gamepadIndexRef.current === null) {
+        for (let i = 0; i < gamepads.length; i++) {
+          if (gamepads[i]) {
+            console.log('Gamepad detected:', gamepads[i].id);
+            gamepadIndexRef.current = i;
+            break;
+          }
+        }
+      }
+      
       if (gamepadIndexRef.current !== null) {
         pollGamepad();
       }
