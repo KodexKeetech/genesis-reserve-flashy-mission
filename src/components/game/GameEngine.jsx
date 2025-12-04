@@ -2909,7 +2909,6 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
               // Regular bat
               enemy.y = enemy.originalY + Math.sin(time * 0.05 + enemy.x * 0.01) * 30;
             }
-          }
         }
         
         // Simple AI - reverse at edges (for non-patrol enemies)
