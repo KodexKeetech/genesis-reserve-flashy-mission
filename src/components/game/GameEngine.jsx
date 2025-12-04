@@ -671,42 +671,68 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     state.bossNoDamage = true;
     state.cameraX = 0;
 
-    // If we have a saved checkpoint and are respawning, restore it and position player there
-    if (savedCheckpoint && respawnAtCheckpoint) {
+    }, [startingGun]);
+
+  // Track if we need to respawn at checkpoint after level generation
+  const pendingCheckpointRespawnRef = useRef(false);
+  
+  useEffect(() => {
+    // If respawning from checkpoint, mark it pending
+    if (respawnAtCheckpoint && savedCheckpoint) {
+      pendingCheckpointRespawnRef.current = true;
+    }
+    generateLevel(currentLevel);
+  }, [currentLevel, generateLevel, playerUpgrades]);
+
+  // Handle checkpoint respawn AFTER level generation
+  useEffect(() => {
+    if (pendingCheckpointRespawnRef.current && savedCheckpoint) {
+      const state = gameStateRef.current;
+      
+      // Restore checkpoint state
       state.checkpoint = { ...savedCheckpoint, activated: true };
       state.checkpointActivated = true;
       
       // Find platform under checkpoint to spawn player on solid ground
-      let spawnY = savedCheckpoint.y - state.player.height - 10;
+      let spawnY = savedCheckpoint.y;
+      let foundPlatform = false;
       for (const platform of state.platforms) {
         if (platform.type !== 'obstacle' &&
             platform.x <= savedCheckpoint.x + 20 && 
             platform.x + platform.width >= savedCheckpoint.x + 20 &&
-            platform.y > savedCheckpoint.y) {
+            platform.y > savedCheckpoint.y &&
+            platform.y < savedCheckpoint.y + 100) {
           spawnY = platform.y - state.player.height;
+          foundPlatform = true;
           break;
         }
       }
       
+      if (!foundPlatform) {
+        spawnY = savedCheckpoint.y - state.player.height - 10;
+      }
+      
       state.player.x = savedCheckpoint.x;
       state.player.y = spawnY;
+      state.player.velocityX = 0;
+      state.player.velocityY = 0;
       state.player.health = Math.floor(state.player.maxHealth * 0.5);
       state.player.invincible = true;
       state.player.invincibleTimer = 120;
-      state.cameraX = Math.max(0, state.player.x - 400);
-      onHealthChange(state.player.health);
+      state.cameraX = Math.max(0, Math.min(state.player.x - 400, state.levelWidth - 800));
       
-      // Notify that respawn is complete
+      onHealthChange(state.player.health);
+      soundManager.playPowerUp();
+      
+      // Clear the pending flag
+      pendingCheckpointRespawnRef.current = false;
+      
+      // Notify parent
       if (onRespawnComplete) {
         onRespawnComplete();
       }
     }
-
-    }, [startingGun, savedCheckpoint, respawnAtCheckpoint, onHealthChange, onRespawnComplete]);
-
-  useEffect(() => {
-    generateLevel(currentLevel);
-  }, [currentLevel, generateLevel, playerUpgrades]);
+  }, [savedCheckpoint, respawnAtCheckpoint, onHealthChange, onRespawnComplete]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
