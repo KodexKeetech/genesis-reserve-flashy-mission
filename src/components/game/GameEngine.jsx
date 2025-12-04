@@ -6,7 +6,31 @@ import { drawEnemy, drawBoss } from './EnemyRenderer';
 import { createImpactEffect, createDamageEffect, createExplosionEffect, createMagicCastEffect, createPowerUpCollectEffect, createCoinCollectEffect, createEnemyDeathEffect, createBossHitEffect, createBossDeathEffect, createAmbientParticle, drawParticle, drawAmbientParticle, drawProjectileTrail, drawEnemyProjectileTrail } from './ParticleEffects';
 import { getAbilityStats, SPECIAL_ABILITIES } from './AbilitySystem';
 import { LEVEL_1_CONFIG, LEVEL_1_ENEMY_BEHAVIORS } from './levels/Level1Config';
+import { LEVEL_2_CONFIG, LEVEL_2_ENEMY_BEHAVIORS } from './levels/Level2Config';
+import { LEVEL_3_CONFIG, LEVEL_3_ENEMY_BEHAVIORS } from './levels/Level3Config';
+import { LEVEL_4_CONFIG, LEVEL_4_ENEMY_BEHAVIORS } from './levels/Level4Config';
+import { LEVEL_5_CONFIG, LEVEL_5_ENEMY_BEHAVIORS } from './levels/Level5Config';
+import { LEVEL_6_CONFIG, LEVEL_6_ENEMY_BEHAVIORS } from './levels/Level6Config';
+import { LEVEL_7_CONFIG, LEVEL_7_ENEMY_BEHAVIORS } from './levels/Level7Config';
+import { LEVEL_8_CONFIG, LEVEL_8_ENEMY_BEHAVIORS } from './levels/Level8Config';
+import { LEVEL_9_CONFIG, LEVEL_9_ENEMY_BEHAVIORS } from './levels/Level9Config';
 import { drawLevel1Background, drawLevel1Decoration } from './levels/Level1Background';
+
+// Helper to get level config
+function getLevelConfig(level) {
+  switch(level) {
+    case 1: return { config: LEVEL_1_CONFIG, behaviors: LEVEL_1_ENEMY_BEHAVIORS };
+    case 2: return { config: LEVEL_2_CONFIG, behaviors: LEVEL_2_ENEMY_BEHAVIORS };
+    case 3: return { config: LEVEL_3_CONFIG, behaviors: LEVEL_3_ENEMY_BEHAVIORS };
+    case 4: return { config: LEVEL_4_CONFIG, behaviors: LEVEL_4_ENEMY_BEHAVIORS };
+    case 5: return { config: LEVEL_5_CONFIG, behaviors: LEVEL_5_ENEMY_BEHAVIORS };
+    case 6: return { config: LEVEL_6_CONFIG, behaviors: LEVEL_6_ENEMY_BEHAVIORS };
+    case 7: return { config: LEVEL_7_CONFIG, behaviors: LEVEL_7_ENEMY_BEHAVIORS };
+    case 8: return { config: LEVEL_8_CONFIG, behaviors: LEVEL_8_ENEMY_BEHAVIORS };
+    case 9: return { config: LEVEL_9_CONFIG, behaviors: LEVEL_9_ENEMY_BEHAVIORS };
+    default: return null;
+  }
+}
 
 const GRAVITY = 0.6;
 const JUMP_FORCE = -13;
