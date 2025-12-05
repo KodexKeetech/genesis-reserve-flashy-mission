@@ -2322,13 +2322,18 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       const deltaTime = currentTime - lastFrameTime;
       lastFrameTime = currentTime;
       
-      // Apply game speed multiplier to time accumulation
-      accumulator += Math.min(deltaTime, FRAME_TIME * 3) * GAME_SPEED;
+      // Clamp delta to prevent issues on slow frames
+      accumulator += Math.min(deltaTime, FRAME_TIME * 3);
       
-      // Only update when enough time has passed
-      if (accumulator >= FRAME_TIME) {
-        accumulator -= FRAME_TIME;
+      // Only update when enough time has passed (adjusted by game speed)
+      const adjustedFrameTime = FRAME_TIME / GAME_SPEED;
+      if (accumulator >= adjustedFrameTime) {
+        accumulator -= adjustedFrameTime;
         time++;
+      } else {
+        // Skip game update this frame, just render
+        animationId = requestAnimationFrame(gameLoop);
+        return;
       }
       
       const { player, platforms, enemies, projectiles, particles, collectibles, keys } = state;
