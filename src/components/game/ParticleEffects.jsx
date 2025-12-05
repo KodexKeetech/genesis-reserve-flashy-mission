@@ -1,3 +1,4 @@
+
 // Enhanced particle effects system
 
 export function createImpactEffect(particles, x, y, color, count = 12) {
