@@ -1,4 +1,3 @@
-
 // Enhanced particle effects system
 
 export function createImpactEffect(particles, x, y, color, count = 12) {
@@ -487,6 +486,9 @@ export function drawEnemyProjectileTrail(ctx, proj, cameraX, time) {
 
 // Ambient particles for environment - spawn based on time, not camera position
 export function createAmbientParticle(particles, biomeKey, cameraX) {
+  // Reduce spawn rate by 80% to minimize visual glitching
+  if (Math.random() > 0.2) return;
+  
   // Spawn at random position within current view
   const x = cameraX + Math.random() * 800;
   const y = Math.random() * 600;
