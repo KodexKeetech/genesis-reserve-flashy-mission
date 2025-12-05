@@ -481,25 +481,27 @@ export default function Game() {
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl" />
       </div>
 
-      {/* Title and Settings - hide title on mobile */}
-      <div className="flex items-center justify-center gap-4 mb-2 md:mb-6">
-        {!isMobile && (
+      {/* Title - hide on mobile */}
+      {!isMobile && (
+        <div className="flex items-center justify-center gap-4 mb-2 md:mb-6">
           <h1 className="text-xl sm:text-2xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400 tracking-tight">
             JEFF: The Robot Wizard
           </h1>
-        )}
+        </div>
+      )}
+
+      {/* Game Container */}
+      <div className="relative w-[65vw] md:w-full md:max-w-[800px]" style={{ aspectRatio: '800/600' }}>
+        {/* Settings button inside game container */}
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setShowSettings(true)}
-          className="text-slate-400 hover:text-white hover:bg-slate-800"
+          className="absolute top-2 right-2 z-40 text-slate-400 hover:text-white hover:bg-slate-800/50 backdrop-blur-sm"
         >
           <Settings className="w-5 h-5" />
         </Button>
-      </div>
 
-      {/* Game Container */}
-      <div className="relative w-[65vw] md:w-full md:max-w-[800px]" style={{ aspectRatio: '800/600' }}>
         <div className="absolute inset-0">
         {gameState === 'tutorial' && (
           <div className="w-full h-full bg-slate-900 rounded-xl relative">
