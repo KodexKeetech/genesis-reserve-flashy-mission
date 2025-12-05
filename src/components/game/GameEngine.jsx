@@ -4657,7 +4657,9 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         return;
       }
       
-      // RENDER BACKGROUND every frame - no clear, just overdraw
+      // RENDER BACKGROUND every frame for smooth camera movement
+      bgCtx.clearRect(0, 0, 800, 600);
+      
       if (state.biome) {
         if (currentLevel >= 1 && currentLevel <= 9 && state.biome.customLevel) {
           if (currentLevel <= 3) {
@@ -4672,6 +4674,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         bgCtx.fillStyle = '#0F172A';
         bgCtx.fillRect(0, 0, 800, 600);
       }
+      
+      lastCameraX = state.cameraX;
       
 
       
