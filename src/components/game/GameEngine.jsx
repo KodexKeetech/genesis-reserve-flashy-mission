@@ -4657,9 +4657,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         return;
       }
       
-      // RENDER BACKGROUND every frame
-      bgCtx.clearRect(0, 0, 800, 600);
-      
+      // RENDER BACKGROUND every frame - no clear, just overdraw
       if (state.biome) {
         if (currentLevel >= 1 && currentLevel <= 9 && state.biome.customLevel) {
           if (currentLevel <= 3) {
