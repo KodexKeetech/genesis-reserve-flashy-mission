@@ -76,6 +76,7 @@ export default function Game() {
       sound: true,
       graphics: 'high',
       particles: true,
+      gameSpeed: 1,
       keybinds: {
         moveLeft: ['ArrowLeft', 'KeyA'],
         moveRight: ['ArrowRight', 'KeyD'],
@@ -105,7 +106,9 @@ export default function Game() {
     };
     if (saved) {
       const parsed = JSON.parse(saved);
-      return { ...defaults, ...parsed };
+      // Deep merge keybinds to ensure new abilities are always available
+      const mergedKeybinds = { ...defaults.keybinds, ...(parsed.keybinds || {}) };
+      return { ...defaults, ...parsed, keybinds: mergedKeybinds };
     }
     return defaults;
   });
