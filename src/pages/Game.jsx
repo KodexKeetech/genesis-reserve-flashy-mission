@@ -497,9 +497,9 @@ export default function Game() {
           variant="ghost"
           size="icon"
           onClick={() => setShowSettings(true)}
-          className="absolute top-12 right-2 z-40 text-slate-400 hover:text-white hover:bg-slate-800/50 backdrop-blur-sm w-10 h-10"
+          className="absolute top-2 right-2 z-40 text-slate-400 hover:text-white hover:bg-slate-800/50 backdrop-blur-sm w-12 h-12"
         >
-          <Settings className="w-6 h-6" />
+          <Settings className="w-8 h-8" />
         </Button>
 
         <div className="absolute inset-0">
