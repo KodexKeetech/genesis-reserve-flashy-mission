@@ -484,14 +484,15 @@ export function drawEnemyProjectileTrail(ctx, proj, cameraX, time) {
   ctx.globalAlpha = 1;
 }
 
-// Ambient particles for environment - spawn based on time, not camera position
+// Ambient particles for environment - spawn well beyond visible area
 export function createAmbientParticle(particles, biomeKey, cameraX) {
-  // Reduce spawn rate by 80% to minimize visual glitching
-  if (Math.random() > 0.2) return;
+  // Spawn particles across a wider area including off-screen zones
+  // This creates a continuous particle field
+  const spawnX = cameraX - 200 + Math.random() * 1200; // Spawn 200px before and after visible area
+  const spawnY = Math.random() * 600;
   
-  // Spawn at random position within current view
-  const x = cameraX + Math.random() * 800;
-  const y = Math.random() * 600;
+  const x = spawnX;
+  const y = spawnY;
   
   if (biomeKey === 'forest') {
     // Fireflies
