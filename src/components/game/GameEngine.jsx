@@ -3467,33 +3467,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         }
       }
       
-      // Spawn and update ambient background particles
+      // Spawn and update ambient background particles - ONLY ONCE
       if (gameSettings.particles && state.biome) {
         ambientSpawnTimer++;
-        if (ambientSpawnTimer >= 8) {
-          createAmbientParticle(ambientParticles, state.biome.key, state.cameraX);
-          ambientSpawnTimer = 0;
-        }
-        
-        for (let i = ambientParticles.length - 1; i >= 0; i--) {
-          const particle = ambientParticles[i];
-          particle.x += particle.velocityX;
-          particle.y += particle.velocityY;
-          if (particle.gravity) {
-            particle.velocityY += particle.gravity;
-          }
-          particle.life--;
-          
-          if (particle.life <= 0 || particle.y > 700 || particle.x < state.cameraX - 300 || particle.x > state.cameraX + 1100) {
-            ambientParticles.splice(i, 1);
-          }
-        }
-      }
-      
-      // Spawn and update ambient background particles
-      if (gameSettings.particles && state.biome) {
-        ambientSpawnTimer++;
-        if (ambientSpawnTimer >= 8) {
+        if (ambientSpawnTimer >= 12) {
           createAmbientParticle(ambientParticles, state.biome.key, state.cameraX);
           ambientSpawnTimer = 0;
         }
@@ -3509,7 +3486,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           particle.life--;
           
           // Remove if dead or far off-screen
-          if (particle.life <= 0 || particle.y > 700 || particle.x < state.cameraX - 300 || particle.x > state.cameraX + 1100) {
+          if (particle.life <= 0 || particle.y > 700 || particle.x < state.cameraX - 400 || particle.x > state.cameraX + 1200) {
             ambientParticles.splice(i, 1);
           }
         }
