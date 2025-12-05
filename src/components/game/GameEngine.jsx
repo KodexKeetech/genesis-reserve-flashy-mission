@@ -1230,7 +1230,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     let time = 0;
     
     // Fixed timestep for consistent game speed across devices
-    const TARGET_FPS = 60;
+    const TARGET_FPS = gameSettings.targetFPS || 60;
     const FRAME_TIME = 1000 / TARGET_FPS;
     let lastFrameTime = performance.now();
     let accumulator = 0;
