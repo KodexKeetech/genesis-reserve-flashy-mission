@@ -3808,6 +3808,38 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       if (state.boss) {
         const boss = state.boss;
         
+        // Check player projectile collision with boss first
+        for (let i = projectiles.length - 1; i >= 0; i--) {
+          if (checkCollision(projectiles[i], boss)) {
+            boss.health -= projectiles[i].damage || 1;
+            
+            if (projectiles[i].type === 'freeze') {
+              boss.frozen = 60;
+            }
+            
+            createBossHitEffect(particles, boss.x + boss.width / 2, boss.y + boss.height / 2, state.biome.boss.color);
+            soundManager.playEnemyHit();
+            projectiles.splice(i, 1);
+
+            if (boss.health <= 0) {
+              soundManager.playEnemyDefeat();
+              createBossDeathEffect(particles, boss.x + boss.width / 2, boss.y + boss.height / 2, state.biome.boss.color);
+              state.score += 500;
+              onScoreChange(state.score);
+
+              const scrapBonus = 1 + ((playerUpgrades || {}).scrapMagnet || 0) * 0.2;
+              const bossScrap = Math.floor(50 * scrapBonus);
+              if (onScrapsEarned) onScrapsEarned(bossScrap);
+
+              let crystals = 2;
+              if (state.bossNoDamage) crystals += 1;
+              if (onCrystalsEarned) onCrystalsEarned(crystals);
+
+              state.boss = null;
+            }
+          }
+        }
+        
         // Handle frozen state
         if (boss.frozen > 0) {
           boss.frozen--;
