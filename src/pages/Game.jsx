@@ -85,6 +85,11 @@ export default function Game() {
         aoeBlast: ['KeyE'],
         reflectShield: ['KeyR'],
         hover: ['KeyF'],
+        timeSlow: ['KeyT'],
+        chainLightning: ['KeyG'],
+        shadowClone: ['KeyC'],
+        magneticPull: ['KeyV'],
+        teleport: ['KeyX'],
       },
       gamepadBinds: {
         move: 'L-Stick',
