@@ -53,7 +53,7 @@ const POWERUP_TYPES = {
 
 import { HIDDEN_LEVELS } from './BiomeConfig';
 
-export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel, hiddenLevelId, difficulty = 'medium', onPowerUpChange, onAbilityCooldowns, onScrapsEarned, onCrystalsEarned, onCoinAmmoChange, savedCoinAmmo, playerUpgrades, unlockedAbilities, abilityUpgrades, gameInput, startingGun = 0, gameSettings = { sound: true, graphics: 'high', particles: true }, onGunChange, onCheckpointActivated, respawnAtCheckpoint, onRespawnComplete, savedCheckpoint }) {
+export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel, hiddenLevelId, difficulty = 'medium', onPowerUpChange, onAbilityCooldowns, onScrapsEarned, onCrystalsEarned, onCoinAmmoChange, savedCoinAmmo, playerUpgrades, unlockedAbilities, abilityUpgrades, gameInput, startingGun = 0, gameSettings = { sound: true, graphics: 'high', particles: true, gameSpeed: 1, keybinds: {} }, onGunChange, onCheckpointActivated, respawnAtCheckpoint, onRespawnComplete, savedCheckpoint }) {
   const canvasRef = useRef(null);
   const mouseRef = useRef({ x: 400, y: 300 }); // Track mouse position relative to canvas
   const gameStateRef = useRef({
@@ -1236,6 +1236,12 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     let lastFrameTime = performance.now();
     let accumulator = 0;
 
+    // Helper to check if a key matches any keybind
+    const isKeyPressed = (action) => {
+      const bindings = gameSettings.keybinds?.[action] || [];
+      return bindings.some(key => gameStateRef.current.keys[key]);
+    };
+
     const handleKeyDown = (e) => {
       gameStateRef.current.keys[e.code] = true;
       if (e.code === 'Space') e.preventDefault();
@@ -1790,34 +1796,36 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
 
     const handleKeyDownWithDash = (e) => {
       handleKeyDown(e);
-      if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+      const keybinds = gameSettings.keybinds || {};
+      
+      if (keybinds.dash?.includes(e.code)) {
         handleDash();
       }
-      if (e.code === 'KeyQ') {
+      if (keybinds.switchSpell?.includes(e.code)) {
         handleSwitchProjectile();
       }
-      if (e.code === 'KeyE') {
+      if (keybinds.aoeBlast?.includes(e.code)) {
         handleAoeBlast();
       }
-      if (e.code === 'KeyR') {
+      if (keybinds.reflectShield?.includes(e.code)) {
         handleReflectShield();
       }
-      if (e.code === 'KeyF') {
+      if (keybinds.hover?.includes(e.code)) {
         handleHover();
       }
-      if (e.code === 'KeyT') {
+      if (keybinds.timeSlow?.includes(e.code)) {
         handleTimeSlow();
       }
-      if (e.code === 'KeyG') {
+      if (keybinds.chainLightning?.includes(e.code)) {
         handleChainLightning();
       }
-      if (e.code === 'KeyC') {
+      if (keybinds.shadowClone?.includes(e.code)) {
         handleShadowClone();
       }
-      if (e.code === 'KeyV') {
+      if (keybinds.magneticPull?.includes(e.code)) {
         handleMagneticPull();
       }
-      if (e.code === 'KeyX') {
+      if (keybinds.teleport?.includes(e.code)) {
         handleTeleport();
       }
     };
@@ -2432,10 +2440,13 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       } else {
         // Normal player input (keyboard or gamepad/touch)
         const moveX = input.move?.x || 0;
-        if (keys['ArrowLeft'] || keys['KeyA'] || moveX < -0.3) {
+        const movingLeft = isKeyPressed('moveLeft') || moveX < -0.3;
+        const movingRight = isKeyPressed('moveRight') || moveX > 0.3;
+        
+        if (movingLeft) {
           player.velocityX = -effectiveSpeed;
           player.facingRight = false;
-        } else if (keys['ArrowRight'] || keys['KeyD'] || moveX > 0.3) {
+        } else if (movingRight) {
           player.velocityX = effectiveSpeed;
           player.facingRight = true;
         } else {
@@ -2449,7 +2460,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       }
       
       // Jump and double jump (keyboard or gamepad/touch)
-      const jumpKeyPressed = keys['ArrowUp'] || keys['KeyW'] || keys['Space'] || (input.jump && !lastInputJump);
+      const jumpKeyPressed = isKeyPressed('jump') || (input.jump && !lastInputJump);
       if (jumpKeyPressed && !player.jumpKeyHeld) {
         if (player.onGround) {
           player.velocityY = JUMP_FORCE;
@@ -2557,7 +2568,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           
           // Allow vertical control while hovering
           const moveY = input.move?.y || 0;
-          if (keys['ArrowUp'] || keys['KeyW'] || keys['Space'] || moveY < -0.3) {
+          if (isKeyPressed('jump') || moveY < -0.3) {
             player.velocityY -= 0.5;
           }
           if (keys['ArrowDown'] || keys['KeyS'] || moveY > 0.3) {
@@ -4453,7 +4464,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         
         // Check player projectile collision with boss
         for (let i = projectiles.length - 1; i >= 0; i--) {
-          if (checkCollision(projectiles[i], boss)) {
+          if (boss && checkCollision(projectiles[i], boss)) {
             boss.health -= projectiles[i].damage || 1;
             
             if (projectiles[i].type === 'freeze') {
@@ -4461,37 +4472,38 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             }
             
             // Enhanced boss hit effect
-                              createBossHitEffect(particles, boss.x + boss.width / 2, boss.y + boss.height / 2, state.biome.boss.color);
+            createBossHitEffect(particles, boss.x + boss.width / 2, boss.y + boss.height / 2, state.biome.boss.color);
 
-                              soundManager.playEnemyHit();
-                              projectiles.splice(i, 1);
+            soundManager.playEnemyHit();
+            projectiles.splice(i, 1);
 
-                              if (boss.health <= 0) {
-                                soundManager.playEnemyDefeat();
-                                // Massive boss death explosion
-                                createBossDeathEffect(particles, boss.x + boss.width / 2, boss.y + boss.height / 2, state.biome.boss.color);
-                                state.score += 500;
-                                onScoreChange(state.score);
+            if (state.boss.health <= 0) {
+              soundManager.playEnemyDefeat();
+              // Massive boss death explosion
+              createBossDeathEffect(particles, state.boss.x + state.boss.width / 2, state.boss.y + state.boss.height / 2, state.biome.boss.color);
+              state.score += 500;
+              onScoreChange(state.score);
 
-                                // Award bonus scraps for boss
-                                const scrapBonus = 1 + ((playerUpgrades || {}).scrapMagnet || 0) * 0.2;
-                                const bossScrap = Math.floor(50 * scrapBonus);
-                                if (onScrapsEarned) onScrapsEarned(bossScrap);
+              // Award bonus scraps for boss
+              const scrapBonus = 1 + ((playerUpgrades || {}).scrapMagnet || 0) * 0.2;
+              const bossScrap = Math.floor(50 * scrapBonus);
+              if (onScrapsEarned) onScrapsEarned(bossScrap);
 
-                                // Award arcane crystals for boss kill
-                                let crystals = 2;
-                                if (state.bossNoDamage) crystals += 1;
-                                if (onCrystalsEarned) onCrystalsEarned(crystals);
+              // Award arcane crystals for boss kill
+              let crystals = 2;
+              if (state.bossNoDamage) crystals += 1;
+              if (onCrystalsEarned) onCrystalsEarned(crystals);
 
-                                state.boss = null;
-                              }
-                            }
-                          }
+              state.boss = null;
+            }
+            }
+          }
+        }
         
         // Boss collision with player
-        if (boss) {
+        if (state.boss) {
           const isInvincible = player.invincible || player.powerUps.INVINCIBILITY > 0 || player.isDashing;
-          if (!isInvincible && checkCollision(player, boss)) {
+          if (!isInvincible && checkCollision(player, state.boss)) {
             if (player.powerUps.SHIELD > 0 && player.powerUps.shieldHealth > 0) {
               player.powerUps.shieldHealth--;
               if (player.powerUps.shieldHealth <= 0) player.powerUps.SHIELD = 0;
@@ -4504,7 +4516,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
               player.invincible = true;
               player.invincibleTimer = 60;
               player.velocityY = -10;
-              player.velocityX = player.x < boss.x ? -8 : 8;
+              player.velocityX = player.x < state.boss.x ? -8 : 8;
               onHealthChange(player.health);
               state.bossNoDamage = false;
             }
