@@ -4657,27 +4657,22 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         return;
       }
       
-      // RENDER BACKGROUND - Only redraw when camera moves significantly
-      const cameraMoved = Math.abs(state.cameraX - lastCameraX) > 15;
-      if (cameraMoved || time === 1) {
-        bgCtx.clearRect(0, 0, 800, 600);
-        
-        if (state.biome) {
-          if (currentLevel >= 1 && currentLevel <= 9 && state.biome.customLevel) {
-            if (currentLevel <= 3) {
-              drawLevel1Background(bgCtx, state.cameraX, 800, 600, time);
-            } else {
-              drawBackground(bgCtx, state.biome, time, state.cameraX);
-            }
+      // RENDER BACKGROUND every frame
+      bgCtx.clearRect(0, 0, 800, 600);
+      
+      if (state.biome) {
+        if (currentLevel >= 1 && currentLevel <= 9 && state.biome.customLevel) {
+          if (currentLevel <= 3) {
+            drawLevel1Background(bgCtx, state.cameraX, 800, 600, time);
           } else {
             drawBackground(bgCtx, state.biome, time, state.cameraX);
           }
         } else {
-          bgCtx.fillStyle = '#0F172A';
-          bgCtx.fillRect(0, 0, 800, 600);
+          drawBackground(bgCtx, state.biome, time, state.cameraX);
         }
-        
-        lastCameraX = state.cameraX;
+      } else {
+        bgCtx.fillStyle = '#0F172A';
+        bgCtx.fillRect(0, 0, 800, 600);
       }
       
 
