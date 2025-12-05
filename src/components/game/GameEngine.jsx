@@ -4680,36 +4680,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         lastCameraX = state.cameraX;
       }
       
-      // Update and draw ambient particles every frame on background canvas
-      if (gameSettings.particles && state.biome) {
-        // Spawn new ambient particles occasionally
-        if (Math.random() < 0.1) {
-          createAmbientParticle(ambientParticlesRef.current, state.biome.key, state.cameraX);
-        }
-        
-        // Keep ambient particle count reasonable
-        if (ambientParticlesRef.current.length > 50) {
-          ambientParticlesRef.current = ambientParticlesRef.current.slice(-50);
-        }
-        
-        // Update and draw all ambient particles
-        bgCtx.save();
-        for (let i = ambientParticlesRef.current.length - 1; i >= 0; i--) {
-          const p = ambientParticlesRef.current[i];
-          p.x += p.velocityX;
-          p.y += p.velocityY;
-          p.life--;
-          
-          // Remove if out of bounds or expired
-          if (p.life <= 0 || p.y > 650 || p.y < -50 || p.x < state.cameraX - 300 || p.x > state.cameraX + 1100) {
-            ambientParticlesRef.current.splice(i, 1);
-          } else {
-            // Draw on background canvas with camera offset
-            drawAmbientParticle(bgCtx, { ...p, x: p.x - state.cameraX }, time);
-          }
-        }
-        bgCtx.restore();
-      }
+
       
       // Clear foreground canvas only
       ctx.clearRect(0, 0, 800, 600);
