@@ -4462,40 +4462,41 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           }
         }
         
-        // Check player projectile collision with boss
-        for (let i = projectiles.length - 1; i >= 0; i--) {
-          if (boss && checkCollision(projectiles[i], boss)) {
-            boss.health -= projectiles[i].damage || 1;
-            
-            if (projectiles[i].type === 'freeze') {
-              boss.frozen = 60;
-            }
-            
-            // Enhanced boss hit effect
-            createBossHitEffect(particles, boss.x + boss.width / 2, boss.y + boss.height / 2, state.biome.boss.color);
+        // Check player projectile collision with boss (after enemy checks)
+        if (state.boss) {
+          for (let i = projectiles.length - 1; i >= 0; i--) {
+            if (checkCollision(projectiles[i], state.boss)) {
+              state.boss.health -= projectiles[i].damage || 1;
+              
+              if (projectiles[i].type === 'freeze') {
+                state.boss.frozen = 60;
+              }
+              
+              // Enhanced boss hit effect
+              createBossHitEffect(particles, state.boss.x + state.boss.width / 2, state.boss.y + state.boss.height / 2, state.biome.boss.color);
 
-            soundManager.playEnemyHit();
-            projectiles.splice(i, 1);
+              soundManager.playEnemyHit();
+              projectiles.splice(i, 1);
 
-            if (state.boss.health <= 0) {
-              soundManager.playEnemyDefeat();
-              // Massive boss death explosion
-              createBossDeathEffect(particles, state.boss.x + state.boss.width / 2, state.boss.y + state.boss.height / 2, state.biome.boss.color);
-              state.score += 500;
-              onScoreChange(state.score);
+              if (state.boss.health <= 0) {
+                soundManager.playEnemyDefeat();
+                // Massive boss death explosion
+                createBossDeathEffect(particles, state.boss.x + state.boss.width / 2, state.boss.y + state.boss.height / 2, state.biome.boss.color);
+                state.score += 500;
+                onScoreChange(state.score);
 
-              // Award bonus scraps for boss
-              const scrapBonus = 1 + ((playerUpgrades || {}).scrapMagnet || 0) * 0.2;
-              const bossScrap = Math.floor(50 * scrapBonus);
-              if (onScrapsEarned) onScrapsEarned(bossScrap);
+                // Award bonus scraps for boss
+                const scrapBonus = 1 + ((playerUpgrades || {}).scrapMagnet || 0) * 0.2;
+                const bossScrap = Math.floor(50 * scrapBonus);
+                if (onScrapsEarned) onScrapsEarned(bossScrap);
 
-              // Award arcane crystals for boss kill
-              let crystals = 2;
-              if (state.bossNoDamage) crystals += 1;
-              if (onCrystalsEarned) onCrystalsEarned(crystals);
+                // Award arcane crystals for boss kill
+                let crystals = 2;
+                if (state.bossNoDamage) crystals += 1;
+                if (onCrystalsEarned) onCrystalsEarned(crystals);
 
-              state.boss = null;
-            }
+                state.boss = null;
+              }
             }
           }
         }
