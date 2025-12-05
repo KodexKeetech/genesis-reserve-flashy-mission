@@ -3,7 +3,7 @@ import soundManager from './SoundManager';
 import { getBiomeForLevel, isBossLevel, getEnemiesForLevel, getDifficultySettings } from './BiomeConfig';
 import { drawBackground, drawPlatform, drawEnvironmentalHazard } from './BackgroundRenderer';
 import { drawEnemy, drawBoss } from './EnemyRenderer';
-import { createImpactEffect, createDamageEffect, createExplosionEffect, createMagicCastEffect, createPowerUpCollectEffect, createCoinCollectEffect, createEnemyDeathEffect, createBossHitEffect, createBossDeathEffect, drawParticle, drawProjectileTrail, drawEnemyProjectileTrail, createSecretPortalEffect } from './ParticleEffects';
+import { createImpactEffect, createDamageEffect, createExplosionEffect, createMagicCastEffect, createPowerUpCollectEffect, createCoinCollectEffect, createEnemyDeathEffect, createBossHitEffect, createBossDeathEffect, drawParticle, drawProjectileTrail, drawEnemyProjectileTrail, createSecretPortalEffect, createAmbientParticle, drawAmbientParticle } from './ParticleEffects';
 import { getAbilityStats, SPECIAL_ABILITIES } from './AbilitySystem';
 import { LEVEL_1_CONFIG, LEVEL_1_ENEMY_BEHAVIORS } from './levels/Level1Config';
 import { LEVEL_2_CONFIG, LEVEL_2_ENEMY_BEHAVIORS } from './levels/Level2Config';
@@ -112,6 +112,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     enemies: [],
     projectiles: [],
     particles: [],
+    ambientParticles: [],
     collectibles: [],
     powerUpItems: [],
     hazards: [],
@@ -138,6 +139,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         state.collectibles = [];
         state.projectiles = [];
         state.particles = [];
+        state.ambientParticles = [];
         state.powerUpItems = [];
         state.hazards = [];
         state.enemyProjectiles = [];
@@ -1243,6 +1245,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     let animationId;
     let time = 0;
     let lastCameraX = 0;
+    let ambientSpawnTimer = 0;
     
     // Fixed timestep for consistent game speed across devices
     const TARGET_FPS = 60;
@@ -2359,7 +2362,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         return;
       }
       
-      const { player, platforms, enemies, projectiles, particles, collectibles, keys } = state;
+      const { player, platforms, enemies, projectiles, particles, ambientParticles, collectibles, keys } = state;
       
       // Update power-up timers
       Object.keys(player.powerUps).forEach(key => {
@@ -3450,7 +3453,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                         }
                       }
       
-      // Update action particles only (ambient particles handled separately)
+      // Update action particles
       for (let i = particles.length - 1; i >= 0; i--) {
         const particle = particles[i];
         particle.x += particle.velocityX;
@@ -3461,6 +3464,31 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         particle.life--;
         if (particle.life <= 0 || particle.y > 650) {
           particles.splice(i, 1);
+        }
+      }
+      
+      // Spawn and update ambient background particles
+      if (gameSettings.particles && state.biome) {
+        ambientSpawnTimer++;
+        if (ambientSpawnTimer >= 8) {
+          createAmbientParticle(ambientParticles, state.biome.key, state.cameraX);
+          ambientSpawnTimer = 0;
+        }
+        
+        // Update ambient particles
+        for (let i = ambientParticles.length - 1; i >= 0; i--) {
+          const particle = ambientParticles[i];
+          particle.x += particle.velocityX;
+          particle.y += particle.velocityY;
+          if (particle.gravity) {
+            particle.velocityY += particle.gravity;
+          }
+          particle.life--;
+          
+          // Remove if dead or far off-screen
+          if (particle.life <= 0 || particle.y > 700 || particle.x < state.cameraX - 300 || particle.x > state.cameraX + 1100) {
+            ambientParticles.splice(i, 1);
+          }
         }
       }
       
@@ -4673,6 +4701,15 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       } else {
         bgCtx.fillStyle = '#0F172A';
         bgCtx.fillRect(0, 0, 800, 600);
+      }
+      
+      // Draw ambient particles on background canvas
+      if (gameSettings.particles && state.biome) {
+        const maxAmbient = gameSettings.graphics === 'low' ? 15 : gameSettings.graphics === 'medium' ? 40 : ambientParticles.length;
+        for (let i = 0; i < Math.min(maxAmbient, ambientParticles.length); i++) {
+          const particle = ambientParticles[i];
+          drawAmbientParticle(bgCtx, { ...particle, x: particle.x - state.cameraX }, time);
+        }
       }
       
       lastCameraX = state.cameraX;
