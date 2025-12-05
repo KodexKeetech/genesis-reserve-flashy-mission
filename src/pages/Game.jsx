@@ -577,6 +577,7 @@ export default function Game() {
               onNextLevel={handleNextLevel}
               hasCheckpoint={isCheckpointActivated && !!checkpointData}
               onContinueFromCheckpoint={handleContinueFromCheckpoint}
+              hiddenLevelId={hiddenLevelId}
             />
           </div>
         )}

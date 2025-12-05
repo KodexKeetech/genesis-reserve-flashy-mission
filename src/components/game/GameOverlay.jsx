@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Trophy, RotateCcw, Play, Sparkles, Save, FolderOpen, Star, Shield, Flame, Skull } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { DIFFICULTY_MODES } from './BiomeConfig';
+import { DIFFICULTY_MODES, HIDDEN_LEVELS } from './BiomeConfig';
 
 const VICTORY_BACKGROUNDS = [
   'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692c28c6355507b7b2161062/3d2f3538c_Victoyart1.jpg',
@@ -49,7 +49,7 @@ const VICTORY_BACKGROUNDS = [
   'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692c28c6355507b7b2161062/135380275_Victoyart43.jpg',
 ];
 
-export default function GameOverlay({ type, score, level, onRestart, onNextLevel, onStart, onLoadGame, hasCheckpoint, onContinueFromCheckpoint, difficulty, onDifficultyChange }) {
+export default function GameOverlay({ type, score, level, onRestart, onNextLevel, onStart, onLoadGame, hasCheckpoint, onContinueFromCheckpoint, difficulty, onDifficultyChange, hiddenLevelId }) {
   const [hasSavedGame, setHasSavedGame] = useState(false);
   const [selectedDifficulty, setSelectedDifficulty] = useState(difficulty || 'medium');
   const [selectedButton, setSelectedButton] = useState(0);
@@ -58,6 +58,10 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
   const victoryBackground = useMemo(() => {
     return VICTORY_BACKGROUNDS[Math.floor(Math.random() * VICTORY_BACKGROUNDS.length)];
   }, [type, level]);
+  
+  // Get hidden level info if this is a secret level
+  const hiddenLevel = hiddenLevelId && HIDDEN_LEVELS[hiddenLevelId];
+  const levelDisplayText = hiddenLevel ? hiddenLevel.name : `LEVEL ${level}`;
 
   useEffect(() => {
     const saved = localStorage.getItem('jeff_save_game');
@@ -474,7 +478,7 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
                 `
               }}
             >
-              LEVEL {level} COMPLETE!
+              {levelDisplayText} COMPLETE!
             </motion.h2>
             
             <motion.div
