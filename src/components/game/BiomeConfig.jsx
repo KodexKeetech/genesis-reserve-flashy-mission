@@ -262,11 +262,11 @@ export const BIOMES = {
   }
 };
 
-// Hidden levels - unlocked by finding secrets or achievements
+// Hidden levels - unlocked by completing regular levels
 export const HIDDEN_LEVELS = {
   'forest-secret': {
     name: 'Fairy Grove',
-    unlockedBy: 'Find the hidden mushroom in level 2',
+    unlockedBy: 'Complete Level 2',
     afterLevel: 2,
     biome: 'forest',
     difficulty: 1.5,
@@ -274,7 +274,7 @@ export const HIDDEN_LEVELS = {
   },
   'volcano-secret': {
     name: 'Lava Core',
-    unlockedBy: 'Defeat Magma Golem without taking damage',
+    unlockedBy: 'Complete Level 6',
     afterLevel: 6,
     biome: 'volcano',
     difficulty: 2,
@@ -282,7 +282,7 @@ export const HIDDEN_LEVELS = {
   },
   'ice-secret': {
     name: 'Frozen Temple',
-    unlockedBy: 'Collect all coins in levels 7-9',
+    unlockedBy: 'Complete Level 9',
     afterLevel: 9,
     biome: 'ice',
     difficulty: 2.5,
@@ -290,7 +290,7 @@ export const HIDDEN_LEVELS = {
   },
   'void-secret': {
     name: 'Heart of Darkness',
-    unlockedBy: 'Beat level 12 in under 2 minutes',
+    unlockedBy: 'Complete Level 12',
     afterLevel: 12,
     biome: 'void',
     difficulty: 3,
@@ -298,7 +298,7 @@ export const HIDDEN_LEVELS = {
   },
   'ultimate-challenge': {
     name: 'The Gauntlet',
-    unlockedBy: 'Complete all other hidden levels',
+    unlockedBy: 'Complete Level 24',
     afterLevel: 24,
     biome: 'techno',
     difficulty: 5,
@@ -306,7 +306,7 @@ export const HIDDEN_LEVELS = {
   },
   'arcane-secret': {
     name: 'Forbidden Library',
-    unlockedBy: 'Defeat The Arcanist without using special abilities',
+    unlockedBy: 'Complete Level 27',
     afterLevel: 27,
     biome: 'arcane',
     difficulty: 4,
@@ -488,10 +488,10 @@ export function getDifficultySettings(level, difficultyMode = 'medium') {
 }
 
 // Get available hidden levels based on progress
-export function getAvailableHiddenLevels(highestLevel, unlockedSecrets = []) {
+export function getAvailableHiddenLevels(highestLevel) {
   const available = [];
   for (const [id, hiddenLevel] of Object.entries(HIDDEN_LEVELS)) {
-    if (highestLevel >= hiddenLevel.afterLevel && !unlockedSecrets.includes(id)) {
+    if (highestLevel > hiddenLevel.afterLevel) {
       available.push({ id, ...hiddenLevel });
     }
   }

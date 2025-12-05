@@ -37,7 +37,7 @@ export default function LevelSelect() {
   };
 
   const biomeList = Object.entries(BIOMES);
-  const availableHiddenLevels = getAvailableHiddenLevels(highestLevel, unlockedSecrets);
+  const availableHiddenLevels = getAvailableHiddenLevels(highestLevel);
 
   if (loading) {
     return (
@@ -236,14 +236,18 @@ export default function LevelSelect() {
 
         {/* All Hidden Levels Info */}
         <div className="mt-8 bg-slate-900/60 backdrop-blur-sm rounded-xl p-6 border border-slate-700">
-          <h3 className="text-lg font-bold text-white mb-3">🔓 How to Unlock Secret Levels</h3>
+          <h3 className="text-lg font-bold text-white mb-3">🔓 Secret Levels</h3>
+          <p className="text-sm text-slate-400 mb-4">Complete regular levels to unlock secret levels with higher difficulty and better rewards!</p>
           <div className="grid md:grid-cols-2 gap-3 text-sm text-slate-400">
-            {Object.entries(HIDDEN_LEVELS).map(([id, hidden]) => (
-              <div key={id} className={`flex items-start gap-2 ${unlockedSecrets.includes(id) ? 'text-green-400' : ''}`}>
-                <span>{unlockedSecrets.includes(id) ? '✅' : '🔒'}</span>
-                <span><strong>{hidden.name}:</strong> {hidden.unlockedBy}</span>
-              </div>
-            ))}
+            {Object.entries(HIDDEN_LEVELS).map(([id, hidden]) => {
+              const unlocked = highestLevel > hidden.afterLevel;
+              return (
+                <div key={id} className={`flex items-start gap-2 ${unlocked ? 'text-green-400' : ''}`}>
+                  <span>{unlocked ? '✅' : '🔒'}</span>
+                  <span><strong>{hidden.name}:</strong> {hidden.unlockedBy}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
