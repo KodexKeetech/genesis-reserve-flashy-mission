@@ -1,5 +1,5 @@
 import React from 'react';
-import { Volume2, VolumeX, Zap, Sparkles, X } from 'lucide-react';
+import { Volume2, VolumeX, Zap, Sparkles, X, Gauge } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ControlsConfig from './ControlsConfig';
 
@@ -59,7 +59,7 @@ export default function SettingsMenu({ settings, onSettingsChange, onClose }) {
         </div>
 
         {/* Particles */}
-        <div className="mb-6">
+        <div className="mb-4">
           <label className="text-slate-300 text-sm mb-2 block">Particles</label>
           <div className="flex gap-2">
             <Button
@@ -77,6 +77,29 @@ export default function SettingsMenu({ settings, onSettingsChange, onClose }) {
               Off
             </Button>
           </div>
+        </div>
+
+        {/* FPS / Game Speed */}
+        <div className="mb-6">
+          <label className="text-slate-300 text-sm mb-2 block flex items-center gap-2">
+            <Gauge className="w-4 h-4" /> Game Speed (FPS)
+          </label>
+          <div className="flex gap-2">
+            {[30, 60].map((fps) => (
+              <Button
+                key={fps}
+                variant={(settings.targetFPS || 60) === fps ? "default" : "outline"}
+                className={`flex-1 ${(settings.targetFPS || 60) === fps ? 
+                  (fps === 30 ? 'bg-green-600' : 'bg-purple-600') : ''}`}
+                onClick={() => onSettingsChange({ ...settings, targetFPS: fps })}
+              >
+                {fps} FPS
+              </Button>
+            ))}
+          </div>
+          <p className="text-slate-500 text-xs mt-1">
+            {(settings.targetFPS || 60) === 30 ? 'Slower, better for older devices' : 'Smooth gameplay (default)'}
+          </p>
         </div>
 
         {/* Controls */}
