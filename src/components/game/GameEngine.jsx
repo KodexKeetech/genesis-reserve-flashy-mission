@@ -3,7 +3,7 @@ import soundManager from './SoundManager';
 import { getBiomeForLevel, isBossLevel, getEnemiesForLevel, getDifficultySettings } from './BiomeConfig';
 import { drawBackground, drawPlatform, drawEnvironmentalHazard } from './BackgroundRenderer';
 import { drawEnemy, drawBoss } from './EnemyRenderer';
-import { createImpactEffect, createDamageEffect, createExplosionEffect, createMagicCastEffect, createPowerUpCollectEffect, createCoinCollectEffect, createEnemyDeathEffect, createBossHitEffect, createBossDeathEffect, createAmbientParticle, drawParticle, drawAmbientParticle, drawProjectileTrail, drawEnemyProjectileTrail } from './ParticleEffects';
+import { createImpactEffect, createDamageEffect, createExplosionEffect, createMagicCastEffect, createPowerUpCollectEffect, createCoinCollectEffect, createEnemyDeathEffect, createBossHitEffect, createBossDeathEffect, createAmbientParticle, drawParticle, drawAmbientParticle, drawProjectileTrail, drawEnemyProjectileTrail, createSecretPortalEffect } from './ParticleEffects';
 import { getAbilityStats, SPECIAL_ABILITIES } from './AbilitySystem';
 import { LEVEL_1_CONFIG, LEVEL_1_ENEMY_BEHAVIORS } from './levels/Level1Config';
 import { LEVEL_2_CONFIG, LEVEL_2_ENEMY_BEHAVIORS } from './levels/Level2Config';
@@ -51,7 +51,7 @@ const POWERUP_TYPES = {
   SHIELD: { color: '#3B82F6', icon: '🛡️', duration: 400, name: 'Shield' }
 };
 
-import { HIDDEN_LEVELS } from './BiomeConfig';
+import { HIDDEN_LEVELS, hasSecretExit } from './BiomeConfig';
 
 export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel, hiddenLevelId, difficulty = 'medium', onPowerUpChange, onAbilityCooldowns, onScrapsEarned, onCrystalsEarned, onCoinAmmoChange, savedCoinAmmo, playerUpgrades, unlockedAbilities, abilityUpgrades, gameInput, startingGun = 0, gameSettings = { sound: true, graphics: 'high', particles: true, gameSpeed: 1, keybinds: {} }, onGunChange, onCheckpointActivated, respawnAtCheckpoint, onRespawnComplete, savedCheckpoint }) {
   const canvasRef = useRef(null);
@@ -119,6 +119,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     checkpoint: null,
     checkpointActivated: false,
     boss: null,
+    secretPortal: null,
     keys: {},
     score: 0,
     gameRunning: true,
@@ -511,9 +512,19 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           };
           state.checkpointActivated = false;
           
-          // Store secret hint if exists
+          // Store secret hint if exists and create secret portal
           if (LEVEL_CONFIG.secretHint) {
             state.secretHint = LEVEL_CONFIG.secretHint;
+            state.secretPortal = {
+              x: LEVEL_CONFIG.secretHint.triggerX,
+              y: LEVEL_CONFIG.secretHint.triggerY || 380,
+              width: 60,
+              height: 80,
+              hiddenLevelId: LEVEL_CONFIG.secretHint.unlocksLevel,
+              discovered: false
+            };
+          } else {
+            state.secretPortal = null;
           }
           
           // Reset player
@@ -4557,6 +4568,45 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         }
       }
       
+      // Check secret portal collision first
+      if (state.secretPortal && !state.secretPortal.discovered) {
+        const portalCenterX = state.secretPortal.x + state.secretPortal.width / 2;
+        const portalCenterY = state.secretPortal.y + state.secretPortal.height / 2;
+        const playerCenterX = player.x + player.width / 2;
+        const playerCenterY = player.y + player.height / 2;
+        const distToPortal = Math.sqrt(
+          Math.pow(playerCenterX - portalCenterX, 2) + 
+          Math.pow(playerCenterY - portalCenterY, 2)
+        );
+        
+        if (distToPortal < 50) {
+          state.secretPortal.discovered = true;
+          // Transition effect
+          for (let i = 0; i < 50; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 2 + Math.random() * 6;
+            particles.push({
+              x: portalCenterX,
+              y: portalCenterY,
+              velocityX: Math.cos(angle) * speed,
+              velocityY: Math.sin(angle) * speed,
+              life: 40 + Math.random() * 20,
+              color: Math.random() > 0.5 ? '#D946EF' : '#F0ABFC',
+              size: 4 + Math.random() * 6,
+              type: 'secretTransition'
+            });
+          }
+          soundManager.createOscillator('sine', 800, 0.3, 0.5);
+          soundManager.createOscillator('triangle', 400, 0.2, 0.4);
+          
+          // Navigate to secret level after delay
+          setTimeout(() => {
+            window.location.href = `?hiddenLevel=${state.secretPortal.hiddenLevelId}`;
+          }, 500);
+          return;
+        }
+      }
+      
       // Check win condition (boss must be defeated on boss levels)
       // On boss levels, portal only appears after boss is defeated
       const isBoss = isBossLevel(currentLevel);
@@ -5727,6 +5777,72 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.beginPath();
           ctx.ellipse(cpx + 20, state.checkpoint.y + 58 + floatY, 15, 5, 0, 0, Math.PI * 2);
           ctx.fill();
+        }
+      }
+      
+      // Draw secret portal if exists
+      if (state.secretPortal) {
+        const spx = state.secretPortal.x - state.cameraX;
+        if (spx > -100 && spx < 900) {
+          const portalCenterX = spx + state.secretPortal.width / 2;
+          const portalCenterY = state.secretPortal.y + state.secretPortal.height / 2;
+          const pulse = Math.sin(time * 0.08) * 0.3 + 0.7;
+          const floatY = Math.sin(time * 0.06) * 4;
+          
+          // Mysterious glow effect
+          ctx.shadowColor = '#D946EF';
+          ctx.shadowBlur = 40 + pulse * 20;
+          
+          // Outer ring - pulsing
+          ctx.strokeStyle = `rgba(217, 70, 239, ${pulse})`;
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.ellipse(portalCenterX, portalCenterY + floatY, 35, 45, 0, 0, Math.PI * 2);
+          ctx.stroke();
+          
+          // Inner portal swirl
+          const gradient = ctx.createRadialGradient(
+            portalCenterX, portalCenterY + floatY, 0,
+            portalCenterX, portalCenterY + floatY, 30
+          );
+          gradient.addColorStop(0, '#F0ABFC');
+          gradient.addColorStop(0.4, '#D946EF');
+          gradient.addColorStop(0.7, '#A21CAF');
+          gradient.addColorStop(1, '#701A75');
+          
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.ellipse(portalCenterX, portalCenterY + floatY, 28, 38, 0, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Rotating symbols
+          ctx.save();
+          ctx.translate(portalCenterX, portalCenterY + floatY);
+          ctx.rotate(time * 0.03);
+          for (let i = 0; i < 4; i++) {
+            const angle = (i / 4) * Math.PI * 2;
+            const x = Math.cos(angle) * 25;
+            const y = Math.sin(angle) * 35;
+            ctx.fillStyle = `rgba(240, 171, 252, ${pulse})`;
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('✦', x, y);
+          }
+          ctx.restore();
+          
+          // Question mark hint
+          ctx.shadowBlur = 15;
+          ctx.fillStyle = '#FBBF24';
+          ctx.font = 'bold 24px Arial';
+          ctx.textAlign = 'center';
+          ctx.fillText('?', portalCenterX, portalCenterY - 50 + floatY);
+          
+          ctx.shadowBlur = 0;
+          
+          // Ambient particles around portal
+          if (Math.random() < 0.3) {
+            createSecretPortalEffect(particles, portalCenterX + state.cameraX, portalCenterY + floatY);
+          }
         }
       }
       

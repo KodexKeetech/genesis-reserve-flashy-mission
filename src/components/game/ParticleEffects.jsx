@@ -243,6 +243,23 @@ export function createBossDeathEffect(particles, x, y, bossColor) {
   });
 }
 
+export function createSecretPortalEffect(particles, x, y) {
+  // Mysterious swirling particles
+  for (let i = 0; i < 8; i++) {
+    const angle = (i / 8) * Math.PI * 2;
+    particles.push({
+      x: x + Math.cos(angle) * 30,
+      y: y + Math.sin(angle) * 40,
+      velocityX: -Math.cos(angle) * 0.5,
+      velocityY: -Math.sin(angle) * 0.5,
+      life: 60 + Math.random() * 30,
+      color: Math.random() > 0.5 ? '#D946EF' : '#F0ABFC',
+      size: 3 + Math.random() * 3,
+      type: 'secretSwirl'
+    });
+  }
+}
+
 export function createTrailEffect(particles, x, y, velocityX, color, intensity = 1) {
   for (let i = 0; i < 3 * intensity; i++) {
     particles.push({
