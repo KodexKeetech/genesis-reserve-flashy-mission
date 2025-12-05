@@ -55,7 +55,9 @@ import { HIDDEN_LEVELS, hasSecretExit } from './BiomeConfig';
 
 export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel, hiddenLevelId, difficulty = 'medium', onPowerUpChange, onAbilityCooldowns, onScrapsEarned, onCrystalsEarned, onCoinAmmoChange, savedCoinAmmo, playerUpgrades, unlockedAbilities, abilityUpgrades, gameInput, startingGun = 0, gameSettings = { sound: true, graphics: 'high', particles: true, gameSpeed: 1, keybinds: {} }, onGunChange, onCheckpointActivated, respawnAtCheckpoint, onRespawnComplete, savedCheckpoint }) {
   const canvasRef = useRef(null);
+  const backgroundCanvasRef = useRef(null);
   const mouseRef = useRef({ x: 400, y: 300 }); // Track mouse position relative to canvas
+  const ambientParticlesRef = useRef([]);
   const gameStateRef = useRef({
     player: {
       x: 100,
@@ -1237,8 +1239,11 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
+    const backgroundCanvas = backgroundCanvasRef.current;
+    const bgCtx = backgroundCanvas.getContext('2d');
     let animationId;
     let time = 0;
+    let lastCameraX = 0;
     
     // Fixed timestep for consistent game speed across devices
     const TARGET_FPS = 60;
@@ -3446,25 +3451,19 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                         }
                       }
       
-      // Spawn ambient particles based on biome (respect graphics settings)
-                  if (state.biome && gameSettings.particles && Math.random() < (gameSettings.graphics === 'low' ? 0.01 : gameSettings.graphics === 'medium' ? 0.03 : 0.05)) {
-                    createAmbientParticle(particles, state.biome.key, state.cameraX, state.levelWidth);
-                  }
-
-                  // Update particles
-                  for (let i = particles.length - 1; i >= 0; i--) {
-                    const particle = particles[i];
-                    particle.x += particle.velocityX;
-                    particle.y += particle.velocityY;
-                    // Apply gravity if particle has it
-                    if (particle.gravity) {
-                      particle.velocityY += particle.gravity;
-                    }
-                    particle.life--;
-                    if (particle.life <= 0 || particle.y > 650) {
-                      particles.splice(i, 1);
-                    }
-                  }
+      // Update action particles only (ambient particles handled separately)
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const particle = particles[i];
+        particle.x += particle.velocityX;
+        particle.y += particle.velocityY;
+        if (particle.gravity) {
+          particle.velocityY += particle.gravity;
+        }
+        particle.life--;
+        if (particle.life <= 0 || particle.y > 650) {
+          particles.splice(i, 1);
+        }
+      }
       
       // Update enemy projectiles
       for (let i = state.enemyProjectiles.length - 1; i >= 0; i--) {
@@ -4659,24 +4658,49 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         return;
       }
       
-      // RENDER - Use biome-specific background
-      if (state.biome) {
-        // Use custom level background for hand-crafted levels
-        if (currentLevel >= 1 && currentLevel <= 9 && state.biome.customLevel) {
-          // For now, use Level 1's forest background for levels 1-3
-          // Volcano and ice levels use the standard biome renderer
-          if (currentLevel <= 3) {
-            drawLevel1Background(ctx, state.cameraX, 800, 600, time);
+      // RENDER BACKGROUND - Only redraw when camera moves significantly
+      if (Math.abs(state.cameraX - lastCameraX) > 10 || time % 120 === 0) {
+        bgCtx.clearRect(0, 0, 800, 600);
+        
+        if (state.biome) {
+          if (currentLevel >= 1 && currentLevel <= 9 && state.biome.customLevel) {
+            if (currentLevel <= 3) {
+              drawLevel1Background(bgCtx, state.cameraX, 800, 600, time);
+            } else {
+              drawBackground(bgCtx, state.biome, time, state.cameraX);
+            }
           } else {
-            drawBackground(ctx, state.biome, time, state.cameraX);
+            drawBackground(bgCtx, state.biome, time, state.cameraX);
           }
         } else {
-          drawBackground(ctx, state.biome, time, state.cameraX);
+          bgCtx.fillStyle = '#0F172A';
+          bgCtx.fillRect(0, 0, 800, 600);
         }
-      } else {
-        ctx.fillStyle = '#0F172A';
-        ctx.fillRect(0, 0, 800, 600);
+        
+        // Spawn and draw ambient particles on background canvas
+        if (gameSettings.particles) {
+          if (state.biome && Math.random() < 0.15) {
+            createAmbientParticle(ambientParticlesRef.current, state.biome.key, state.cameraX);
+          }
+          
+          for (let i = ambientParticlesRef.current.length - 1; i >= 0; i--) {
+            const p = ambientParticlesRef.current[i];
+            p.x += p.velocityX;
+            p.y += p.velocityY;
+            p.life--;
+            if (p.life <= 0 || p.y > 650 || p.y < -50 || p.x < state.cameraX - 200 || p.x > state.cameraX + 1000) {
+              ambientParticlesRef.current.splice(i, 1);
+            } else {
+              drawAmbientParticle(bgCtx, { ...p, x: p.x - state.cameraX }, time);
+            }
+          }
+        }
+        
+        lastCameraX = state.cameraX;
       }
+      
+      // Clear foreground canvas only
+      ctx.clearRect(0, 0, 800, 600);
       
       // Draw level decorations (for custom levels)
       if (state.decorations) {
@@ -5521,19 +5545,14 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         ctx.shadowBlur = 0;
       }
       
-      // Draw particles with enhanced effects (respect graphics settings)
-                  if (gameSettings.particles) {
-                    const maxParticles = gameSettings.graphics === 'low' ? 20 : gameSettings.graphics === 'medium' ? 50 : particles.length;
-                    const particlesToDraw = particles.slice(0, maxParticles);
-                    for (const particle of particlesToDraw) {
-                      const adjustedParticle = { ...particle, x: particle.x - state.cameraX };
-                      if (['firefly', 'leaf', 'ember', 'ash', 'snow', 'iceSparkle', 'voidParticle'].includes(particle.type)) {
-                        drawAmbientParticle(ctx, adjustedParticle, time);
-                      } else {
-                        drawParticle(ctx, adjustedParticle, time);
-                      }
-                    }
-                  }
+      // Draw action particles only (ambient particles on background canvas)
+      if (gameSettings.particles) {
+        const maxParticles = gameSettings.graphics === 'low' ? 20 : gameSettings.graphics === 'medium' ? 50 : particles.length;
+        for (let i = 0; i < Math.min(maxParticles, particles.length); i++) {
+          const particle = particles[i];
+          drawParticle(ctx, { ...particle, x: particle.x - state.cameraX }, time);
+        }
+      }
       
       // Draw shield effect around Jeff if active
       if (player.powerUps.SHIELD > 0) {
@@ -5936,12 +5955,21 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
   };
 
   return (
-    <canvas
-      ref={canvasRef}
-      width={800}
-      height={600}
-      className="rounded-xl shadow-2xl cursor-crosshair w-full h-full"
-      style={{ imageRendering: 'pixelated' }}
-    />
+    <div className="relative w-full h-full">
+      <canvas
+        ref={backgroundCanvasRef}
+        width={800}
+        height={600}
+        className="absolute inset-0 rounded-xl"
+        style={{ imageRendering: 'pixelated' }}
+      />
+      <canvas
+        ref={canvasRef}
+        width={800}
+        height={600}
+        className="absolute inset-0 rounded-xl shadow-2xl cursor-crosshair"
+        style={{ imageRendering: 'pixelated' }}
+      />
+    </div>
   );
 }
