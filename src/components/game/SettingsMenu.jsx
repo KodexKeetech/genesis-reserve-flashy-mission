@@ -14,6 +14,31 @@ export default function SettingsMenu({ settings, onSettingsChange, onClose }) {
           </Button>
         </div>
 
+        {/* Game Speed */}
+        <div className="mb-3">
+          <label className="text-slate-300 text-xs mb-1 block flex items-center gap-1">
+            <Gauge className="w-3 h-3" /> Game Speed
+          </label>
+          <div className="flex gap-2">
+            {[0.5, 0.75, 1].map((speed) => (
+              <Button
+                key={speed}
+                size="sm"
+                variant={(settings.gameSpeed || 1) === speed ? "default" : "outline"}
+                className={`flex-1 text-xs ${(settings.gameSpeed || 1) === speed ? 
+                  (speed === 0.5 ? 'bg-orange-600' : speed === 0.75 ? 'bg-green-600' : 'bg-purple-600') : ''}`}
+                onClick={() => onSettingsChange({ ...settings, gameSpeed: speed })}
+              >
+                {speed === 1 ? 'Normal' : `${speed * 100}%`}
+              </Button>
+            ))}
+          </div>
+          <p className="text-slate-500 text-[10px] mt-1">
+            {(settings.gameSpeed || 1) === 0.5 ? 'Half speed - easiest' : 
+             (settings.gameSpeed || 1) === 0.75 ? 'Slower gameplay' : 'Normal speed'}
+          </p>
+        </div>
+
         {/* Sound */}
         <div className="mb-3">
           <label className="text-slate-300 text-xs mb-1 block">Sound</label>
@@ -79,26 +104,7 @@ export default function SettingsMenu({ settings, onSettingsChange, onClose }) {
           </div>
         </div>
 
-        {/* FPS / Game Speed */}
-        <div className="mb-3">
-          <label className="text-slate-300 text-xs mb-1 block flex items-center gap-1">
-            <Gauge className="w-3 h-3" /> Game Speed (FPS)
-          </label>
-          <div className="flex gap-2">
-            {[15, 30, 60].map((fps) => (
-              <Button
-                key={fps}
-                size="sm"
-                variant={(settings.targetFPS || 60) === fps ? "default" : "outline"}
-                className={`flex-1 text-xs ${(settings.targetFPS || 60) === fps ? 
-                  (fps === 15 ? 'bg-orange-600' : fps === 30 ? 'bg-green-600' : 'bg-purple-600') : ''}`}
-                onClick={() => onSettingsChange({ ...settings, targetFPS: fps })}
-              >
-                {fps}
-              </Button>
-            ))}
-          </div>
-        </div>
+
 
         {/* Controls */}
         <div className="mb-4">
