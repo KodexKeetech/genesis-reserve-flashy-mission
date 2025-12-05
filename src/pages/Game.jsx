@@ -590,6 +590,7 @@ export default function Game() {
             abilityCooldowns={abilityCooldowns}
             sessionScraps={sessionScraps}
             isTutorial={level === 0}
+            hiddenLevelId={hiddenLevelId}
           />
         )}
         </div>

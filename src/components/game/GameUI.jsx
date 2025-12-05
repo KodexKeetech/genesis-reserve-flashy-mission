@@ -2,7 +2,7 @@ import React from 'react';
 import { Heart, Star, Zap, Wind, Shield, Flame, Snowflake, Map, Sparkles, Circle, Coins } from 'lucide-react';
 import { SPECIAL_ABILITIES } from './AbilitySystem';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getBiomeForLevel, isBossLevel } from './BiomeConfig';
+import { getBiomeForLevel, isBossLevel, HIDDEN_LEVELS } from './BiomeConfig';
 
 const POWERUP_INFO = {
   SPEED: { color: '#22D3EE', icon: Wind, name: 'Speed', maxDuration: 300 },
@@ -11,13 +11,17 @@ const POWERUP_INFO = {
   SHIELD: { color: '#3B82F6', icon: Shield, name: 'Shield', maxDuration: 400 }
 };
 
-export default function GameUI({ score, health, level, powerUps, abilityCooldowns, sessionScraps = 0, isTutorial = false }) {
+export default function GameUI({ score, health, level, powerUps, abilityCooldowns, sessionScraps = 0, isTutorial = false, hiddenLevelId }) {
   const activePowerUps = powerUps ? Object.entries(powerUps).filter(
     ([key, value]) => key !== 'shieldHealth' && value > 0
   ) : [];
   
   const biome = getBiomeForLevel(level);
   const isBoss = isBossLevel(level);
+  
+  // Get hidden level info if this is a secret level
+  const hiddenLevel = hiddenLevelId && HIDDEN_LEVELS[hiddenLevelId];
+  const levelDisplay = hiddenLevel ? hiddenLevel.name : `Lv${level}`;
 
   return (
     <div className="absolute top-2 left-2 right-2 flex justify-between items-start pointer-events-none">
@@ -91,9 +95,10 @@ export default function GameUI({ score, health, level, powerUps, abilityCooldown
         <div className="flex gap-2 justify-end">
           <div className="bg-slate-900/70 backdrop-blur-sm rounded-lg px-2 py-1 border border-blue-500/30 flex items-center gap-1">
                           <Zap className="w-3 h-3 text-blue-400" fill="currentColor" />
-                          <span className="text-blue-400 font-bold text-xs">Lv{level}</span>
+                          <span className="text-blue-400 font-bold text-xs">{levelDisplay}</span>
                           {level === 0 && <span className="text-cyan-400 text-xs font-bold">TUT</span>}
-                          {isBoss && level !== 0 && <span className="text-red-400 text-xs font-bold animate-pulse">BOSS</span>}
+                          {hiddenLevel && <span className="text-purple-400 text-xs font-bold">SECRET</span>}
+                          {isBoss && level !== 0 && !hiddenLevel && <span className="text-red-400 text-xs font-bold animate-pulse">BOSS</span>}
                         </div>
           <div className="bg-slate-900/70 backdrop-blur-sm rounded-lg px-2 py-1 border border-yellow-500/30 flex items-center gap-1">
             <Star className="w-3 h-3 text-yellow-400" fill="currentColor" />
