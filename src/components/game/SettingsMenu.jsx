@@ -20,13 +20,13 @@ export default function SettingsMenu({ settings, onSettingsChange, onClose }) {
             <Gauge className="w-3 h-3" /> Game Speed
           </label>
           <div className="flex gap-2">
-            {[0.5, 0.75, 1].map((speed) => (
+            {[0.25, 0.5, 1].map((speed) => (
               <Button
                 key={speed}
                 size="sm"
                 variant={(settings.gameSpeed || 1) === speed ? "default" : "outline"}
                 className={`flex-1 text-xs ${(settings.gameSpeed || 1) === speed ? 
-                  (speed === 0.5 ? 'bg-orange-600' : speed === 0.75 ? 'bg-green-600' : 'bg-purple-600') : ''}`}
+                  (speed === 0.25 ? 'bg-orange-600' : speed === 0.5 ? 'bg-green-600' : 'bg-purple-600') : ''}`}
                 onClick={() => onSettingsChange({ ...settings, gameSpeed: speed })}
               >
                 {speed === 1 ? 'Normal' : `${speed * 100}%`}
@@ -34,8 +34,8 @@ export default function SettingsMenu({ settings, onSettingsChange, onClose }) {
             ))}
           </div>
           <p className="text-slate-500 text-[10px] mt-1">
-            {(settings.gameSpeed || 1) === 0.5 ? 'Half speed - easiest' : 
-             (settings.gameSpeed || 1) === 0.75 ? 'Slower gameplay' : 'Normal speed'}
+            {(settings.gameSpeed || 1) === 0.25 ? 'Very slow - easiest' : 
+             (settings.gameSpeed || 1) === 0.5 ? 'Half speed' : 'Normal speed'}
           </p>
         </div>
 
