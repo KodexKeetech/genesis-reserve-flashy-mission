@@ -1,3 +1,4 @@
+
 // Enhanced particle effects system
 
 export function createImpactEffect(particles, x, y, color, count = 12) {
@@ -374,111 +375,24 @@ export function drawParticle(ctx, particle, time) {
     ctx.textAlign = 'center';
     ctx.fillText(particle.text, particle.x, particle.y);
     ctx.shadowBlur = 0;
-  } else if (particle.type === 'crackle') {
-    ctx.save();
-    ctx.translate(particle.x, particle.y);
-    ctx.rotate(particle.angle);
-    ctx.strokeStyle = particle.color;
-    ctx.lineWidth = 2 * alpha;
-    ctx.shadowColor = '#FFFFFF';
-    ctx.shadowBlur = 15;
-    // Draw lightning bolt shape
-    ctx.beginPath();
-    ctx.moveTo(-particle.size/2, 0);
-    ctx.lineTo(-particle.size/4, -particle.size/4);
-    ctx.lineTo(0, 0);
-    ctx.lineTo(particle.size/4, -particle.size/3);
-    ctx.lineTo(particle.size/2, 0);
-    ctx.stroke();
-    ctx.restore();
-    ctx.shadowBlur = 0;
-  } else if (particle.type === 'smoke') {
-    const smokeAlpha = alpha * 0.5;
-    ctx.globalAlpha = smokeAlpha;
-    const gradient = ctx.createRadialGradient(
-      particle.x, particle.y, 0,
-      particle.x, particle.y, particle.size
-    );
-    gradient.addColorStop(0, particle.color);
-    gradient.addColorStop(1, 'transparent');
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(particle.x, particle.y, particle.size * (1 + (1 - alpha) * 0.5), 0, Math.PI * 2);
-    ctx.fill();
-  } else if (particle.type === 'sparkle') {
-    ctx.fillStyle = particle.color;
-    ctx.shadowColor = particle.color;
-    ctx.shadowBlur = 8;
-    // Draw star shape
-    ctx.save();
-    ctx.translate(particle.x, particle.y);
-    ctx.rotate(time * 0.1);
-    ctx.beginPath();
-    for (let i = 0; i < 4; i++) {
-      const angle = (i / 4) * Math.PI * 2;
-      const innerAngle = angle + Math.PI / 4;
-      ctx.lineTo(Math.cos(angle) * particle.size * alpha, Math.sin(angle) * particle.size * alpha);
-      ctx.lineTo(Math.cos(innerAngle) * particle.size * 0.3 * alpha, Math.sin(innerAngle) * particle.size * 0.3 * alpha);
-    }
-    ctx.closePath();
-    ctx.fill();
-    ctx.restore();
-    ctx.shadowBlur = 0;
-  } else if (particle.type === 'magic') {
-    ctx.fillStyle = particle.color;
-    ctx.shadowColor = particle.color;
-    ctx.shadowBlur = 12;
-    ctx.beginPath();
-    ctx.arc(particle.x, particle.y, particle.size * alpha, 0, Math.PI * 2);
-    ctx.fill();
-    // Inner glow
-    ctx.fillStyle = '#FFFFFF';
-    ctx.beginPath();
-    ctx.arc(particle.x, particle.y, particle.size * alpha * 0.4, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.shadowBlur = 0;
-  } else if (particle.type === 'powerup' || particle.type === 'ring') {
+  } else if (particle.type === 'secretTransition') {
     ctx.fillStyle = particle.color;
     ctx.shadowColor = particle.color;
     ctx.shadowBlur = 15;
     ctx.beginPath();
-    ctx.arc(particle.x, particle.y, particle.size * alpha, 0, Math.PI * 2);
+    ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
     ctx.fill();
     ctx.shadowBlur = 0;
-  } else if (particle.type === 'coin') {
-    ctx.fillStyle = particle.color;
-    ctx.shadowColor = '#FBBF24';
-    ctx.shadowBlur = 10;
-    ctx.beginPath();
-    ctx.arc(particle.x, particle.y, particle.size * alpha, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.shadowBlur = 0;
-  } else if (particle.type === 'bossHit') {
-    ctx.fillStyle = particle.color;
-    ctx.shadowColor = particle.color;
-    ctx.shadowBlur = 20;
-    const size = particle.size * alpha;
-    ctx.beginPath();
-    ctx.arc(particle.x, particle.y, size, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.shadowBlur = 0;
-  } else if (particle.type === 'heal' && particle.symbol) {
-    ctx.fillStyle = particle.color;
-    ctx.shadowColor = particle.color;
-    ctx.shadowBlur = 10;
-    ctx.font = `bold ${particle.size * 3}px Arial`;
-    ctx.textAlign = 'center';
-    ctx.fillText('+', particle.x, particle.y);
-    ctx.shadowBlur = 0;
-  } else if (particle.type === 'trail') {
+  } else if (particle.type === 'secretSwirl') {
     ctx.fillStyle = particle.color;
     ctx.shadowColor = particle.color;
     ctx.shadowBlur = 8;
     ctx.beginPath();
-    ctx.ellipse(particle.x, particle.y, particle.size * alpha, particle.size * alpha * 0.6, 0, 0, Math.PI * 2);
+    ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
     ctx.fill();
     ctx.shadowBlur = 0;
   } else {
+    // All other standard particles
     ctx.fillStyle = particle.color;
     ctx.shadowColor = particle.color;
     ctx.shadowBlur = 6;
@@ -573,8 +487,8 @@ export function drawEnemyProjectileTrail(ctx, proj, cameraX, time) {
   ctx.globalAlpha = 1;
 }
 
-// Ambient particles for environment
-export function createAmbientParticle(particles, biomeKey, cameraX, levelWidth) {
+// Ambient particles for environment - optimized spawning
+export function createAmbientParticle(particles, biomeKey, cameraX) {
   const x = cameraX + Math.random() * 800;
   const y = Math.random() * 500;
   
@@ -618,19 +532,6 @@ export function createAmbientParticle(particles, biomeKey, cameraX, levelWidth) 
       size: 2 + Math.random() * 3,
       type: 'ember'
     });
-    // Ash particles
-    if (Math.random() < 0.5) {
-      particles.push({
-        x,
-        y: -10,
-        velocityX: (Math.random() - 0.5) * 1.5,
-        velocityY: 0.5 + Math.random() * 1,
-        life: 150,
-        color: '#475569',
-        size: 2 + Math.random() * 3,
-        type: 'ash'
-      });
-    }
   } else if (biomeKey === 'ice') {
     // Snow particles
     particles.push({
@@ -643,19 +544,6 @@ export function createAmbientParticle(particles, biomeKey, cameraX, levelWidth) 
       size: 2 + Math.random() * 3,
       type: 'snow'
     });
-    // Ice sparkles
-    if (Math.random() < 0.2) {
-      particles.push({
-        x,
-        y,
-        velocityX: 0,
-        velocityY: 0,
-        life: 30 + Math.random() * 30,
-        color: '#A5F3FC',
-        size: 2 + Math.random() * 2,
-        type: 'iceSparkle'
-      });
-    }
   } else if (biomeKey === 'void') {
     // Void particles
     particles.push({
@@ -668,20 +556,6 @@ export function createAmbientParticle(particles, biomeKey, cameraX, levelWidth) 
       size: 2 + Math.random() * 3,
       type: 'voidParticle'
     });
-    // Energy crackle
-    if (Math.random() < 0.1) {
-      particles.push({
-        x,
-        y,
-        velocityX: 0,
-        velocityY: 0,
-        life: 10,
-        color: '#C084FC',
-        size: 15 + Math.random() * 15,
-        type: 'crackle',
-        angle: Math.random() * Math.PI
-      });
-    }
   }
 }
 
@@ -717,26 +591,10 @@ export function drawAmbientParticle(ctx, particle, time) {
     ctx.arc(particle.x, particle.y, particle.size * alpha, 0, Math.PI * 2);
     ctx.fill();
     ctx.shadowBlur = 0;
-  } else if (particle.type === 'ash') {
-    ctx.fillStyle = particle.color;
-    ctx.globalAlpha = alpha * 0.6;
-    ctx.beginPath();
-    ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-    ctx.fill();
   } else if (particle.type === 'snow') {
     ctx.fillStyle = particle.color;
     ctx.shadowColor = '#FFFFFF';
     ctx.shadowBlur = 5;
-    ctx.beginPath();
-    ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.shadowBlur = 0;
-  } else if (particle.type === 'iceSparkle') {
-    const sparkle = Math.sin(time * 0.3) * 0.5 + 0.5;
-    ctx.globalAlpha = alpha * sparkle;
-    ctx.fillStyle = particle.color;
-    ctx.shadowColor = particle.color;
-    ctx.shadowBlur = 10;
     ctx.beginPath();
     ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
     ctx.fill();
