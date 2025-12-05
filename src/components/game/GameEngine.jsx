@@ -4523,7 +4523,6 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             }
           }
         }
-      }
       
       // Check win condition (boss must be defeated on boss levels)
       // On boss levels, portal only appears after boss is defeated
