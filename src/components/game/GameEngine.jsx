@@ -4685,30 +4685,34 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         return;
       }
       
-      // RENDER BACKGROUND every frame for smooth camera movement
-      bgCtx.clearRect(0, 0, 800, 600);
+      // RENDER BACKGROUND only when camera moves OR for animated backgrounds
+      const cameraMovedSignificantly = Math.abs(state.cameraX - lastCameraX) > 0.1;
       
-      if (state.biome) {
-        if (currentLevel >= 1 && currentLevel <= 9 && state.biome.customLevel) {
-          if (currentLevel <= 3) {
-            drawLevel1Background(bgCtx, state.cameraX, 800, 600, time);
+      if (cameraMovedSignificantly || time % 2 === 0) {
+        bgCtx.clearRect(0, 0, 800, 600);
+        
+        if (state.biome) {
+          if (currentLevel >= 1 && currentLevel <= 9 && state.biome.customLevel) {
+            if (currentLevel <= 3) {
+              drawLevel1Background(bgCtx, state.cameraX, 800, 600, time);
+            } else {
+              drawBackground(bgCtx, state.biome, time, state.cameraX);
+            }
           } else {
             drawBackground(bgCtx, state.biome, time, state.cameraX);
           }
         } else {
-          drawBackground(bgCtx, state.biome, time, state.cameraX);
+          bgCtx.fillStyle = '#0F172A';
+          bgCtx.fillRect(0, 0, 800, 600);
         }
-      } else {
-        bgCtx.fillStyle = '#0F172A';
-        bgCtx.fillRect(0, 0, 800, 600);
-      }
-      
-      // Draw ambient particles on background canvas
-      if (gameSettings.particles && state.biome) {
-        const maxAmbient = gameSettings.graphics === 'low' ? 15 : gameSettings.graphics === 'medium' ? 40 : ambientParticles.length;
-        for (let i = 0; i < Math.min(maxAmbient, ambientParticles.length); i++) {
-          const particle = ambientParticles[i];
-          drawAmbientParticle(bgCtx, { ...particle, x: particle.x - state.cameraX }, time);
+        
+        // Draw ambient particles on background canvas
+        if (gameSettings.particles && state.biome) {
+          const maxAmbient = gameSettings.graphics === 'low' ? 15 : gameSettings.graphics === 'medium' ? 40 : ambientParticles.length;
+          for (let i = 0; i < Math.min(maxAmbient, ambientParticles.length); i++) {
+            const particle = ambientParticles[i];
+            drawAmbientParticle(bgCtx, { ...particle, x: particle.x - state.cameraX }, time);
+          }
         }
       }
       
