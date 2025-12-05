@@ -1230,8 +1230,9 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     let time = 0;
     
     // Fixed timestep for consistent game speed across devices
-    const TARGET_FPS = gameSettings.targetFPS || 60;
+    const TARGET_FPS = 60;
     const FRAME_TIME = 1000 / TARGET_FPS;
+    const GAME_SPEED = gameSettings.gameSpeed || 1;
     let lastFrameTime = performance.now();
     let accumulator = 0;
 
@@ -2321,8 +2322,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       const deltaTime = currentTime - lastFrameTime;
       lastFrameTime = currentTime;
       
-      // Clamp delta to prevent issues on slow frames
-      accumulator += Math.min(deltaTime, FRAME_TIME * 3);
+      // Apply game speed multiplier to time accumulation
+      accumulator += Math.min(deltaTime, FRAME_TIME * 3) * GAME_SPEED;
       
       // Only update when enough time has passed
       if (accumulator >= FRAME_TIME) {
