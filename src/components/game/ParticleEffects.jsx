@@ -1,4 +1,3 @@
-
 // Enhanced particle effects system
 
 export function createImpactEffect(particles, x, y, color, count = 12) {
@@ -376,7 +375,6 @@ export function drawParticle(ctx, particle, time) {
     ctx.fillText(particle.text, particle.x, particle.y);
     ctx.shadowBlur = 0;
   } else if (particle.type === 'secretTransition') {
-    ctx.fillStyle = particle.color;
     ctx.shadowColor = particle.color;
     ctx.shadowBlur = 15;
     ctx.beginPath();
@@ -384,7 +382,6 @@ export function drawParticle(ctx, particle, time) {
     ctx.fill();
     ctx.shadowBlur = 0;
   } else if (particle.type === 'secretSwirl') {
-    ctx.fillStyle = particle.color;
     ctx.shadowColor = particle.color;
     ctx.shadowBlur = 8;
     ctx.beginPath();
@@ -487,10 +484,11 @@ export function drawEnemyProjectileTrail(ctx, proj, cameraX, time) {
   ctx.globalAlpha = 1;
 }
 
-// Ambient particles for environment - optimized spawning
+// Ambient particles for environment - spawn based on time, not camera position
 export function createAmbientParticle(particles, biomeKey, cameraX) {
+  // Spawn at random position within current view
   const x = cameraX + Math.random() * 800;
-  const y = Math.random() * 500;
+  const y = Math.random() * 600;
   
   if (biomeKey === 'forest') {
     // Fireflies
@@ -498,9 +496,9 @@ export function createAmbientParticle(particles, biomeKey, cameraX) {
       particles.push({
         x,
         y,
-        velocityX: (Math.random() - 0.5) * 0.5,
-        velocityY: (Math.random() - 0.5) * 0.5,
-        life: 100 + Math.random() * 100,
+        velocityX: (Math.random() - 0.5) * 0.3,
+        velocityY: (Math.random() - 0.5) * 0.3,
+        life: 200 + Math.random() * 200,
         color: '#FBBF24',
         size: 2 + Math.random() * 2,
         type: 'firefly',
@@ -511,23 +509,23 @@ export function createAmbientParticle(particles, biomeKey, cameraX) {
     particles.push({
       x,
       y: -10,
-      velocityX: (Math.random() - 0.5) * 1,
-      velocityY: 1 + Math.random() * 1,
-      life: 200,
+      velocityX: (Math.random() - 0.5) * 0.8,
+      velocityY: 0.8 + Math.random() * 0.8,
+      life: 300,
       color: Math.random() > 0.5 ? '#22C55E' : '#84CC16',
       size: 4 + Math.random() * 4,
       type: 'leaf',
       rotation: Math.random() * Math.PI * 2,
-      rotationSpeed: (Math.random() - 0.5) * 0.1
+      rotationSpeed: (Math.random() - 0.5) * 0.08
     });
   } else if (biomeKey === 'volcano') {
     // Embers floating up
     particles.push({
       x,
       y: 550 + Math.random() * 50,
-      velocityX: (Math.random() - 0.5) * 2,
-      velocityY: -2 - Math.random() * 3,
-      life: 80 + Math.random() * 60,
+      velocityX: (Math.random() - 0.5) * 1.5,
+      velocityY: -1.5 - Math.random() * 2,
+      life: 120 + Math.random() * 100,
       color: Math.random() > 0.5 ? '#F97316' : '#FBBF24',
       size: 2 + Math.random() * 3,
       type: 'ember'
@@ -537,9 +535,9 @@ export function createAmbientParticle(particles, biomeKey, cameraX) {
     particles.push({
       x,
       y: -10,
-      velocityX: (Math.random() - 0.5) * 1,
-      velocityY: 1 + Math.random() * 2,
-      life: 200,
+      velocityX: (Math.random() - 0.5) * 0.8,
+      velocityY: 0.8 + Math.random() * 1.5,
+      life: 300,
       color: '#FFFFFF',
       size: 2 + Math.random() * 3,
       type: 'snow'
@@ -549,9 +547,9 @@ export function createAmbientParticle(particles, biomeKey, cameraX) {
     particles.push({
       x,
       y,
-      velocityX: (Math.random() - 0.5) * 1,
-      velocityY: -0.5 - Math.random() * 1,
-      life: 100 + Math.random() * 100,
+      velocityX: (Math.random() - 0.5) * 0.8,
+      velocityY: -0.3 - Math.random() * 0.8,
+      life: 180 + Math.random() * 180,
       color: Math.random() > 0.5 ? '#A855F7' : '#7C3AED',
       size: 2 + Math.random() * 3,
       type: 'voidParticle'
@@ -560,7 +558,7 @@ export function createAmbientParticle(particles, biomeKey, cameraX) {
 }
 
 export function drawAmbientParticle(ctx, particle, time) {
-  const alpha = Math.min(1, particle.life / 30);
+  const alpha = Math.min(1, particle.life / 100);
   ctx.globalAlpha = alpha;
   
   if (particle.type === 'firefly') {
