@@ -5525,7 +5525,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         ctx.shadowBlur = 0;
       }
       
-      // Draw action particles only (ambient particles on background canvas)
+      // Draw action particles
       if (gameSettings.particles) {
         const maxParticles = gameSettings.graphics === 'low' ? 20 : gameSettings.graphics === 'medium' ? 50 : particles.length;
         for (let i = 0; i < Math.min(maxParticles, particles.length); i++) {
