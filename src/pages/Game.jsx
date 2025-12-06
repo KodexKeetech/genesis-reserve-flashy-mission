@@ -458,23 +458,13 @@ export default function Game() {
   }, []);
 
   const handleGameOver = useCallback(() => {
-    if (lives > 1) {
-      // Lose a life and respawn
-      saveLives(lives - 1);
-      setHealth(100);
-      setRespawnAtCheckpoint(true);
-      setGameKey(prev => prev + 1); // Force remount to reset properly
-      setTimeout(() => setGameState('playing'), 50); // Brief delay to ensure clean state
-    } else {
-      // Out of lives - show comic ad
-      saveLives(0);
-      setShowComicAd(true);
-    }
+    // Always show comic ad on death
+    setShowComicAd(true);
     if (sessionScraps > 0 || sessionCrystals > 0) {
       saveScraps(sessionScraps, sessionCrystals);
     }
     saveGunPreference(currentGun);
-  }, [sessionScraps, sessionCrystals, saveScraps, currentGun, saveGunPreference, lives, saveLives]);
+  }, [sessionScraps, sessionCrystals, saveScraps, currentGun, saveGunPreference]);
 
   const handleAdComplete = useCallback(() => {
     setShowComicAd(false);
