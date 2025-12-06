@@ -30,6 +30,7 @@ export default function Game() {
   const [health, setHealth] = useState(100);
   const [lives, setLives] = useState(10);
   const [showComicAd, setShowComicAd] = useState(false);
+  const [deathCount, setDeathCount] = useState(0);
   const [level, setLevel] = useState(startLevelParamInit ? parseInt(startLevelParamInit, 10) : (hiddenLevelInit ? 100 : 0)); // Start at 0 for tutorial, 100+ for hidden
   const [powerUps, setPowerUps] = useState({});
   const [abilityCooldowns, setAbilityCooldowns] = useState({
@@ -458,25 +459,31 @@ export default function Game() {
   }, []);
 
   const handleGameOver = useCallback(() => {
-    // Always show comic ad on death
-    setShowComicAd(true);
+    const newDeathCount = deathCount + 1;
+    setDeathCount(newDeathCount);
+
+    // Show ad every 10 deaths
+    if (newDeathCount % 10 === 0) {
+      setShowComicAd(true);
+    } else {
+      setGameState('gameOver');
+    }
+
     if (sessionScraps > 0 || sessionCrystals > 0) {
       saveScraps(sessionScraps, sessionCrystals);
     }
     saveGunPreference(currentGun);
-  }, [sessionScraps, sessionCrystals, saveScraps, currentGun, saveGunPreference]);
+  }, [sessionScraps, sessionCrystals, saveScraps, currentGun, saveGunPreference, deathCount]);
 
   const handleAdComplete = useCallback(() => {
     setShowComicAd(false);
     setGameState('gameOver');
-    saveLives(10); // Reset lives for next game
-  }, [saveLives]);
+  }, []);
 
   const handleSkipAd = useCallback(() => {
     setShowComicAd(false);
     setGameState('gameOver');
-    saveLives(10); // Reset lives for next game
-  }, [saveLives]);
+  }, []);
 
   // Use a ref to store checkpoint data that persists across re-renders
   const checkpointRef = useRef(null);
