@@ -73,18 +73,7 @@ export const SPECIAL_ABILITIES = {
     key: 'KeyC',
     unlockedAtLevel: 18
   },
-  magneticPull: {
-    id: 'magneticPull',
-    name: 'Gravity Well',
-    description: 'Pull nearby collectibles and enemies toward you',
-    icon: '🧲',
-    color: '#EC4899',
-    unlockCost: 4,
-    baseCooldown: 480,
-    baseRadius: 200,
-    key: 'KeyV',
-    unlockedAtLevel: 9
-  },
+
   teleport: {
     id: 'teleport',
     name: 'Blink',
@@ -181,16 +170,7 @@ export const ABILITY_UPGRADES = {
     costMultiplier: 1.5,
     color: '#6366F1'
   },
-  magneticPullRadius: {
-    id: 'magneticPullRadius',
-    name: 'Stronger Pull',
-    description: '+25% radius per level',
-    abilityId: 'magneticPull',
-    maxLevel: 3,
-    baseCost: 2,
-    costMultiplier: 1.5,
-    color: '#EC4899'
-  },
+
   teleportDistance: {
     id: 'teleportDistance',
     name: 'Extended Blink',
@@ -240,9 +220,6 @@ export function getAbilityStats(abilityId, abilityUpgrades = {}) {
       break;
     case 'shadowClone':
       stats.duration = ability.baseDuration + (abilityUpgrades.shadowCloneDuration || 0) * 60;
-      break;
-    case 'magneticPull':
-      stats.radius = ability.baseRadius * (1 + (abilityUpgrades.magneticPullRadius || 0) * 0.25);
       break;
     case 'teleport':
       stats.distance = ability.baseDistance + (abilityUpgrades.teleportDistance || 0) * 50;

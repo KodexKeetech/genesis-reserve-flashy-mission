@@ -260,6 +260,94 @@ export function createSecretPortalEffect(particles, x, y) {
   }
 }
 
+export function createArcaneNovaEffect(particles, x, y, radius) {
+  // Expanding magic ring
+  particles.push({
+    x,
+    y,
+    velocityX: 0,
+    velocityY: 0,
+    life: 30,
+    color: '#A855F7',
+    size: 5,
+    type: 'arcaneNova',
+    growthRate: radius / 30,
+    maxSize: radius
+  });
+  
+  // Magic runes orbiting outward
+  for (let i = 0; i < 20; i++) {
+    const angle = (i / 20) * Math.PI * 2;
+    const speed = 4 + Math.random() * 3;
+    particles.push({
+      x,
+      y,
+      velocityX: Math.cos(angle) * speed,
+      velocityY: Math.sin(angle) * speed,
+      life: 25 + Math.random() * 10,
+      color: i % 2 === 0 ? '#A855F7' : '#C084FC',
+      size: 4 + Math.random() * 4,
+      type: 'arcaneRune'
+    });
+  }
+  
+  // Core flash
+  particles.push({
+    x,
+    y,
+    velocityX: 0,
+    velocityY: 0,
+    life: 12,
+    color: '#FFFFFF',
+    size: 50,
+    type: 'flash'
+  });
+}
+
+export function createArcStormEffect(particles, targets) {
+  // Create lightning bolts between targets
+  for (let i = 0; i < targets.length - 1; i++) {
+    const from = targets[i];
+    const to = targets[i + 1];
+    
+    // Lightning particles along the arc
+    for (let t = 0; t < 8; t++) {
+      const progress = t / 8;
+      const x = from.x + (to.x - from.x) * progress;
+      const y = from.y + (to.y - from.y) * progress;
+      
+      particles.push({
+        x: x + (Math.random() - 0.5) * 15,
+        y: y + (Math.random() - 0.5) * 15,
+        velocityX: (Math.random() - 0.5) * 2,
+        velocityY: (Math.random() - 0.5) * 2,
+        life: 12 + Math.random() * 8,
+        color: '#FCD34D',
+        size: 4 + Math.random() * 4,
+        type: 'lightning'
+      });
+    }
+  }
+  
+  // Electric burst at each target
+  for (const target of targets) {
+    for (let i = 0; i < 10; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 2 + Math.random() * 3;
+      particles.push({
+        x: target.x,
+        y: target.y,
+        velocityX: Math.cos(angle) * speed,
+        velocityY: Math.sin(angle) * speed,
+        life: 15 + Math.random() * 10,
+        color: i % 2 === 0 ? '#FBBF24' : '#FEF3C7',
+        size: 3 + Math.random() * 3,
+        type: 'electricSpark'
+      });
+    }
+  }
+}
+
 export function createTrailEffect(particles, x, y, velocityX, color, intensity = 1) {
   for (let i = 0; i < 3 * intensity; i++) {
     particles.push({
@@ -365,6 +453,41 @@ export function drawParticle(ctx, particle, time) {
     ctx.beginPath();
     ctx.arc(particle.x, particle.y, currentSize, 0, Math.PI * 2);
     ctx.stroke();
+    ctx.shadowBlur = 0;
+  } else if (particle.type === 'arcaneNova') {
+    const currentSize = particle.size + (30 - particle.life) * particle.growthRate;
+    if (currentSize <= particle.maxSize) {
+      ctx.strokeStyle = particle.color;
+      ctx.lineWidth = 6 * alpha;
+      ctx.shadowColor = particle.color;
+      ctx.shadowBlur = 25;
+      ctx.beginPath();
+      ctx.arc(particle.x, particle.y, currentSize, 0, Math.PI * 2);
+      ctx.stroke();
+      // Inner glow ring
+      ctx.strokeStyle = '#C084FC';
+      ctx.lineWidth = 3 * alpha;
+      ctx.shadowBlur = 15;
+      ctx.beginPath();
+      ctx.arc(particle.x, particle.y, currentSize * 0.7, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+  } else if (particle.type === 'arcaneRune') {
+    ctx.fillStyle = particle.color;
+    ctx.shadowColor = particle.color;
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.arc(particle.x, particle.y, particle.size * alpha, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  } else if (particle.type === 'lightning' || particle.type === 'electricSpark') {
+    ctx.fillStyle = particle.color;
+    ctx.shadowColor = '#FCD34D';
+    ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.arc(particle.x, particle.y, particle.size * alpha, 0, Math.PI * 2);
+    ctx.fill();
     ctx.shadowBlur = 0;
   } else if (particle.type === 'scoreText') {
     ctx.fillStyle = particle.color;
