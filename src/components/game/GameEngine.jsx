@@ -2666,10 +2666,11 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         player.health = 0;
       }
       
-      // Camera follow
+      // Camera follow with pixel-perfect positioning
       const targetCameraX = player.x - 400;
       state.cameraX += (targetCameraX - state.cameraX) * 0.1;
       state.cameraX = Math.max(0, Math.min(state.cameraX, state.levelWidth - 800));
+      state.cameraX = Math.round(state.cameraX);
       
       // Update cast timer
       if (player.castTimer > 0) player.castTimer--;
