@@ -24,7 +24,7 @@ export default function Game() {
   
   const startLevelParamInit = new URLSearchParams(window.location.search).get('startLevel');
   const hiddenLevelInit = new URLSearchParams(window.location.search).get('hiddenLevel');
-  const [gameState, setGameState] = useState(startLevelParamInit || hiddenLevelInit ? 'playing' : 'tutorial'); // tutorial, playing, gameOver, levelComplete
+  const [gameState, setGameState] = useState(startLevelParamInit || hiddenLevelInit ? 'playing' : 'tutorial'); // tutorial, playing, gameOver, levelComplete, endGameIntro
   const [hiddenLevelId, setHiddenLevelId] = useState(hiddenLevelInit || null);
   const [score, setScore] = useState(0);
   const [health, setHealth] = useState(100);
@@ -574,9 +574,23 @@ export default function Game() {
   sessionCrystalsRef.current = sessionCrystals;
 
   const handleLevelComplete = useCallback(() => {
+    const currentLevel = levelRef.current;
+
+    // Check if player just completed level 30 - show endgame intro
+    if (currentLevel === 30) {
+      setGameState('endGameIntro');
+      const scraps = sessionScrapsRef.current;
+      const crystals = sessionCrystalsRef.current;
+      if (scraps > 0 || crystals > 0) {
+        saveScraps(scraps, crystals);
+        setSessionScraps(0);
+        setSessionCrystals(0);
+      }
+      return;
+    }
+
     setGameState('levelComplete');
     // Award bonus crystal every 5 levels
-    const currentLevel = levelRef.current;
     const scraps = sessionScrapsRef.current;
     const crystals = sessionCrystalsRef.current;
     const bonusCrystal = currentLevel % 5 === 0 ? 1 : 0;
@@ -589,7 +603,7 @@ export default function Game() {
     // Save the gun and clear checkpoint for next level
     saveGunPreference(currentGun);
     setStartingGun(currentGun);
-    
+
     // Auto-save progress
     const saveData = {
       level: currentLevel + 1,

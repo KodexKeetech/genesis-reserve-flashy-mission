@@ -22,6 +22,7 @@ import { drawLevel7Background } from './levels/Level7Background';
 import { drawLevel16Background } from './levels/Level16Background';
 import { drawLevel17Background } from './levels/Level17Background';
 import { drawLevel20Background } from './levels/Level20Background';
+import { drawMysticalBackground } from './levels/MysticalBackground';
 import { createAmbientParticle, drawAmbientParticle } from './ParticleEffects';
 
 export default function BackgroundCanvas({ currentLevel, hiddenLevelId, gameSettings, cameraXRef, timeRef }) {
@@ -49,7 +50,9 @@ export default function BackgroundCanvas({ currentLevel, hiddenLevelId, gameSett
         ctx.clearRect(0, 0, 800, 600);
 
         // Draw biome-specific background
-        if (currentLevel === 0) {
+        if (currentLevel > 30) {
+          drawMysticalBackground(ctx, cameraX, 800, 600, time);
+        } else if (currentLevel === 0) {
           drawLevel1Background(ctx, cameraX, 800, 600, time, true);
         } else if (currentLevel === 1) {
           drawLevel1Background(ctx, cameraX, 800, 600, time, false);

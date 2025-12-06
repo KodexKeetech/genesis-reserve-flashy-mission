@@ -429,6 +429,146 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           return;
         }
 
+        // Infinite endless mode for levels > 30
+        if (level > 30) {
+          const biome = { key: 'mystical', name: 'Ethereal Void' };
+          state.biome = biome;
+          state.levelWidth = 50000; // Very long level
+          state.goalX = 100000; // Unreachable - endless mode
+          
+          // No checkpoint or portal in endless mode
+          state.checkpoint = null;
+          state.checkpointActivated = false;
+          
+          // Generate continuous challenging terrain
+          let currentX = 0;
+          state.platforms.push({ x: 0, y: 500, width: 300, height: 100, type: 'ground' });
+          currentX = 300;
+          
+          // Generate many sections for endless scrolling
+          const sectionCount = 100;
+          for (let section = 0; section < sectionCount; section++) {
+            const sectionType = section % 10;
+            const variance = ((level * 5 + section * 11) % 40) - 20;
+            
+            if (sectionType === 0) {
+              // Gap with platforms
+              const gapWidth = 140 + variance;
+              state.platforms.push({ x: currentX + gapWidth / 2 - 40, y: 380 + variance / 3, width: 80, height: 20, type: 'magic' });
+              state.platforms.push({ x: currentX + gapWidth, y: 500, width: 200, height: 100, type: 'ground' });
+              currentX += gapWidth + 200;
+            } else if (sectionType === 1) {
+              // Stairs
+              for (let step = 0; step < 4; step++) {
+                state.platforms.push({ x: currentX + step * 90, y: 450 - step * 55, width: 100, height: 20, type: step % 2 === 0 ? 'normal' : 'magic' });
+              }
+              currentX += 400;
+            } else if (sectionType === 2) {
+              // Floating islands
+              for (let i = 0; i < 5; i++) {
+                state.platforms.push({ x: currentX + i * 80, y: 400 + (i % 2) * 50, width: 60, height: 20, type: 'normal' });
+              }
+              state.platforms.push({ x: currentX + 400, y: 500, width: 150, height: 100, type: 'ground' });
+              currentX += 550;
+            } else if (sectionType === 3) {
+              // Long run with obstacles
+              state.platforms.push({ x: currentX, y: 500, width: 500, height: 100, type: 'ground' });
+              state.platforms.push({ x: currentX + 100, y: 420, width: 50, height: 80, type: 'obstacle' });
+              state.platforms.push({ x: currentX + 250, y: 400, width: 50, height: 100, type: 'obstacle' });
+              state.platforms.push({ x: currentX + 400, y: 380, width: 50, height: 120, type: 'obstacle' });
+              currentX += 500;
+            } else {
+              // Mixed platforms
+              state.platforms.push({ x: currentX, y: 350 + variance / 2, width: 80, height: 20, type: 'magic' });
+              state.platforms.push({ x: currentX + 130, y: 420, width: 100, height: 20, type: 'normal' });
+              state.platforms.push({ x: currentX + 270, y: 500, width: 200, height: 100, type: 'ground' });
+              currentX += 470;
+            }
+          }
+          
+          // Spawn many enemies for endless challenge
+          const enemyCount = 80;
+          const enemyTypes = ['voidWalker', 'shadowBat', 'voidSlime', 'mirrorPhantom'];
+          for (let i = 0; i < enemyCount; i++) {
+            const enemyX = 400 + (i * (state.levelWidth - 600) / enemyCount);
+            const enemyType = enemyTypes[i % enemyTypes.length];
+            const enemyY = ['shadowBat'].includes(enemyType) ? 200 + Math.random() * 100 : 460;
+            
+            state.enemies.push({
+              x: enemyX,
+              y: enemyY,
+              width: 40,
+              height: 40,
+              velocityX: (Math.random() > 0.5 ? 1 : -1) * 2,
+              velocityY: 0,
+              type: enemyType,
+              health: 3,
+              maxHealth: 3,
+              patrolStart: enemyX - 100,
+              patrolEnd: enemyX + 100,
+              frozen: 0,
+              facingRight: true,
+              originalY: enemyY
+            });
+          }
+          
+          // Lots of collectibles
+          for (let i = 0; i < 150; i++) {
+            state.collectibles.push({
+              x: 200 + (i * (state.levelWidth - 400) / 150),
+              y: 250 - Math.random() * 150,
+              width: 24,
+              height: 24,
+              collected: false,
+              bobOffset: Math.random() * Math.PI * 2
+            });
+          }
+          
+          // Power-ups scattered throughout
+          const powerUpTypes = Object.keys(POWERUP_TYPES);
+          for (let i = 0; i < 30; i++) {
+            state.powerUpItems.push({
+              x: 300 + (i * (state.levelWidth - 500) / 30),
+              y: 200 - Math.random() * 120,
+              width: 28,
+              height: 28,
+              collected: false,
+              type: powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)],
+              bobOffset: Math.random() * Math.PI * 2
+            });
+          }
+          
+          // Reset player
+          const upgrades = playerUpgrades || {};
+          const bonusHealth = (upgrades.maxHealth || 0) * 20;
+          state.player.x = 100;
+          state.player.y = 400;
+          state.player.velocityX = 0;
+          state.player.velocityY = 0;
+          state.player.health = 100 + bonusHealth;
+          state.player.maxHealth = 100 + bonusHealth;
+          state.player.canDoubleJump = true;
+          state.player.hasDoubleJumped = false;
+          state.player.dashCooldown = 0;
+          state.player.isDashing = false;
+          state.player.powerUps = { SPEED: 0, INVINCIBILITY: 0, POWER_SHOT: 0, SHIELD: 0, shieldHealth: 0 };
+          state.player.selectedProjectile = startingGun;
+          state.player.coinAmmo = savedCoinAmmo || 0;
+          state.player.specialAbilities = {
+            aoeBlast: { cooldown: 0, active: false },
+            reflectShield: { cooldown: 0, active: false, timer: 0 },
+            hover: { cooldown: 0, active: false, timer: 0 },
+            timeSlow: { cooldown: 0, active: false, timer: 0 },
+            chainLightning: { cooldown: 0, active: false },
+            shadowClone: { cooldown: 0, active: false, timer: 0, cloneX: 0, cloneY: 0 },
+            magneticPull: { cooldown: 0, active: false },
+            teleport: { cooldown: 0, active: false }
+          };
+          state.bossNoDamage = true;
+          state.cameraX = 0;
+          return;
+        }
+
         // Hand-crafted levels (non-boss regular levels + ALL space levels 28-30)
         // Boss levels (3, 6, 9, etc.) that aren't in config use procedural generation
         const levelData = getLevelConfig(level);
