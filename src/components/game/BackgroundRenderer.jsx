@@ -490,11 +490,7 @@ function drawFairyGroveBackground(ctx, time, cameraX) {
     
     // Stem
     ctx.fillStyle = '#8B7355';
-    ctx.beginPath();
-    ctx.moveTo(mx + 20, 500);
-    ctx.quadraticCurveTo(mx + 15, 500 - mushHeight / 2, mx + 25, 500 - mushHeight);
-    ctx.quadraticCurveTo(mx + 35, 500 - mushHeight / 2, mx + 30, 500);
-    ctx.fill();
+    ctx.fillRect(mx + 18, 500 - mushHeight, 14, mushHeight);
     
     // Cap
     const capGlow = Math.sin(time * 0.05 + i) * 0.2 + 0.8;
@@ -502,7 +498,7 @@ function drawFairyGroveBackground(ctx, time, cameraX) {
     ctx.shadowColor = '#EC4899';
     ctx.shadowBlur = 20;
     ctx.beginPath();
-    ctx.ellipse(mx + 25, 500 - mushHeight, 40 + (i % 2) * 15, 25, 0, Math.PI, Math.PI * 2);
+    ctx.arc(mx + 25, 500 - mushHeight, 35, Math.PI, 0);
     ctx.fill();
     ctx.shadowBlur = 0;
     
@@ -514,10 +510,10 @@ function drawFairyGroveBackground(ctx, time, cameraX) {
     ctx.fill();
   }
   
-  // Fairy lights (many floating orbs)
-  for (let i = 0; i < 40; i++) {
-    const fx = Math.round(((i * 47 - cameraX * 0.15 + time * 0.3) % 900 + 900) % 900 - 50);
-    const fy = 100 + Math.sin(time * 0.03 + i * 0.5) * 50 + (i % 5) * 80;
+  // Fairy lights - reduced count
+  for (let i = 0; i < 20; i++) {
+    const fx = Math.round(((i * 70 - cameraX * 0.15) % 900 + 900) % 900 - 50);
+    const fy = 100 + (i % 5) * 90;
     const pulse = Math.sin(time * 0.1 + i * 2) * 0.4 + 0.6;
     const colors = ['#EC4899', '#8B5CF6', '#22D3EE', '#FBBF24', '#22C55E'];
     
@@ -531,19 +527,6 @@ function drawFairyGroveBackground(ctx, time, cameraX) {
   }
   ctx.globalAlpha = 1;
   ctx.shadowBlur = 0;
-  
-  // Mystical vines
-  ctx.strokeStyle = '#166534';
-  ctx.lineWidth = 3;
-  for (let i = 0; i < 6; i++) {
-    const vx = Math.round(((i * 150 - cameraX * 0.2) % 1000) - 50);
-    ctx.beginPath();
-    ctx.moveTo(vx, 0);
-    for (let j = 0; j < 10; j++) {
-      ctx.lineTo(vx + Math.sin(j * 0.8 + time * 0.02) * 20, j * 60);
-    }
-    ctx.stroke();
-  }
 }
 
 function drawLavaCoreBackground(ctx, time, cameraX) {
@@ -556,8 +539,8 @@ function drawLavaCoreBackground(ctx, time, cameraX) {
   ctx.fillRect(0, 300, 800, 300);
   
   // Molten rock formations
-  for (let i = 0; i < 8; i++) {
-    const rx = Math.round(((i * 130 - cameraX * 0.08) % 1100) - 100);
+  for (let i = 0; i < 6; i++) {
+    const rx = Math.round(((i * 150 - cameraX * 0.08) % 1100) - 100);
     const rh = 80 + (i % 3) * 40;
     
     ctx.fillStyle = '#1C1917';
@@ -582,72 +565,40 @@ function drawLavaCoreBackground(ctx, time, cameraX) {
     ctx.shadowBlur = 0;
   }
   
-  // Large magma bubbles
-  for (let i = 0; i < 15; i++) {
-    const bx = Math.round(((i * 80 - cameraX * 0.05) % 900 + 900) % 900 - 50);
-    const by = 550 - (time * 0.5 + i * 40) % 200;
-    const bsize = 8 + (i % 4) * 4;
+  // Reduced magma bubbles
+  for (let i = 0; i < 10; i++) {
+    const bx = Math.round(((i * 90 - cameraX * 0.05) % 900 + 900) % 900 - 50);
+    const by = 550 - (time * 0.5 + i * 50) % 200;
     const pulse = Math.sin(time * 0.15 + i) * 0.3 + 0.7;
     
     ctx.fillStyle = `rgba(251, 191, 36, ${pulse})`;
     ctx.shadowColor = '#FBBF24';
     ctx.shadowBlur = 15;
     ctx.beginPath();
-    ctx.arc(bx, by, bsize, 0, Math.PI * 2);
+    ctx.arc(bx, by, 8, 0, Math.PI * 2);
     ctx.fill();
     ctx.shadowBlur = 0;
-  }
-  
-  // Heat distortion lines
-  ctx.strokeStyle = 'rgba(239, 68, 68, 0.2)';
-  ctx.lineWidth = 2;
-  for (let i = 0; i < 10; i++) {
-    const hx = Math.round(((i * 100 - cameraX * 0.1) % 900) - 50);
-    ctx.beginPath();
-    ctx.moveTo(hx, 500);
-    for (let j = 0; j < 6; j++) {
-      ctx.lineTo(hx + Math.sin(time * 0.1 + j) * 10, 500 - j * 50);
-    }
-    ctx.stroke();
   }
 }
 
 function drawFrozenTempleBackground(ctx, time, cameraX) {
-  // Aurora effect
-  for (let i = 0; i < 4; i++) {
-    const auroraY = 50 + i * 40;
-    const wave = Math.sin(time * 0.02 + i) * 30;
-    const auroraGrad = ctx.createLinearGradient(0, auroraY - 20, 0, auroraY + 40);
-    const colors = ['rgba(34, 211, 238, 0.3)', 'rgba(139, 92, 246, 0.2)', 'rgba(34, 211, 238, 0.3)'];
-    auroraGrad.addColorStop(0, 'transparent');
-    auroraGrad.addColorStop(0.5, colors[i % 3]);
-    auroraGrad.addColorStop(1, 'transparent');
-    
-    ctx.fillStyle = auroraGrad;
-    ctx.beginPath();
-    ctx.moveTo(0, auroraY + wave);
-    for (let x = 0; x <= 800; x += 20) {
-      ctx.lineTo(x, auroraY + Math.sin(x * 0.01 + time * 0.03 + i) * 20 + wave);
-    }
-    ctx.lineTo(800, auroraY + 60);
-    ctx.lineTo(0, auroraY + 60);
-    ctx.fill();
-  }
+  // Simplified aurora effect
+  const auroraGrad = ctx.createLinearGradient(0, 100, 0, 250);
+  auroraGrad.addColorStop(0, 'transparent');
+  auroraGrad.addColorStop(0.5, 'rgba(34, 211, 238, 0.2)');
+  auroraGrad.addColorStop(1, 'transparent');
+  ctx.fillStyle = auroraGrad;
+  ctx.fillRect(0, 100, 800, 150);
   
   // Ice pillars/temple columns
-  for (let i = 0; i < 6; i++) {
-    const px = Math.round(((i * 180 - cameraX * 0.12) % 1200) - 100);
+  for (let i = 0; i < 5; i++) {
+    const px = Math.round(((i * 200 - cameraX * 0.12) % 1200) - 100);
     const ph = 200 + (i % 2) * 80;
     
     ctx.fillStyle = 'rgba(186, 230, 253, 0.6)';
     ctx.shadowColor = '#38BDF8';
     ctx.shadowBlur = 15;
-    ctx.beginPath();
-    ctx.moveTo(px, 500);
-    ctx.lineTo(px + 10, 500 - ph);
-    ctx.lineTo(px + 40, 500 - ph);
-    ctx.lineTo(px + 50, 500);
-    ctx.fill();
+    ctx.fillRect(px + 10, 500 - ph, 30, ph);
     
     // Ice crystal top
     ctx.fillStyle = '#E0F2FE';
@@ -660,24 +611,19 @@ function drawFrozenTempleBackground(ctx, time, cameraX) {
     ctx.shadowBlur = 0;
   }
   
-  // Floating ice shards
-  for (let i = 0; i < 20; i++) {
-    const sx = Math.round(((i * 60 - cameraX * 0.2) % 950 + 950) % 950 - 75);
-    const sy = 150 + Math.sin(time * 0.04 + i) * 40 + (i % 4) * 80;
-    const rot = time * 0.02 + i;
+  // Reduced floating ice shards
+  for (let i = 0; i < 12; i++) {
+    const sx = Math.round(((i * 80 - cameraX * 0.2) % 950 + 950) % 950 - 75);
+    const sy = 180 + (i % 4) * 100;
     
-    ctx.save();
-    ctx.translate(sx, sy);
-    ctx.rotate(rot);
-    ctx.fillStyle = `rgba(165, 243, 252, ${0.4 + Math.sin(time * 0.1 + i) * 0.2})`;
+    ctx.fillStyle = 'rgba(165, 243, 252, 0.5)';
     ctx.beginPath();
-    ctx.moveTo(0, -15);
-    ctx.lineTo(8, 0);
-    ctx.lineTo(0, 15);
-    ctx.lineTo(-8, 0);
+    ctx.moveTo(sx, sy - 12);
+    ctx.lineTo(sx + 6, sy);
+    ctx.lineTo(sx, sy + 12);
+    ctx.lineTo(sx - 6, sy);
     ctx.closePath();
     ctx.fill();
-    ctx.restore();
   }
 }
 
@@ -738,27 +684,27 @@ function drawHeartOfDarknessBackground(ctx, time, cameraX) {
 }
 
 function drawGauntletBackground(ctx, time, cameraX) {
-  // Electric grid background
+  // Simplified electric grid
   ctx.strokeStyle = 'rgba(34, 211, 238, 0.15)';
   ctx.lineWidth = 1;
-  for (let x = 0; x < 20; x++) {
-    const gx = ((x * 50 - cameraX * 0.1) % 1000) - 100;
+  for (let x = 0; x < 12; x++) {
+    const gx = Math.round(((x * 80 - cameraX * 0.1) % 1000) - 100);
     ctx.beginPath();
     ctx.moveTo(gx, 0);
     ctx.lineTo(gx, 600);
     ctx.stroke();
   }
-  for (let y = 0; y < 12; y++) {
+  for (let y = 0; y < 8; y++) {
     ctx.beginPath();
-    ctx.moveTo(0, y * 50);
-    ctx.lineTo(800, y * 50);
+    ctx.moveTo(0, y * 80);
+    ctx.lineTo(800, y * 80);
     ctx.stroke();
   }
   
-  // Pulsing nodes at intersections
-  for (let i = 0; i < 15; i++) {
-    const nx = Math.round(((i * 100 - cameraX * 0.1) % 900 + 900) % 900 - 50);
-    const ny = (i * 70) % 550 + 25;
+  // Reduced pulsing nodes
+  for (let i = 0; i < 10; i++) {
+    const nx = Math.round(((i * 120 - cameraX * 0.1) % 900 + 900) % 900 - 50);
+    const ny = (i * 80) % 550 + 40;
     const pulse = Math.sin(time * 0.1 + i * 1.5) * 0.5 + 0.5;
     
     ctx.fillStyle = `rgba(34, 211, 238, ${pulse})`;
@@ -770,49 +716,27 @@ function drawGauntletBackground(ctx, time, cameraX) {
     ctx.shadowBlur = 0;
   }
   
-  // Electric arcs
-  for (let i = 0; i < 5; i++) {
-    const ax = Math.round(((i * 200 - cameraX * 0.15 + time * 2) % 1000) - 100);
-    const ay = 100 + (i % 3) * 150;
-    
-    if (Math.sin(time * 0.2 + i * 3) > 0.7) {
-      ctx.strokeStyle = '#22D3EE';
-      ctx.shadowColor = '#22D3EE';
-      ctx.shadowBlur = 20;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(ax, ay);
-      for (let seg = 0; seg < 5; seg++) {
-        ctx.lineTo(ax + seg * 30 + (Math.random() - 0.5) * 20, ay + (Math.random() - 0.5) * 30);
-      }
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-    }
-  }
-  
   // Tech panels
-  for (let i = 0; i < 4; i++) {
-    const px = Math.round(((i * 250 - cameraX * 0.08) % 1100) - 100);
+  for (let i = 0; i < 3; i++) {
+    const px = Math.round(((i * 280 - cameraX * 0.08) % 1100) - 100);
     ctx.fillStyle = 'rgba(30, 41, 59, 0.6)';
     ctx.strokeStyle = 'rgba(34, 211, 238, 0.4)';
     ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.roundRect(px, 400, 100, 80, 5);
-    ctx.fill();
-    ctx.stroke();
+    ctx.fillRect(px, 420, 100, 70);
+    ctx.strokeRect(px, 420, 100, 70);
     
     // Screen glow
     const screenGlow = Math.sin(time * 0.15 + i) * 0.3 + 0.5;
     ctx.fillStyle = `rgba(16, 185, 129, ${screenGlow})`;
-    ctx.fillRect(px + 10, 410, 80, 30);
+    ctx.fillRect(px + 10, 430, 80, 25);
   }
 }
 
 function drawForbiddenLibraryBackground(ctx, time, cameraX) {
   // Floating bookshelves
-  for (let i = 0; i < 5; i++) {
-    const bx = Math.round(((i * 200 - cameraX * 0.1) % 1100) - 100);
-    const by = 200 + (i % 2) * 150 + Math.sin(time * 0.02 + i) * 10;
+  for (let i = 0; i < 4; i++) {
+    const bx = Math.round(((i * 240 - cameraX * 0.1) % 1100) - 100);
+    const by = 220 + (i % 2) * 150;
     
     // Shelf
     ctx.fillStyle = '#3D2914';
@@ -829,10 +753,10 @@ function drawForbiddenLibraryBackground(ctx, time, cameraX) {
     }
   }
   
-  // Glowing runes/symbols
-  for (let i = 0; i < 12; i++) {
-    const rx = Math.round(((i * 100 - cameraX * 0.15 + Math.sin(time * 0.01 + i) * 20) % 950 + 950) % 950 - 75);
-    const ry = 80 + (i % 4) * 120 + Math.sin(time * 0.03 + i * 2) * 15;
+  // Reduced glowing runes
+  for (let i = 0; i < 8; i++) {
+    const rx = Math.round(((i * 120 - cameraX * 0.15) % 950 + 950) % 950 - 75);
+    const ry = 100 + (i % 4) * 130;
     const pulse = Math.sin(time * 0.08 + i * 1.5) * 0.4 + 0.6;
     
     ctx.strokeStyle = `rgba(167, 139, 250, ${pulse})`;
@@ -840,29 +764,18 @@ function drawForbiddenLibraryBackground(ctx, time, cameraX) {
     ctx.shadowBlur = 15 * pulse;
     ctx.lineWidth = 2;
     
-    ctx.save();
-    ctx.translate(rx, ry);
-    ctx.rotate(time * 0.01 + i);
-    
-    // Random rune pattern
     ctx.beginPath();
     if (i % 3 === 0) {
-      ctx.arc(0, 0, 15, 0, Math.PI * 2);
-      ctx.moveTo(-10, -10);
-      ctx.lineTo(10, 10);
-      ctx.moveTo(10, -10);
-      ctx.lineTo(-10, 10);
+      ctx.arc(rx, ry, 15, 0, Math.PI * 2);
     } else if (i % 3 === 1) {
-      ctx.moveTo(0, -15);
-      ctx.lineTo(15, 10);
-      ctx.lineTo(-15, 10);
+      ctx.moveTo(rx, ry - 15);
+      ctx.lineTo(rx + 15, ry + 10);
+      ctx.lineTo(rx - 15, ry + 10);
       ctx.closePath();
     } else {
-      ctx.rect(-10, -10, 20, 20);
-      ctx.arc(0, 0, 8, 0, Math.PI * 2);
+      ctx.rect(rx - 10, ry - 10, 20, 20);
     }
     ctx.stroke();
-    ctx.restore();
     ctx.shadowBlur = 0;
   }
   
@@ -884,117 +797,55 @@ function drawSpaceBackground(ctx, time, cameraX) {
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, 800, 600);
   
-  // Distant galaxies/nebulae
-  for (let i = 0; i < 3; i++) {
-    const nebulaX = (i * 350 - cameraX * 0.02 + 100) % 1000 - 100;
-    const nebulaY = 100 + i * 150;
-    const nebulaSize = 120 + i * 40;
-    const pulse = Math.sin(time * 0.01 + i) * 0.1 + 0.15;
-    
-    const nebulaGrad = ctx.createRadialGradient(nebulaX, nebulaY, 0, nebulaX, nebulaY, nebulaSize);
-    const colors = [
-      ['rgba(139, 92, 246, ', 'rgba(79, 70, 229, ', 'rgba(99, 102, 241, '],  // Purple/Indigo
-      ['rgba(236, 72, 153, ', 'rgba(219, 39, 119, ', 'rgba(190, 24, 93, '],   // Pink
-      ['rgba(34, 211, 238, ', 'rgba(6, 182, 212, ', 'rgba(14, 165, 233, ']    // Cyan
-    ][i];
-    nebulaGrad.addColorStop(0, colors[0] + (pulse * 0.5) + ')');
-    nebulaGrad.addColorStop(0.4, colors[1] + (pulse * 0.3) + ')');
-    nebulaGrad.addColorStop(0.7, colors[2] + (pulse * 0.1) + ')');
-    nebulaGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = nebulaGrad;
-    ctx.fillRect(nebulaX - nebulaSize, nebulaY - nebulaSize, nebulaSize * 2, nebulaSize * 2);
-  }
+  // Simplified nebula
+  const nebulaX = 400;
+  const nebulaY = 250;
+  const pulse = Math.sin(time * 0.01) * 0.1 + 0.15;
   
-  // Many stars with different layers
-  for (let layer = 0; layer < 4; layer++) {
+  const nebulaGrad = ctx.createRadialGradient(nebulaX, nebulaY, 0, nebulaX, nebulaY, 180);
+  nebulaGrad.addColorStop(0, `rgba(139, 92, 246, ${pulse * 0.5})`);
+  nebulaGrad.addColorStop(0.4, `rgba(79, 70, 229, ${pulse * 0.3})`);
+  nebulaGrad.addColorStop(0.7, `rgba(99, 102, 241, ${pulse * 0.1})`);
+  nebulaGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  ctx.fillStyle = nebulaGrad;
+  ctx.fillRect(nebulaX - 180, nebulaY - 180, 360, 360);
+  
+  // Reduced stars
+  for (let layer = 0; layer < 3; layer++) {
     const parallax = 0.01 + layer * 0.02;
-    const starCount = 30 - layer * 5;
-    for (let i = 0; i < starCount; i++) {
-      const starX = ((i * 137 + layer * 200 - cameraX * parallax) % 900 + 900) % 900 - 50;
-      const starY = (i * 89 + layer * 50) % 550 + 25;
+    for (let i = 0; i < 20; i++) {
+      const starX = Math.round(((i * 110 + layer * 180 - cameraX * parallax) % 900 + 900) % 900 - 50);
+      const starY = (i * 73 + layer * 50) % 550 + 25;
       const twinkle = Math.sin(time * 0.06 + i * 1.5 + layer * 2) * 0.4 + 0.6;
-      const size = (i % 3) + 1 - layer * 0.2;
       
-      // Star color based on layer
-      const colors = ['#FFFFFF', '#E0F2FE', '#DDD6FE', '#FEF3C7'];
-      ctx.fillStyle = colors[layer];
+      ctx.fillStyle = layer === 0 ? '#FFFFFF' : layer === 1 ? '#E0F2FE' : '#DDD6FE';
       ctx.globalAlpha = twinkle * (0.9 - layer * 0.15);
       ctx.beginPath();
-      ctx.arc(starX, starY, Math.max(0.5, size), 0, Math.PI * 2);
+      ctx.arc(starX, starY, 1 + layer * 0.3, 0, Math.PI * 2);
       ctx.fill();
-      
-      // Add cross sparkle to brighter stars
-      if (layer === 0 && i % 4 === 0) {
-        ctx.globalAlpha = twinkle * 0.4;
-        ctx.strokeStyle = '#FFFFFF';
-        ctx.lineWidth = 0.5;
-        ctx.beginPath();
-        ctx.moveTo(starX - 4, starY);
-        ctx.lineTo(starX + 4, starY);
-        ctx.moveTo(starX, starY - 4);
-        ctx.lineTo(starX, starY + 4);
-        ctx.stroke();
-      }
     }
   }
   ctx.globalAlpha = 1;
   
-  // Distant planets
-  for (let i = 0; i < 2; i++) {
-    const planetX = (i * 500 + 200 - cameraX * 0.03) % 1000 - 100;
-    const planetY = 120 + i * 200;
-    const planetSize = 30 + i * 20;
-    
-    // Planet body
-    const planetGrad = ctx.createRadialGradient(
-      planetX - planetSize * 0.3, planetY - planetSize * 0.3, 0,
-      planetX, planetY, planetSize
-    );
-    const planetColors = [
-      ['#7C3AED', '#5B21B6', '#4C1D95'],
-      ['#0891B2', '#0E7490', '#155E75']
-    ][i];
-    planetGrad.addColorStop(0, planetColors[0]);
-    planetGrad.addColorStop(0.6, planetColors[1]);
-    planetGrad.addColorStop(1, planetColors[2]);
-    ctx.fillStyle = planetGrad;
-    ctx.beginPath();
-    ctx.arc(planetX, planetY, planetSize, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Planet ring for first planet
-    if (i === 0) {
-      ctx.strokeStyle = 'rgba(196, 181, 253, 0.4)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.ellipse(planetX, planetY, planetSize * 1.6, planetSize * 0.3, 0.3, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-  }
+  // Single distant planet
+  const planetX = Math.round((650 - cameraX * 0.03) % 1000);
+  const planetY = 180;
   
-  // Shooting stars occasionally
-  const shootingStarPhase = (time * 0.02) % 10;
-  if (shootingStarPhase < 1) {
-    const ssX = 100 + shootingStarPhase * 600;
-    const ssY = 50 + shootingStarPhase * 150;
-    
-    ctx.strokeStyle = '#FFFFFF';
-    ctx.lineWidth = 2;
-    ctx.globalAlpha = 1 - shootingStarPhase;
-    ctx.beginPath();
-    ctx.moveTo(ssX, ssY);
-    ctx.lineTo(ssX - 40, ssY - 20);
-    ctx.stroke();
-    
-    // Trail
-    ctx.lineWidth = 1;
-    ctx.globalAlpha = (1 - shootingStarPhase) * 0.5;
-    ctx.beginPath();
-    ctx.moveTo(ssX - 40, ssY - 20);
-    ctx.lineTo(ssX - 80, ssY - 40);
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-  }
+  const planetGrad = ctx.createRadialGradient(planetX - 15, planetY - 15, 0, planetX, planetY, 40);
+  planetGrad.addColorStop(0, '#7C3AED');
+  planetGrad.addColorStop(0.6, '#5B21B6');
+  planetGrad.addColorStop(1, '#4C1D95');
+  ctx.fillStyle = planetGrad;
+  ctx.beginPath();
+  ctx.arc(planetX, planetY, 40, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Planet ring
+  ctx.strokeStyle = 'rgba(196, 181, 253, 0.4)';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.ellipse(planetX, planetY, 64, 12, 0.3, 0, Math.PI * 2);
+  ctx.stroke();
 }
 
 function drawVoidBackground(ctx, time, cameraX) {
