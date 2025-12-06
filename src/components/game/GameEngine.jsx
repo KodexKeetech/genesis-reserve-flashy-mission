@@ -1081,30 +1081,55 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       state.goalX = currentX + 300;
       
       // Add checkpoint at middle of level (non-boss levels only)
-      // Find a platform near the middle to place checkpoint above
+      // Find a safe ground platform near the middle to place checkpoint above
       const midX = state.levelWidth / 2;
-      let checkpointY = 400;
       let checkpointPlatform = null;
+      let bestDistance = Infinity;
+      
+      // Find the closest ground platform to midpoint
       for (const platform of state.platforms) {
-        if (platform.type !== 'obstacle' && 
-            platform.x <= midX && platform.x + platform.width >= midX) {
-          if (!checkpointPlatform || platform.y < checkpointPlatform.y) {
+        if (platform.type === 'ground') {
+          const platCenterX = platform.x + platform.width / 2;
+          const distance = Math.abs(platCenterX - midX);
+          if (distance < bestDistance) {
+            bestDistance = distance;
             checkpointPlatform = platform;
           }
         }
       }
-      if (checkpointPlatform) {
-        checkpointY = checkpointPlatform.y - 60;
+      
+      // If no ground platform found, find any safe platform near middle
+      if (!checkpointPlatform) {
+        for (const platform of state.platforms) {
+          if (platform.type !== 'obstacle' && platform.type !== 'moving') {
+            const platCenterX = platform.x + platform.width / 2;
+            const distance = Math.abs(platCenterX - midX);
+            if (distance < bestDistance && platform.width >= 80) {
+              bestDistance = distance;
+              checkpointPlatform = platform;
+            }
+          }
+        }
       }
       
-      state.checkpoint = {
-        x: midX - 20,
-        y: checkpointY,
-        width: 40,
-        height: 60,
-        activated: false
-      };
-      state.checkpointActivated = false;
+      // Place checkpoint on found platform
+      if (checkpointPlatform) {
+        const checkpointX = checkpointPlatform.x + checkpointPlatform.width / 2 - 20;
+        const checkpointY = checkpointPlatform.y - 60;
+        state.checkpoint = {
+          x: checkpointX,
+          y: checkpointY,
+          width: 40,
+          height: 60,
+          activated: false,
+          platformY: checkpointPlatform.y // Store platform Y for safe respawn
+        };
+        state.checkpointActivated = false;
+      } else {
+        // No safe platform - don't create checkpoint
+        state.checkpoint = null;
+        state.checkpointActivated = false;
+      }
     }
     
     // Boss levels don't have checkpoints
@@ -1274,26 +1299,56 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       state.checkpoint = { ...savedCheckpoint, activated: true };
       state.checkpointActivated = true;
       
-      // Find platform under checkpoint to spawn player on solid ground
-      let spawnY = savedCheckpoint.y;
-      let foundPlatform = false;
-      for (const platform of state.platforms) {
-        if (platform.type !== 'obstacle' &&
-            platform.x <= savedCheckpoint.x + 20 && 
-            platform.x + platform.width >= savedCheckpoint.x + 20 &&
-            platform.y > savedCheckpoint.y &&
-            platform.y < savedCheckpoint.y + 100) {
-          spawnY = platform.y - state.player.height;
-          foundPlatform = true;
-          break;
+      // Use stored platform Y if available, otherwise find nearest platform
+      let spawnY = savedCheckpoint.platformY 
+        ? savedCheckpoint.platformY - state.player.height
+        : savedCheckpoint.y;
+      
+      // If no platformY stored, find the closest ground platform
+      if (!savedCheckpoint.platformY) {
+        let closestPlatform = null;
+        let closestDist = Infinity;
+        
+        for (const platform of state.platforms) {
+          if (platform.type === 'ground') {
+            const platCenterX = platform.x + platform.width / 2;
+            const checkpointCenterX = savedCheckpoint.x + 20;
+            const dist = Math.abs(platCenterX - checkpointCenterX);
+            if (dist < closestDist) {
+              closestDist = dist;
+              closestPlatform = platform;
+            }
+          }
         }
+        
+        // If still no platform, find any safe platform nearby
+        if (!closestPlatform) {
+          for (const platform of state.platforms) {
+            if (platform.type !== 'obstacle' && platform.type !== 'moving') {
+              const platCenterX = platform.x + platform.width / 2;
+              const checkpointCenterX = savedCheckpoint.x + 20;
+              const dist = Math.abs(platCenterX - checkpointCenterX);
+              if (dist < closestDist && platform.width >= 80) {
+                closestDist = dist;
+                closestPlatform = platform;
+              }
+            }
+          }
+        }
+        
+        if (closestPlatform) {
+          spawnY = closestPlatform.y - state.player.height;
+          // Also adjust X to be on the platform
+          state.player.x = closestPlatform.x + closestPlatform.width / 2 - state.player.width / 2;
+        } else {
+          // Fallback - spawn at start of level
+          spawnY = 400;
+          state.player.x = 100;
+        }
+      } else {
+        state.player.x = savedCheckpoint.x;
       }
       
-      if (!foundPlatform) {
-        spawnY = savedCheckpoint.y - state.player.height - 10;
-      }
-      
-      state.player.x = savedCheckpoint.x;
       state.player.y = spawnY;
       state.player.velocityX = 0;
       state.player.velocityY = 0;
