@@ -75,16 +75,18 @@ function drawForestStars(ctx, cameraX, time) {
 function drawTutorialInstructions(ctx, canvasWidth, canvasHeight) {
   const isMobile = canvasWidth < 600;
   
-  ctx.fillStyle = '#000000';
   ctx.textAlign = 'center';
-  ctx.font = 'bold 28px Arial';
+  ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+  ctx.shadowBlur = 4;
   
   // Title
-  ctx.fillText('TUTORIAL - Learn the Controls', canvasWidth / 2, 50);
+  ctx.fillStyle = '#000000';
+  ctx.font = 'bold 32px Arial';
+  ctx.fillText('TUTORIAL - Learn the Controls', canvasWidth / 2, 140);
   
   // Different instructions for mobile vs desktop
-  ctx.font = '18px Arial';
-  ctx.fillStyle = '#333333';
+  ctx.font = 'bold 20px Arial';
+  ctx.fillStyle = '#1a1a1a';
   
   if (isMobile) {
     const instructions = [
@@ -96,51 +98,57 @@ function drawTutorialInstructions(ctx, canvasWidth, canvasHeight) {
       '🎯 Right Joystick - Aim your magic',
       '✨ Cast Button - Shoot magic spells',
       '',
-      '💡 You can unlock more moves like:',
-      'AOE Blast, Shield, Hover, and special abilities!'
+      '💡 Unlock more moves as you progress:',
+      'AOE Blast, Shield, Hover, and more!'
     ];
     
-    let y = 90;
+    let y = 190;
     instructions.forEach(line => {
       if (line === '') {
-        y += 10;
+        y += 12;
+      } else if (line.includes('CONTROLS') || line.includes('Unlock')) {
+        ctx.font = 'bold 22px Arial';
+        ctx.fillText(line, canvasWidth / 2, y);
+        ctx.font = 'bold 20px Arial';
+        y += 32;
       } else {
         ctx.fillText(line, canvasWidth / 2, y);
-        y += 25;
+        y += 28;
       }
     });
   } else {
     const instructions = [
       '⌨️ KEYBOARD & MOUSE CONTROLS:',
       '',
-      '← → or A/D - Move Jeff left and right',
-      'SPACE or W/↑ - Jump (press twice for double jump)',
-      'SHIFT - Dash forward quickly',
+      '← → or A/D - Move Jeff',
+      'SPACE or W - Jump (press twice for double jump)',
+      'SHIFT - Dash forward',
       'MOUSE - Aim your magic',
       'LEFT CLICK - Cast magic spells',
       'Q - Switch between spell types',
-      'E, R, F - Use special abilities when unlocked',
       '',
-      '💡 Unlock new abilities like:',
-      'AOE Blast, Reflect Shield, Hover, Time Slow,',
-      'Chain Lightning, Shadow Clone, and more!'
+      '💡 Unlock abilities as you progress:',
+      'AOE Blast, Reflect Shield, Hover,',
+      'Time Slow, Chain Lightning, and more!'
     ];
     
-    let y = 90;
+    let y = 190;
     instructions.forEach(line => {
       if (line === '') {
-        y += 10;
+        y += 12;
+      } else if (line.includes('CONTROLS') || line.includes('Unlock')) {
+        ctx.font = 'bold 22px Arial';
+        ctx.fillText(line, canvasWidth / 2, y);
+        ctx.font = 'bold 20px Arial';
+        y += 32;
       } else {
         ctx.fillText(line, canvasWidth / 2, y);
-        y += 25;
+        y += 28;
       }
     });
   }
   
-  // Bottom tip
-  ctx.font = 'italic 16px Arial';
-  ctx.fillStyle = '#666666';
-  ctx.fillText('Progress through levels to unlock powerful new abilities!', canvasWidth / 2, canvasHeight - 30);
+  ctx.shadowBlur = 0;
 }
 
 function drawMoonGlow(ctx, cameraX, time) {
