@@ -1997,15 +1997,16 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       ctx.restore();
 
       // Belt with metallic look
+      const beltY1 = ensureFinite(y + 38 - bodyBob + breathe, 0);
       const beltGrad = ctx.createLinearGradient(
-        ensureFinite(centerX - 12), ensureFinite(y + 38), 
-        ensureFinite(centerX - 12), ensureFinite(y + 42)
+        ensureFinite(centerX - 12), beltY1, 
+        ensureFinite(centerX - 12), ensureFinite(beltY1 + 4)
       );
       beltGrad.addColorStop(0, '#7A6950');
       beltGrad.addColorStop(0.5, '#5D4E37');
       beltGrad.addColorStop(1, '#4A3F2D');
       ctx.fillStyle = beltGrad;
-      ctx.fillRect(centerX - 13, y + 38 - bodyBob + breathe, 26, 5);
+      ctx.fillRect(ensureFinite(centerX - 13), beltY1, 26, 5);
       // Belt buckle with shine
       ctx.fillStyle = '#C9A227';
       ctx.shadowColor = '#C9A227';
@@ -2025,9 +2026,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       ctx.fill();
 
       // Navy blue coat - main body with gradient
+      const coatY1 = ensureFinite(y + 20 - bodyBob + breathe, 0);
       const coatBodyGrad = ctx.createLinearGradient(
-        ensureFinite(centerX - 16), ensureFinite(y + 20), 
-        ensureFinite(centerX + 16), ensureFinite(y + 55)
+        ensureFinite(centerX - 16), coatY1, 
+        ensureFinite(centerX + 16), ensureFinite(coatY1 + 35)
       );
       coatBodyGrad.addColorStop(0, '#1E3A5F');
       coatBodyGrad.addColorStop(0.5, '#234B73');
@@ -2180,9 +2182,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       ctx.restore();
 
       // Gray scarf with depth
+      const scarfY = ensureFinite(y + 14 - bodyBob + breathe, 0);
       const scarfGrad = ctx.createLinearGradient(
-        ensureFinite(centerX - 12), ensureFinite(y + 14), 
-        ensureFinite(centerX + 12), ensureFinite(y + 22)
+        ensureFinite(centerX - 12), scarfY, 
+        ensureFinite(centerX + 12), ensureFinite(scarfY + 8)
       );
       scarfGrad.addColorStop(0, '#7A8A9A');
       scarfGrad.addColorStop(0.5, '#B0B8C4');
@@ -2202,9 +2205,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       ctx.stroke();
 
       // Robot head - enhanced with metallic cyan look
+      const headY = ensureFinite(y - 2 - bodyBob + breathe, 0);
       const headGrad = ctx.createLinearGradient(
-        ensureFinite(centerX - 10), ensureFinite(y - 2), 
-        ensureFinite(centerX + 10), ensureFinite(y + 16)
+        ensureFinite(centerX - 10), headY, 
+        ensureFinite(centerX + 10), ensureFinite(headY + 18)
       );
       headGrad.addColorStop(0, '#A5E8F5');
       headGrad.addColorStop(0.3, '#7DD3E8');
@@ -2273,9 +2277,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       ctx.ellipse(centerX, y - 3 - bodyBob + breathe, 24, 6, 0, 0, Math.PI * 2);
       ctx.fill();
       // Hat brim main
+      const brimY = ensureFinite(y - 5 - bodyBob + breathe, 0);
       const brimGrad = ctx.createLinearGradient(
-        ensureFinite(centerX - 22), ensureFinite(y - 5), 
-        ensureFinite(centerX + 22), ensureFinite(y - 5)
+        ensureFinite(centerX - 22), brimY, 
+        ensureFinite(centerX + 22), brimY
       );
       brimGrad.addColorStop(0, '#3D4852');
       brimGrad.addColorStop(0.5, '#5A6570');
@@ -2292,9 +2297,11 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       ctx.stroke();
 
       // Hat cylindrical top with gradient
+      const hatY1 = ensureFinite(y - 30 - bodyBob + breathe, 0);
+      const hatY2 = ensureFinite(y - 10 - bodyBob + breathe, 0);
       const hatGrad = ctx.createLinearGradient(
-        ensureFinite(centerX - 9), ensureFinite(y - 30), 
-        ensureFinite(centerX + 9), ensureFinite(y - 10)
+        ensureFinite(centerX - 9), hatY1, 
+        ensureFinite(centerX + 9), hatY2
       );
       hatGrad.addColorStop(0, '#4A5568');
       hatGrad.addColorStop(0.3, '#3D4852');
@@ -2321,9 +2328,11 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       ctx.fill();
       
       // Hat band with buckle
+      const bandY1 = ensureFinite(y - 12 - bodyBob + breathe, 0);
+      const bandY2 = ensureFinite(y - 8 - bodyBob + breathe, 0);
       const bandGrad = ctx.createLinearGradient(
-        ensureFinite(centerX - 9), ensureFinite(y - 12), 
-        ensureFinite(centerX - 9), ensureFinite(y - 8)
+        ensureFinite(centerX - 9), bandY1, 
+        ensureFinite(centerX - 9), bandY2
       );
       bandGrad.addColorStop(0, '#1A2530');
       bandGrad.addColorStop(0.5, '#2D3748');
