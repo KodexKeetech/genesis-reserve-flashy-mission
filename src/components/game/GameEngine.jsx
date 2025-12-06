@@ -1876,19 +1876,19 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         scaleY = 0.8;
       }
 
-      // Animation offsets
+      // Animation offsets with safety checks
       const isMoving = Math.abs(player.velocityX) > 0.5;
-      const runCycle = time * 0.3;
-      const legSwing = isMoving && player.onGround ? Math.sin(runCycle) * 12 : 0;
-      const armSwing = isMoving && player.onGround ? Math.sin(runCycle) * 10 : 0;
-      const bodyBob = isMoving && player.onGround ? Math.abs(Math.sin(runCycle * 2)) * 3 : 0;
-      const coatFlap = isMoving ? Math.sin(runCycle * 0.8) * 8 : Math.sin(time * 0.05) * 2;
+      const runCycle = ensureFinite(time * 0.3, 0);
+      const legSwing = isMoving && player.onGround ? ensureFinite(Math.sin(runCycle) * 12, 0) : 0;
+      const armSwing = isMoving && player.onGround ? ensureFinite(Math.sin(runCycle) * 10, 0) : 0;
+      const bodyBob = isMoving && player.onGround ? ensureFinite(Math.abs(Math.sin(runCycle * 2)) * 3, 0) : 0;
+      const coatFlap = isMoving ? ensureFinite(Math.sin(runCycle * 0.8) * 8, 0) : ensureFinite(Math.sin(time * 0.05) * 2, 0);
 
       // Casting animation
-      const castingPose = player.isCasting ? Math.sin(time * 0.5) * 5 : 0;
+      const castingPose = player.isCasting ? ensureFinite(Math.sin(time * 0.5) * 5, 0) : 0;
       
       // Idle breathing animation
-      const breathe = !isMoving ? Math.sin(time * 0.08) * 1.5 : 0;
+      const breathe = !isMoving ? ensureFinite(Math.sin(time * 0.08) * 1.5, 0) : 0;
 
       // Apply scale transform
       ctx.translate(ensureFinite(centerX), ensureFinite(y + player.height));
