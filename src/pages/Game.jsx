@@ -629,7 +629,7 @@ export default function Game() {
             />
           </div>
         )}
-        {gameState === 'playing' && (
+        {gameState === 'playing' && !showComicAd && (
               <GameEngine
                 key={gameKey}
                 currentLevel={level}
