@@ -775,6 +775,9 @@ export function drawBoss(ctx, boss, bx, time, isFrozen, biomeKey) {
     case 'omegaTitan':
       drawOmegaTitan(ctx, boss, bx, time, isFrozen, rage, pulse);
       break;
+    case 'cosmicEntity':
+      drawCosmicEntity(ctx, boss, bx, time, isFrozen, rage, pulse);
+      break;
     default:
       // Fallback - draw a generic boss shape
       drawGenericBoss(ctx, boss, bx, time, isFrozen, rage, pulse);

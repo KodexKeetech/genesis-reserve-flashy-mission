@@ -17,6 +17,9 @@ import { LEVEL_9_CONFIG, LEVEL_9_ENEMY_BEHAVIORS } from './levels/Level9Config';
 import { level16Config, level16EnemyBehaviors } from './levels/Level16Config';
 import { level17Config, level17EnemyBehaviors } from './levels/Level17Config';
 import { level18Config, level18EnemyBehaviors } from './levels/Level18Config';
+import { level28Config, level28EnemyBehaviors } from './levels/Level28Config';
+import { level29Config, level29EnemyBehaviors } from './levels/Level29Config';
+import { level30Config, level30EnemyBehaviors } from './levels/Level30Config';
 import { drawLevel1Background, drawLevel1Decoration } from './levels/Level1Background';
 import { drawLevel2Background } from './levels/Level2Background';
 import { drawLevel4Background } from './levels/Level4Background';
@@ -33,6 +36,9 @@ import { drawLevel15Background } from './levels/Level15Background';
 import { drawLevel16Background } from './levels/Level16Background';
 import { drawLevel17Background } from './levels/Level17Background';
 import { drawLevel18Background } from './levels/Level18Background';
+import { drawLevel28Background } from './levels/Level28Background';
+import { drawLevel29Background } from './levels/Level29Background';
+import { drawLevel30Background } from './levels/Level30Background';
 
 // Helper to get level config
 function getLevelConfig(level) {
@@ -49,6 +55,9 @@ function getLevelConfig(level) {
     case 16: return { config: level16Config, behaviors: level16EnemyBehaviors };
     case 17: return { config: level17Config, behaviors: level17EnemyBehaviors };
     case 18: return { config: level18Config, behaviors: level18EnemyBehaviors };
+    case 28: return { config: level28Config, behaviors: level28EnemyBehaviors };
+    case 29: return { config: level29Config, behaviors: level29EnemyBehaviors };
+    case 30: return { config: level30Config, behaviors: level30EnemyBehaviors };
     default: return null;
   }
 }
@@ -399,10 +408,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           return;
         }
 
-        // LEVELS 1, 2, 4, 5, 7, 8, 16, 17, 18 - Hand-crafted levels
-        // Boss levels (3, 6, 9, 12, 15, 18) - level 18 is custom boss
+        // LEVELS 1, 2, 4, 5, 7, 8, 16, 17, 18, 28, 29, 30 - Hand-crafted levels
+        // Boss levels (3, 6, 9, 12, 15, 18, 30) - custom boss levels
         const levelData = getLevelConfig(level);
-        const isBossLevelCustom = level === 3 || level === 6 || level === 9 || level === 12 || level === 15;
+        const isBossLevelCustom = level === 3 || level === 6 || level === 9 || level === 12 || level === 15 || level === 30;
         
         if (levelData && !isBossLevelCustom) {
           const { config: LEVEL_CONFIG, behaviors: ENEMY_BEHAVIORS } = levelData;
@@ -4540,6 +4549,177 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                 soundManager.createOscillator('sine', 500, 0.2, 0.3);
               }
               
+            } else if (boss.type === 'cosmicEntity') {
+              // Level 30 ultimate boss - cycles through ALL previous boss attacks
+              if (!boss.ultimateAttackMode) boss.ultimateAttackMode = 0;
+              if (!boss.ultimateAttackTimer) boss.ultimateAttackTimer = 0;
+              
+              const ultraEnraged = boss.health < boss.maxHealth / 2;
+              boss.ultimateAttackTimer++;
+              
+              // Switch attack every 8 seconds (faster than omegaTitan)
+              if (boss.ultimateAttackTimer >= 480 || (ultraEnraged && boss.ultimateAttackTimer >= 360)) {
+                boss.ultimateAttackMode = (boss.ultimateAttackMode + 1) % 8;
+                boss.ultimateAttackTimer = 0;
+              }
+              
+              // Execute attack based on mode
+              if (boss.ultimateAttackMode === 0) {
+                // TREANT: Roots + leaves
+                for (let i = 0; i < 4; i++) {
+                  state.hazards.push({
+                    x: player.x - 90 + i * 60,
+                    y: 480,
+                    width: 40,
+                    height: 30,
+                    life: 120,
+                    damage: 20,
+                    type: 'root'
+                  });
+                }
+                const leafCount = ultraEnraged ? 7 : 5;
+                for (let i = 0; i < leafCount; i++) {
+                  const spreadAngle = (i - leafCount / 2 + 0.5) * 0.25;
+                  state.enemyProjectiles.push({
+                    x: boss.x + boss.width / 2,
+                    y: boss.y + 30,
+                    velocityX: aimX * 6 + spreadAngle * 2,
+                    velocityY: aimY * 6 + spreadAngle,
+                    width: 20,
+                    height: 12,
+                    life: 150,
+                    type: 'leaf'
+                  });
+                }
+                
+              } else if (boss.ultimateAttackMode === 1) {
+                // MAGMA GOLEM: Fireballs
+                const fireCount = ultraEnraged ? 7 : 5;
+                for (let i = 0; i < fireCount; i++) {
+                  const spreadAngle = (i - Math.floor(fireCount / 2)) * 0.25;
+                  state.enemyProjectiles.push({
+                    x: boss.x + boss.width / 2,
+                    y: boss.y + 40,
+                    velocityX: aimX * 5 + spreadAngle * dirToPlayer,
+                    velocityY: aimY * 5 + spreadAngle,
+                    width: 16,
+                    height: 16,
+                    life: 100,
+                    type: 'fireball'
+                  });
+                }
+                
+              } else if (boss.ultimateAttackMode === 2) {
+                // FROST WYRM: Ice breath + icicles
+                state.enemyProjectiles.push({
+                  x: boss.x + boss.width / 2,
+                  y: boss.y + 60,
+                  velocityX: aimX * 7,
+                  velocityY: aimY * 4,
+                  width: 70,
+                  height: 35,
+                  life: 60,
+                  type: 'iceBreath'
+                });
+                const icicleCount = ultraEnraged ? 8 : 6;
+                for (let i = 0; i < icicleCount; i++) {
+                  state.enemyProjectiles.push({
+                    x: player.x - 140 + i * (280 / icicleCount),
+                    y: 50,
+                    velocityX: 0,
+                    velocityY: 5 + Math.random() * 2,
+                    width: 15,
+                    height: 30,
+                    life: 180,
+                    type: 'icicle'
+                  });
+                }
+                
+              } else if (boss.ultimateAttackMode === 3) {
+                // VOID LORD: Void zones
+                for (let i = 0; i < (ultraEnraged ? 3 : 2); i++) {
+                  state.environmentalHazards.push({
+                    x: player.x - 60 + i * 60,
+                    y: player.y,
+                    width: 60,
+                    height: 60,
+                    type: 'voidZone',
+                    damage: 25,
+                    life: 180
+                  });
+                }
+                
+              } else if (boss.ultimateAttackMode === 4) {
+                // STORM TITAN: Lightning
+                const lightningCount = ultraEnraged ? 5 : 3;
+                for (let i = 0; i < lightningCount; i++) {
+                  const targetX = player.x + (i - lightningCount / 2 + 0.5) * 70;
+                  state.enemyProjectiles.push({
+                    x: targetX,
+                    y: boss.y + boss.height,
+                    velocityX: 0,
+                    velocityY: 10,
+                    width: 20,
+                    height: 400,
+                    life: 40,
+                    type: 'lightning'
+                  });
+                }
+                
+              } else if (boss.ultimateAttackMode === 5) {
+                // CRYSTAL QUEEN: Crystal shards
+                const shardCount = ultraEnraged ? 8 : 6;
+                for (let i = 0; i < shardCount; i++) {
+                  const angle = (i / shardCount) * Math.PI * 2;
+                  state.enemyProjectiles.push({
+                    x: boss.x + boss.width / 2,
+                    y: boss.y + boss.height / 2,
+                    velocityX: Math.cos(angle) * 5,
+                    velocityY: Math.sin(angle) * 5,
+                    width: 15,
+                    height: 15,
+                    life: 150,
+                    type: 'crystal'
+                  });
+                }
+                
+              } else if (boss.ultimateAttackMode === 6) {
+                // ARCANIST: Arcane missiles
+                const missileCount = ultraEnraged ? 8 : 6;
+                for (let i = 0; i < missileCount; i++) {
+                  const angle = (i / missileCount) * Math.PI * 2;
+                  state.enemyProjectiles.push({
+                    x: boss.x + boss.width / 2,
+                    y: boss.y + 50,
+                    velocityX: Math.cos(angle) * 3.5,
+                    velocityY: Math.sin(angle) * 3.5,
+                    width: 16,
+                    height: 16,
+                    life: 200,
+                    type: 'arcaneMissile',
+                    turnSpeed: 0.05
+                  });
+                }
+                
+              } else {
+                // OMEGA PRIME: Homing missiles + drones
+                const missileCount = ultraEnraged ? 5 : 3;
+                for (let i = 0; i < missileCount; i++) {
+                  const angle = (i / missileCount) * Math.PI - Math.PI / 2;
+                  state.enemyProjectiles.push({
+                    x: boss.x + boss.width / 2,
+                    y: boss.y + 30,
+                    velocityX: Math.cos(angle) * 2.5,
+                    velocityY: -4,
+                    width: 14,
+                    height: 14,
+                    life: 220,
+                    type: 'homingMissile',
+                    turnSpeed: ultraEnraged ? 0.09 : 0.06
+                  });
+                }
+              }
+              
             } else if (boss.type === 'omegaPrime') {
               // Omega Prime - Ultimate robot boss with 4 attack patterns
               const enraged = boss.health < boss.maxHealth / 2;
@@ -4871,6 +5051,12 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           drawLevel17Background(bgCtx, state.cameraX, 800, 600, time);
         } else if (currentLevel === 18) {
           drawLevel18Background(bgCtx, state.cameraX, 800, 600, time);
+        } else if (currentLevel === 28) {
+          drawLevel28Background(bgCtx, state.cameraX, 800, 600, time);
+        } else if (currentLevel === 29) {
+          drawLevel29Background(bgCtx, state.cameraX, 800, 600, time);
+        } else if (currentLevel === 30) {
+          drawLevel30Background(bgCtx, state.cameraX, 800, 600, time);
         } else {
           drawBackground(bgCtx, state.biome, time, state.cameraX);
         }
