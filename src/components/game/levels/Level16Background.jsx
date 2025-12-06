@@ -1,6 +1,7 @@
 // Level 16: Nebula Gateway Background
 
 export function drawLevel16Background(ctx, cameraX, canvasWidth, canvasHeight, time) {
+  if (!isFinite(cameraX)) cameraX = 0;
   // Deep space gradient
   const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
   gradient.addColorStop(0, '#0A0520');
@@ -10,8 +11,9 @@ export function drawLevel16Background(ctx, cameraX, canvasWidth, canvasHeight, t
   ctx.fillRect(0, 0, canvasWidth, canvasHeight);
   
   // Purple nebula
-  const nebX = 400 - cameraX * 0.02;
+  const nebX = Math.round(400 - cameraX * 0.02);
   const nebY = 200;
+  if (!isFinite(nebX)) return;
   const nebulaGrad = ctx.createRadialGradient(nebX, nebY, 0, nebX, nebY, 180);
   nebulaGrad.addColorStop(0, 'rgba(147, 51, 234, 0.3)');
   nebulaGrad.addColorStop(0.5, 'rgba(109, 40, 217, 0.2)');
@@ -32,7 +34,8 @@ export function drawLevel16Background(ctx, cameraX, canvasWidth, canvasHeight, t
   ctx.globalAlpha = 1;
   
   // Distant planets
-  const planetX = 650 - cameraX * 0.025;
+  const planetX = Math.round(650 - cameraX * 0.025);
+  if (!isFinite(planetX)) return;
   const planetGrad = ctx.createRadialGradient(planetX - 15, 150, 0, planetX, 160, 40);
   planetGrad.addColorStop(0, '#8B5CF6');
   planetGrad.addColorStop(0.7, '#6D28D9');

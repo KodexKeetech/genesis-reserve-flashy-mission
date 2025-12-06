@@ -1,6 +1,7 @@
 // Level 17: Cosmic Depths Background
 
 export function drawLevel17Background(ctx, cameraX, canvasWidth, canvasHeight, time) {
+  if (!isFinite(cameraX)) cameraX = 0;
   // Dark space gradient
   const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
   gradient.addColorStop(0, '#050215');
@@ -10,8 +11,9 @@ export function drawLevel17Background(ctx, cameraX, canvasWidth, canvasHeight, t
   ctx.fillRect(0, 0, canvasWidth, canvasHeight);
   
   // Black hole effect
-  const bhX = 350 - cameraX * 0.03;
+  const bhX = Math.round(350 - cameraX * 0.03);
   const bhY = 250;
+  if (!isFinite(bhX)) return;
   for (let i = 3; i >= 0; i--) {
     const size = 40 + i * 20;
     const alpha = 0.15 + i * 0.1;
@@ -41,7 +43,8 @@ export function drawLevel17Background(ctx, cameraX, canvasWidth, canvasHeight, t
   ctx.globalAlpha = 1;
   
   // Distant galaxy
-  const galX = 550 - cameraX * 0.015;
+  const galX = Math.round(550 - cameraX * 0.015);
+  if (!isFinite(galX)) return;
   const galGrad = ctx.createRadialGradient(galX, 180, 0, galX, 180, 70);
   galGrad.addColorStop(0, 'rgba(167, 139, 250, 0.25)');
   galGrad.addColorStop(0.6, 'rgba(109, 40, 217, 0.15)');

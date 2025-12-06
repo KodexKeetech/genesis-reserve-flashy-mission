@@ -1,6 +1,8 @@
+
 // Level 18: Ultimate Showdown Background
 
 export function drawLevel18Background(ctx, cameraX, canvasWidth, canvasHeight, time) {
+  if (!isFinite(cameraX)) cameraX = 0;
   // Epic space gradient
   const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
   gradient.addColorStop(0, '#030112');
