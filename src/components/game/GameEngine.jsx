@@ -1906,11 +1906,11 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       ctx.shadowBlur = 0;
 
       // Coat tail (behind) - Dark navy blue long coat with gradient
-      const coatY1 = ensureFinite(y + 28 - bodyBob, 0);
-      const coatY2 = ensureFinite(y + 58, 0);
+      const coatTailY1 = ensureFinite(y + 28 - bodyBob, 0);
+      const coatTailY2 = ensureFinite(y + 58, 0);
       const coatGrad = ctx.createLinearGradient(
-        ensureFinite(centerX - 18), coatY1, 
-        ensureFinite(centerX - 18), coatY2
+        ensureFinite(centerX - 18), coatTailY1, 
+        ensureFinite(centerX - 18), coatTailY2
       );
       coatGrad.addColorStop(0, '#1E3A5F');
       coatGrad.addColorStop(1, '#152A45');
@@ -2028,10 +2028,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       ctx.fill();
 
       // Navy blue coat - main body with gradient
-      const coatY1 = ensureFinite(y + 20 - bodyBob + breathe, 0);
+      const coatBodyY1 = ensureFinite(y + 20 - bodyBob + breathe, 0);
       const coatBodyGrad = ctx.createLinearGradient(
-        ensureFinite(centerX - 16), coatY1, 
-        ensureFinite(centerX + 16), ensureFinite(coatY1 + 35)
+        ensureFinite(centerX - 16), coatBodyY1, 
+        ensureFinite(centerX + 16), ensureFinite(coatBodyY1 + 35)
       );
       coatBodyGrad.addColorStop(0, '#1E3A5F');
       coatBodyGrad.addColorStop(0.5, '#234B73');
