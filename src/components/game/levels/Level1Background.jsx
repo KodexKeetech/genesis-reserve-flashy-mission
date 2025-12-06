@@ -72,6 +72,77 @@ function drawForestStars(ctx, cameraX, time) {
   ctx.shadowBlur = 0;
 }
 
+function drawTutorialInstructions(ctx, canvasWidth, canvasHeight) {
+  const isMobile = canvasWidth < 600;
+  
+  ctx.fillStyle = '#000000';
+  ctx.textAlign = 'center';
+  ctx.font = 'bold 28px Arial';
+  
+  // Title
+  ctx.fillText('TUTORIAL - Learn the Controls', canvasWidth / 2, 50);
+  
+  // Different instructions for mobile vs desktop
+  ctx.font = '18px Arial';
+  ctx.fillStyle = '#333333';
+  
+  if (isMobile) {
+    const instructions = [
+      '📱 TOUCH CONTROLS:',
+      '',
+      '◀️ Left Joystick - Move Jeff',
+      '🔼 Jump Button - Jump (tap twice for double jump)',
+      '⚡ Dash Button - Quick dash forward',
+      '🎯 Right Joystick - Aim your magic',
+      '✨ Cast Button - Shoot magic spells',
+      '',
+      '💡 You can unlock more moves like:',
+      'AOE Blast, Shield, Hover, and special abilities!'
+    ];
+    
+    let y = 90;
+    instructions.forEach(line => {
+      if (line === '') {
+        y += 10;
+      } else {
+        ctx.fillText(line, canvasWidth / 2, y);
+        y += 25;
+      }
+    });
+  } else {
+    const instructions = [
+      '⌨️ KEYBOARD & MOUSE CONTROLS:',
+      '',
+      '← → or A/D - Move Jeff left and right',
+      'SPACE or W/↑ - Jump (press twice for double jump)',
+      'SHIFT - Dash forward quickly',
+      'MOUSE - Aim your magic',
+      'LEFT CLICK - Cast magic spells',
+      'Q - Switch between spell types',
+      'E, R, F - Use special abilities when unlocked',
+      '',
+      '💡 Unlock new abilities like:',
+      'AOE Blast, Reflect Shield, Hover, Time Slow,',
+      'Chain Lightning, Shadow Clone, and more!'
+    ];
+    
+    let y = 90;
+    instructions.forEach(line => {
+      if (line === '') {
+        y += 10;
+      } else {
+        ctx.fillText(line, canvasWidth / 2, y);
+        y += 25;
+      }
+    });
+  }
+  
+  // Bottom tip
+  ctx.font = 'italic 16px Arial';
+  ctx.fillStyle = '#666666';
+  ctx.fillText('Progress through levels to unlock powerful new abilities!', canvasWidth / 2, canvasHeight - 30);
+}
+
 function drawMoonGlow(ctx, cameraX, time) {
   const moonX = Math.round(650 - cameraX * 0.02);
   const moonY = 80;
