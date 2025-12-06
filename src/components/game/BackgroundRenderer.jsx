@@ -137,79 +137,31 @@ function drawMountainShape(ctx, x, y, width, height) {
 }
 
 function drawVolcanoBackground(ctx, time, cameraX) {
-  // Pulsing lava glow at bottom (enhanced)
+  // Pulsing lava glow at bottom
   const glowPulse = Math.sin(time * 0.05) * 0.15 + 0.6;
-  const lavaGlow = ctx.createLinearGradient(0, 400, 0, 600);
+  const lavaGlow = ctx.createLinearGradient(0, 450, 0, 600);
   lavaGlow.addColorStop(0, 'rgba(234, 88, 12, 0)');
-  lavaGlow.addColorStop(0.3, `rgba(249, 115, 22, ${glowPulse * 0.25})`);
-  lavaGlow.addColorStop(0.6, `rgba(234, 88, 12, ${glowPulse * 0.5})`);
-  lavaGlow.addColorStop(1, `rgba(220, 38, 38, ${glowPulse * 0.8})`);
+  lavaGlow.addColorStop(0.5, `rgba(234, 88, 12, ${glowPulse * 0.4})`);
+  lavaGlow.addColorStop(1, `rgba(234, 88, 12, ${glowPulse})`);
   ctx.fillStyle = lavaGlow;
-  ctx.fillRect(0, 400, 800, 200);
-  
-  // Heat shimmer lines
-  ctx.strokeStyle = 'rgba(251, 191, 36, 0.1)';
-  ctx.lineWidth = 2;
-  for (let i = 0; i < 6; i++) {
-    const shimmerY = 420 + i * 30;
-    const offset = Math.sin(time * 0.08 + i) * 10;
-    ctx.beginPath();
-    ctx.moveTo(0, shimmerY);
-    ctx.quadraticCurveTo(200 + offset, shimmerY + 5, 400, shimmerY);
-    ctx.quadraticCurveTo(600 - offset, shimmerY - 5, 800, shimmerY);
-    ctx.stroke();
-  }
+  ctx.fillRect(0, 450, 800, 150);
 
   // Far volcanic mountains
   ctx.fillStyle = '#1c1917';
   for (let i = 0; i < 3; i++) {
     const vx = Math.round(((i * 400 - cameraX * 0.04) % 1300) - 200);
-    ctx.beginPath();
-    ctx.moveTo(vx, 500);
-    ctx.lineTo(vx + 100, 320);
-    ctx.lineTo(vx + 130, 280);
-    ctx.lineTo(vx + 160, 330);
-    ctx.lineTo(vx + 280, 500);
-    ctx.closePath();
-    ctx.fill();
-  }
-  
-  // Mid volcanic rocks
-  ctx.fillStyle = '#292524';
-  for (let i = 0; i < 5; i++) {
-    const rx = Math.round(((i * 250 - cameraX * 0.12) % 1400) - 150);
-    ctx.beginPath();
-    ctx.moveTo(rx, 500);
-    ctx.lineTo(rx + 50, 380);
-    ctx.lineTo(rx + 80, 350);
-    ctx.lineTo(rx + 110, 390);
-    ctx.lineTo(rx + 150, 500);
-    ctx.closePath();
-    ctx.fill();
+    drawMountainShape(ctx, vx, 500, 280, 220);
   }
 }
 
 function drawIceBackground(ctx, time, cameraX) {
-  // Aurora borealis effect
-  for (let i = 0; i < 3; i++) {
-    const auroraY = 80 + i * 50;
-    const wave = Math.sin(time * 0.03 + i * 2) * 20;
-    const auroraGrad = ctx.createLinearGradient(0, auroraY - 30, 0, auroraY + 50);
-    const colors = ['rgba(34, 211, 238, 0.2)', 'rgba(167, 139, 250, 0.15)', 'rgba(110, 231, 183, 0.18)'];
-    auroraGrad.addColorStop(0, 'transparent');
-    auroraGrad.addColorStop(0.5, colors[i % 3]);
-    auroraGrad.addColorStop(1, 'transparent');
-    
-    ctx.fillStyle = auroraGrad;
-    ctx.beginPath();
-    ctx.moveTo(0, auroraY + wave);
-    for (let x = 0; x <= 800; x += 20) {
-      ctx.lineTo(x, auroraY + Math.sin(x * 0.015 + time * 0.04 + i) * 25 + wave);
-    }
-    ctx.lineTo(800, auroraY + 80);
-    ctx.lineTo(0, auroraY + 80);
-    ctx.fill();
-  }
+  // Simplified aurora effect
+  const auroraGrad = ctx.createLinearGradient(0, 100, 0, 250);
+  auroraGrad.addColorStop(0, 'transparent');
+  auroraGrad.addColorStop(0.5, 'rgba(34, 211, 238, 0.15)');
+  auroraGrad.addColorStop(1, 'transparent');
+  ctx.fillStyle = auroraGrad;
+  ctx.fillRect(0, 100, 800, 150);
   
   // Far ice mountains with snow caps
   ctx.fillStyle = '#bae6fd';
@@ -249,14 +201,11 @@ function drawIceBackground(ctx, time, cameraX) {
     ctx.fill();
   }
   
-  // Ice crystals
+  // Ice crystals (reduced count)
   ctx.fillStyle = '#7dd3fc';
-  for (let i = 0; i < 6; i++) {
-    const cx = Math.round(((i * 180 - cameraX * 0.2) % 1100) - 60);
-    const shimmer = Math.sin(time * 0.08 + i) * 0.3 + 0.7;
-    ctx.globalAlpha = shimmer;
-    drawIceCrystalShape(ctx, cx, 450, 25 + (i % 3) * 10);
-    ctx.globalAlpha = 1;
+  for (let i = 0; i < 4; i++) {
+    const cx = Math.round(((i * 200 - cameraX * 0.2) % 1100) - 60);
+    drawIceCrystalShape(ctx, cx, 450, 30);
   }
 }
 
@@ -272,85 +221,41 @@ function drawIceCrystalShape(ctx, x, y, size) {
 }
 
 function drawSkyBackground(ctx, time, cameraX) {
-  // Sun glow
-  const sunX = 700;
-  const sunY = 100;
-  const sunGlow = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, 150);
-  sunGlow.addColorStop(0, 'rgba(251, 191, 36, 0.2)');
-  sunGlow.addColorStop(0.4, 'rgba(251, 191, 36, 0.08)');
-  sunGlow.addColorStop(1, 'rgba(251, 191, 36, 0)');
-  ctx.fillStyle = sunGlow;
-  ctx.fillRect(550, 0, 250, 250);
-  
-  // Fluffy clouds at multiple layers
-  for (let layer = 0; layer < 3; layer++) {
-    const parallax = 0.03 + layer * 0.04;
-    const cloudY = 80 + layer * 100;
-    const cloudAlpha = 0.95 - layer * 0.2;
+  // Simplified clouds - 2 layers instead of 3
+  for (let layer = 0; layer < 2; layer++) {
+    const parallax = 0.03 + layer * 0.05;
+    const cloudY = 100 + layer * 120;
+    const cloudAlpha = 0.9 - layer * 0.2;
     
-    for (let i = 0; i < 6; i++) {
-      const cx = Math.round(((i * 180 + layer * 50 - cameraX * parallax) % 1100) - 150);
+    for (let i = 0; i < 4; i++) {
+      const cx = Math.round(((i * 220 + layer * 60 - cameraX * parallax) % 1100) - 150);
       ctx.fillStyle = `rgba(255, 255, 255, ${cloudAlpha})`;
       
-      // Cloud puffs
+      // Simplified cloud shape
       ctx.beginPath();
-      ctx.arc(cx, cloudY, 40 + layer * 10, 0, Math.PI * 2);
-      ctx.arc(cx + 35, cloudY - 10, 35 + layer * 8, 0, Math.PI * 2);
-      ctx.arc(cx + 70, cloudY, 45 + layer * 12, 0, Math.PI * 2);
-      ctx.arc(cx + 35, cloudY + 15, 30 + layer * 6, 0, Math.PI * 2);
+      ctx.arc(cx, cloudY, 40, 0, Math.PI * 2);
+      ctx.arc(cx + 40, cloudY, 45, 0, Math.PI * 2);
+      ctx.arc(cx + 25, cloudY - 15, 30, 0, Math.PI * 2);
       ctx.fill();
     }
   }
   
-  // Floating islands
-  for (let i = 0; i < 4; i++) {
-    const ix = Math.round(((i * 300 - cameraX * 0.1) % 1400) - 200);
-    const iy = 350 + Math.sin(time * 0.02 + i) * 15 + (i % 2) * 50;
+  // Simplified floating islands
+  for (let i = 0; i < 3; i++) {
+    const ix = Math.round(((i * 350 - cameraX * 0.1) % 1400) - 200);
+    const iy = 380 + (i % 2) * 60;
     
-    // Island bottom (rocky)
+    // Island
     ctx.fillStyle = '#78716C';
     ctx.beginPath();
-    ctx.moveTo(ix, iy);
-    ctx.lineTo(ix + 40, iy + 60);
-    ctx.lineTo(ix + 100, iy + 50);
-    ctx.lineTo(ix + 140, iy);
+    ctx.ellipse(ix + 70, iy, 70, 30, 0, 0, Math.PI * 2);
     ctx.fill();
     
-    // Island top (grassy)
+    // Grass top
     ctx.fillStyle = '#22C55E';
     ctx.beginPath();
-    ctx.ellipse(ix + 70, iy - 5, 75, 20, 0, 0, Math.PI * 2);
+    ctx.ellipse(ix + 70, iy - 10, 65, 15, 0, 0, Math.PI * 2);
     ctx.fill();
-    
-    // Small structures
-    ctx.fillStyle = '#E2E8F0';
-    ctx.fillRect(ix + 50, iy - 40, 20, 35);
-    ctx.fillRect(ix + 75, iy - 55, 25, 50);
-  }
-  
-  // Birds
-  for (let i = 0; i < 8; i++) {
-    const bx = Math.round(((i * 120 - cameraX * 0.15 + time * 0.5) % 1000) - 100);
-    const by = 100 + (i % 3) * 60 + Math.sin(time * 0.1 + i) * 20;
-    
-    ctx.strokeStyle = '#1E293B';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(bx - 8, by);
-    ctx.quadraticCurveTo(bx, by - 5 + Math.sin(time * 0.3 + i) * 3, bx + 8, by);
-    ctx.stroke();
-  }
-  
-  // Wind streaks
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-  ctx.lineWidth = 1;
-  for (let i = 0; i < 10; i++) {
-    const wx = Math.round(((i * 100 - cameraX * 0.2 + time * 2) % 900) - 50);
-    const wy = 150 + (i % 4) * 100;
-    ctx.beginPath();
-    ctx.moveTo(wx, wy);
-    ctx.lineTo(wx + 40, wy);
-    ctx.stroke();
   }
 }
 
@@ -414,174 +319,95 @@ function drawRuinsBackground(ctx, time, cameraX) {
 }
 
 function drawCrystalBackground(ctx, time, cameraX) {
-  // Ethereal glow
-  const glowGrad = ctx.createRadialGradient(400, 250, 0, 400, 250, 400);
-  glowGrad.addColorStop(0, 'rgba(232, 121, 249, 0.08)');
-  glowGrad.addColorStop(0.5, 'rgba(192, 132, 252, 0.04)');
-  glowGrad.addColorStop(1, 'rgba(168, 85, 247, 0)');
+  // Simplified glow
+  const glowGrad = ctx.createRadialGradient(400, 300, 0, 400, 300, 350);
+  glowGrad.addColorStop(0, 'rgba(192, 132, 252, 0.06)');
+  glowGrad.addColorStop(1, 'transparent');
   ctx.fillStyle = glowGrad;
   ctx.fillRect(0, 0, 800, 600);
   
-  // Crystal formations
-  for (let i = 0; i < 8; i++) {
-    const cx = Math.round(((i * 150 - cameraX * 0.1) % 1300) - 100);
-    const ch = 100 + (i % 3) * 60;
-    const hue = 270 + (i % 4) * 20;
-    const pulse = Math.sin(time * 0.05 + i) * 0.3 + 0.8;
+  // Reduced crystal formations
+  for (let i = 0; i < 5; i++) {
+    const cx = Math.round(((i * 180 - cameraX * 0.1) % 1300) - 100);
+    const ch = 100 + (i % 3) * 50;
+    const hue = 270 + (i % 3) * 25;
+    const pulse = Math.sin(time * 0.05 + i) * 0.2 + 0.7;
     
-    ctx.fillStyle = `hsla(${hue}, 80%, 60%, ${pulse * 0.6})`;
-    ctx.shadowColor = `hsl(${hue}, 80%, 70%)`;
-    ctx.shadowBlur = 20;
+    ctx.fillStyle = `hsla(${hue}, 70%, 60%, ${pulse * 0.5})`;
     
-    // Main crystal
+    // Single crystal
     ctx.beginPath();
-    ctx.moveTo(cx + 20, 500);
-    ctx.lineTo(cx + 10, 500 - ch);
-    ctx.lineTo(cx + 30, 500 - ch - 20);
-    ctx.lineTo(cx + 50, 500 - ch);
-    ctx.lineTo(cx + 40, 500);
+    ctx.moveTo(cx + 25, 500);
+    ctx.lineTo(cx + 15, 500 - ch);
+    ctx.lineTo(cx + 30, 500 - ch - 15);
+    ctx.lineTo(cx + 45, 500 - ch);
+    ctx.lineTo(cx + 35, 500);
     ctx.fill();
-    
-    // Small crystal beside
-    ctx.beginPath();
-    ctx.moveTo(cx + 50, 500);
-    ctx.lineTo(cx + 45, 500 - ch * 0.5);
-    ctx.lineTo(cx + 60, 500 - ch * 0.5 - 10);
-    ctx.lineTo(cx + 75, 500 - ch * 0.5);
-    ctx.lineTo(cx + 70, 500);
-    ctx.fill();
-    
-    ctx.shadowBlur = 0;
   }
   
-  // Light reflections
-  for (let i = 0; i < 15; i++) {
-    const rx = Math.round(((i * 80 - cameraX * 0.15) % 900 + 900) % 900 - 50);
-    const ry = 100 + (i % 4) * 100;
+  // Reduced sparkles
+  for (let i = 0; i < 8; i++) {
+    const rx = Math.round(((i * 120 - cameraX * 0.15) % 900 + 900) % 900 - 50);
+    const ry = 150 + (i % 3) * 130;
     const sparkle = Math.sin(time * 0.15 + i * 2) * 0.5 + 0.5;
     
-    if (sparkle > 0.7) {
+    if (sparkle > 0.75) {
       ctx.fillStyle = '#FFFFFF';
-      ctx.globalAlpha = sparkle;
+      ctx.globalAlpha = sparkle * 0.8;
       ctx.beginPath();
-      ctx.arc(rx, ry, 3, 0, Math.PI * 2);
+      ctx.arc(rx, ry, 2, 0, Math.PI * 2);
       ctx.fill();
-      
-      // Cross sparkle
-      ctx.strokeStyle = '#FFFFFF';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(rx - 6, ry);
-      ctx.lineTo(rx + 6, ry);
-      ctx.moveTo(rx, ry - 6);
-      ctx.lineTo(rx, ry + 6);
-      ctx.stroke();
       ctx.globalAlpha = 1;
     }
   }
 }
 
 function drawTechnoBackground(ctx, time, cameraX) {
-  // Circuit board grid
-  ctx.strokeStyle = 'rgba(16, 185, 129, 0.2)';
+  // Simplified grid
+  ctx.strokeStyle = 'rgba(16, 185, 129, 0.15)';
   ctx.lineWidth = 1;
-  for (let x = 0; x < 20; x++) {
-    const gx = Math.round(((x * 50 - cameraX * 0.08) % 1000) - 100);
+  for (let x = 0; x < 12; x++) {
+    const gx = Math.round(((x * 80 - cameraX * 0.08) % 1000) - 100);
     ctx.beginPath();
     ctx.moveTo(gx, 0);
     ctx.lineTo(gx, 600);
     ctx.stroke();
   }
-  for (let y = 0; y < 12; y++) {
+  for (let y = 0; y < 8; y++) {
     ctx.beginPath();
-    ctx.moveTo(0, y * 50);
-    ctx.lineTo(800, y * 50);
+    ctx.moveTo(0, y * 80);
+    ctx.lineTo(800, y * 80);
     ctx.stroke();
   }
   
-  // Tech panels/servers
-  for (let i = 0; i < 5; i++) {
-    const px = Math.round(((i * 200 - cameraX * 0.12) % 1200) - 100);
-    const ph = 150 + (i % 2) * 50;
+  // Simplified tech panels
+  for (let i = 0; i < 4; i++) {
+    const px = Math.round(((i * 220 - cameraX * 0.12) % 1200) - 100);
+    const ph = 140;
     
     ctx.fillStyle = '#1E293B';
     ctx.strokeStyle = '#10B981';
     ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.roundRect(px, 500 - ph, 80, ph, 5);
-    ctx.fill();
-    ctx.stroke();
+    ctx.fillRect(px, 500 - ph, 70, ph);
+    ctx.strokeRect(px, 500 - ph, 70, ph);
     
-    // LED lights
-    for (let led = 0; led < 4; led++) {
-      const ledOn = Math.sin(time * 0.2 + i + led) > 0;
-      ctx.fillStyle = ledOn ? '#10B981' : '#064E3B';
-      ctx.beginPath();
-      ctx.arc(px + 20 + led * 15, 500 - ph + 20, 4, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    
-    // Screen
-    const screenGlow = Math.sin(time * 0.1 + i) * 0.2 + 0.6;
-    ctx.fillStyle = `rgba(34, 211, 238, ${screenGlow})`;
-    ctx.fillRect(px + 10, 500 - ph + 40, 60, 40);
-    
-    // Screen data lines
-    ctx.fillStyle = '#0F172A';
-    for (let line = 0; line < 3; line++) {
-      ctx.fillRect(px + 15, 500 - ph + 50 + line * 10, 30 + (line % 2) * 15, 3);
-    }
-  }
-  
-  // Holographic displays
-  for (let i = 0; i < 3; i++) {
-    const hx = Math.round(((i * 300 + 100 - cameraX * 0.1) % 1000) - 100);
-    const hy = 150 + (i % 2) * 100;
-    const pulse = Math.sin(time * 0.08 + i * 2) * 0.3 + 0.5;
-    
-    ctx.strokeStyle = `rgba(34, 211, 238, ${pulse})`;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.ellipse(hx, hy, 40, 25, 0, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.ellipse(hx, hy, 30, 18, 0, 0, Math.PI * 2);
-    ctx.stroke();
+    // Simplified screen
+    ctx.fillStyle = 'rgba(34, 211, 238, 0.6)';
+    ctx.fillRect(px + 10, 500 - ph + 30, 50, 30);
   }
 }
 
 function drawArcaneBackground(ctx, time, cameraX) {
-  // Deep mystical gradient
-  const gradient = ctx.createLinearGradient(0, 0, 0, 600);
-  gradient.addColorStop(0, '#1E1B4B');
-  gradient.addColorStop(0.5, '#312E81');
-  gradient.addColorStop(1, '#4338CA');
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, 800, 600);
-  
-  // Floating arcane runes in background
-  for (let i = 0; i < 8; i++) {
-    const runeX = Math.round((i * 120 - cameraX * 0.1 + time * 0.3) % 900 - 50);
-    const runeY = 100 + Math.sin(time * 0.02 + i) * 30 + (i % 3) * 80;
-    const runeAlpha = 0.15 + Math.sin(time * 0.03 + i * 2) * 0.1;
+  // Simplified arcane runes
+  ctx.strokeStyle = 'rgba(167, 139, 250, 0.2)';
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 5; i++) {
+    const runeX = Math.round((i * 180 - cameraX * 0.1) % 950 - 75);
+    const runeY = 120 + (i % 3) * 120;
     
-    ctx.strokeStyle = `rgba(167, 139, 250, ${runeAlpha})`;
-    ctx.lineWidth = 2;
-    ctx.save();
-    ctx.translate(runeX, runeY);
-    ctx.rotate(time * 0.01 + i);
-    
-    // Draw rune symbol
     ctx.beginPath();
-    ctx.arc(0, 0, 20, 0, Math.PI * 2);
+    ctx.arc(runeX, runeY, 18, 0, Math.PI * 2);
     ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(-15, -15);
-    ctx.lineTo(15, 15);
-    ctx.moveTo(15, -15);
-    ctx.lineTo(-15, 15);
-    ctx.stroke();
-    ctx.restore();
   }
   
   // Crystal formations in background
