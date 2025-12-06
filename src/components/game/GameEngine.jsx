@@ -174,9 +174,9 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     keys: {},
     score: 0,
     gameRunning: true,
-    levelWidth: 2000,
+    levelWidth: 2500,
     cameraX: 0,
-    goalX: 1900,
+    goalX: 2000,
     biome: null,
 
     });
