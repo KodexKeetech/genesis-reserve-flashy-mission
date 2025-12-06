@@ -606,13 +606,13 @@ function drawRuneConstruct(ctx, enemy, ex, time, isFrozen) {
 }
 
 function drawPhantomWisp(ctx, enemy, ex, time, isFrozen) {
-  const float = isFrozen ? 0 : Math.sin(time * 0.2) * 8;
+  const floatAnim = isFrozen ? 0 : Math.sin(time * 0.2) * 8;
   const pulse = Math.sin(time * 0.15) * 0.4 + 0.6;
   
   // Ethereal trail
   ctx.fillStyle = isFrozen ? 'rgba(103, 232, 249, 0.3)' : `rgba(139, 92, 246, ${pulse * 0.3})`;
   ctx.beginPath();
-  ctx.ellipse(ex + 20, enemy.y + 30 + float, 12, 20, 0, 0, Math.PI * 2);
+  ctx.ellipse(ex + 20, enemy.y + 30 + floatAnim, 12, 20, 0, 0, Math.PI * 2);
   ctx.fill();
   
   // Core orb
@@ -620,20 +620,20 @@ function drawPhantomWisp(ctx, enemy, ex, time, isFrozen) {
   ctx.shadowColor = isFrozen ? '#67E8F9' : '#8B5CF6';
   ctx.shadowBlur = 20;
   ctx.beginPath();
-  ctx.arc(ex + 20, enemy.y + 18 + float, 12, 0, Math.PI * 2);
+  ctx.arc(ex + 20, enemy.y + 18 + floatAnim, 12, 0, Math.PI * 2);
   ctx.fill();
   
   // Inner glow
   ctx.fillStyle = '#fff';
   ctx.beginPath();
-  ctx.arc(ex + 18, enemy.y + 15 + float, 4, 0, Math.PI * 2);
+  ctx.arc(ex + 18, enemy.y + 15 + floatAnim, 4, 0, Math.PI * 2);
   ctx.fill();
   
   // Orbiting particles
   for (let i = 0; i < 3; i++) {
     const angle = time * 0.1 + i * Math.PI * 2 / 3;
     const orbX = ex + 20 + Math.cos(angle) * 18;
-    const orbY = enemy.y + 18 + float + Math.sin(angle) * 10;
+    const orbY = enemy.y + 18 + floatAnim + Math.sin(angle) * 10;
     ctx.fillStyle = isFrozen ? '#A5F3FC' : '#C4B5FD';
     ctx.beginPath();
     ctx.arc(orbX, orbY, 3, 0, Math.PI * 2);
@@ -777,7 +777,7 @@ function drawIllusionist(ctx, enemy, ex, time, isFrozen) {
   }
 
   function drawCosmicDrifter(ctx, enemy, ex, time, isFrozen) {
-  const float = Math.sin(time * 0.08) * 5;
+  const floatAnim = Math.sin(time * 0.08) * 5;
   const pulse = Math.sin(time * 0.12) * 0.3 + 0.7;
 
   // Jellyfish-like cosmic entity
@@ -786,13 +786,13 @@ function drawIllusionist(ctx, enemy, ex, time, isFrozen) {
   ctx.shadowColor = isFrozen ? '#67E8F9' : '#8B5CF6';
   ctx.shadowBlur = 18;
   ctx.beginPath();
-  ctx.arc(ex + 20, enemy.y + 15 + float, 18, Math.PI, 0);
+  ctx.arc(ex + 20, enemy.y + 15 + floatAnim, 18, Math.PI, 0);
   ctx.fill();
 
   // Inner glow
   ctx.fillStyle = isFrozen ? '#A5F3FC' : '#C4B5FD';
   ctx.beginPath();
-  ctx.arc(ex + 20, enemy.y + 10 + float, 10, Math.PI, 0);
+  ctx.arc(ex + 20, enemy.y + 10 + floatAnim, 10, Math.PI, 0);
   ctx.fill();
   ctx.shadowBlur = 0;
 
@@ -802,10 +802,10 @@ function drawIllusionist(ctx, enemy, ex, time, isFrozen) {
   for (let i = 0; i < 4; i++) {
     const tentacleX = ex + 8 + i * 8;
     ctx.beginPath();
-    ctx.moveTo(tentacleX, enemy.y + 20 + float);
+    ctx.moveTo(tentacleX, enemy.y + 20 + floatAnim);
     for (let j = 0; j < 4; j++) {
       const waveX = tentacleX + Math.sin(time * 0.15 + i + j * 0.5) * 4;
-      const waveY = enemy.y + 25 + float + j * 8;
+      const waveY = enemy.y + 25 + floatAnim + j * 8;
       ctx.lineTo(waveX, waveY);
     }
     ctx.stroke();
