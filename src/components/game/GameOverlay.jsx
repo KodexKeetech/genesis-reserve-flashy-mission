@@ -209,7 +209,7 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
             <img 
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692c28c6355507b7b2161062/4bcf6076a_1117_00000_00000.jpg"
               alt="Jeff the Robot Wizard"
-              className="w-full max-w-xs mx-auto rounded-lg mb-2"
+              className="w-32 mx-auto rounded-lg mb-2"
             />
             <Button
               onClick={() => window.open('https://globalcomix.com/c/jefftherobotwizard', '_blank')}
