@@ -1844,6 +1844,12 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
 
       ctx.save();
 
+      // Safety check for player position
+      if (!isFinite(y) || !isFinite(centerX)) {
+        ctx.restore();
+        return;
+      }
+
       // Damage flash effect
       if (player.invincible && player.invincibleTimer > 50) {
         ctx.filter = 'brightness(2) saturate(0.5)';
@@ -1885,9 +1891,9 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       const breathe = !isMoving ? Math.sin(time * 0.08) * 1.5 : 0;
 
       // Apply scale transform
-      ctx.translate(centerX, y + player.height);
-      ctx.scale(scaleX, scaleY);
-      ctx.translate(-centerX, -(y + player.height));
+      ctx.translate(ensureFinite(centerX), ensureFinite(y + player.height));
+      ctx.scale(ensureFinite(scaleX, 1), ensureFinite(scaleY, 1));
+      ctx.translate(ensureFinite(-centerX), ensureFinite(-(y + player.height)));
 
       // Magic aura glow (subtle ambient effect)
       const auraAlpha = 0.1 + Math.sin(time * 0.05) * 0.05;
@@ -1895,7 +1901,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       ctx.shadowBlur = 25 + Math.sin(time * 0.1) * 8;
       ctx.fillStyle = `rgba(168, 85, 247, ${auraAlpha})`;
       ctx.beginPath();
-      ctx.ellipse(centerX, y + 32 - bodyBob, 28, 35, 0, 0, Math.PI * 2);
+      ctx.ellipse(ensureFinite(centerX), ensureFinite(y + 32 - bodyBob), 28, 35, 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.shadowBlur = 0;
 
