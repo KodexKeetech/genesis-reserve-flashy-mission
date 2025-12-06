@@ -1,8 +1,16 @@
 // Level 29: Planetary Gateway - Optimized Background
 
+// Helper to ensure finite values
+function ensureFinite(value, fallback = 0) {
+  return isFinite(value) ? value : fallback;
+}
+
 export function drawLevel29Background(ctx, cameraX, canvasWidth, canvasHeight, time) {
   // Deep space gradient
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
+  const gradient = ctx.createLinearGradient(
+    ensureFinite(0), ensureFinite(0), 
+    ensureFinite(0), ensureFinite(canvasHeight)
+  );
   gradient.addColorStop(0, '#0D0628');
   gradient.addColorStop(0.5, '#1A0D40');
   gradient.addColorStop(1, '#120930');
@@ -32,7 +40,10 @@ export function drawLevel29Background(ctx, cameraX, canvasWidth, canvasHeight, t
   const nebPulse = Math.sin(time * 0.015) * 0.15 + 0.25;
   
   if (isFinite(nebX) && isFinite(nebY)) {
-    const nebGrad = ctx.createRadialGradient(nebX, nebY, 0, nebX, nebY, 250);
+    const nebGrad = ctx.createRadialGradient(
+      ensureFinite(nebX), ensureFinite(nebY), ensureFinite(0), 
+      ensureFinite(nebX), ensureFinite(nebY), ensureFinite(250)
+    );
     nebGrad.addColorStop(0, `rgba(168, 85, 247, ${nebPulse})`);
     nebGrad.addColorStop(0.4, `rgba(139, 92, 246, ${nebPulse * 0.6})`);
     nebGrad.addColorStop(0.7, `rgba(99, 102, 241, ${nebPulse * 0.3})`);
@@ -46,7 +57,10 @@ export function drawLevel29Background(ctx, cameraX, canvasWidth, canvasHeight, t
   const planetY = 250;
   
   if (isFinite(planetX) && isFinite(planetY)) {
-    const planetGrad = ctx.createRadialGradient(planetX - 30, planetY - 30, 0, planetX, planetY, 80);
+    const planetGrad = ctx.createRadialGradient(
+      ensureFinite(planetX - 30), ensureFinite(planetY - 30), ensureFinite(0), 
+      ensureFinite(planetX), ensureFinite(planetY), ensureFinite(80)
+    );
     planetGrad.addColorStop(0, '#8B5CF6');
     planetGrad.addColorStop(0.5, '#6D28D9');
     planetGrad.addColorStop(1, '#5B21B6');

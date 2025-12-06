@@ -1,8 +1,16 @@
 // Level 28: Cosmic Expanse - Optimized Background
 
+// Helper to ensure finite values
+function ensureFinite(value, fallback = 0) {
+  return isFinite(value) ? value : fallback;
+}
+
 export function drawLevel28Background(ctx, cameraX, canvasWidth, canvasHeight, time) {
   // Deep space gradient
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
+  const gradient = ctx.createLinearGradient(
+    ensureFinite(0), ensureFinite(0), 
+    ensureFinite(0), ensureFinite(canvasHeight)
+  );
   gradient.addColorStop(0, '#0A0520');
   gradient.addColorStop(0.5, '#150A35');
   gradient.addColorStop(1, '#0F0828');
@@ -33,7 +41,10 @@ export function drawLevel28Background(ctx, cameraX, canvasWidth, canvasHeight, t
     const pulse = Math.sin(time * 0.02 + i * 3) * 0.1 + 0.2;
     
     if (isFinite(nx) && isFinite(ny)) {
-      const nebulaGrad = ctx.createRadialGradient(nx, ny, 0, nx, ny, 180);
+      const nebulaGrad = ctx.createRadialGradient(
+        ensureFinite(nx), ensureFinite(ny), ensureFinite(0), 
+        ensureFinite(nx), ensureFinite(ny), ensureFinite(180)
+      );
       nebulaGrad.addColorStop(0, `rgba(139, 92, 246, ${pulse})`);
       nebulaGrad.addColorStop(0.5, `rgba(99, 102, 241, ${pulse * 0.5})`);
       nebulaGrad.addColorStop(1, 'rgba(79, 70, 229, 0)');
@@ -47,7 +58,10 @@ export function drawLevel28Background(ctx, cameraX, canvasWidth, canvasHeight, t
   const planetY = 180;
   
   if (isFinite(planetX) && isFinite(planetY)) {
-    const planetGrad = ctx.createRadialGradient(planetX - 20, planetY - 20, 0, planetX, planetY, 50);
+    const planetGrad = ctx.createRadialGradient(
+      ensureFinite(planetX - 20), ensureFinite(planetY - 20), ensureFinite(0), 
+      ensureFinite(planetX), ensureFinite(planetY), ensureFinite(50)
+    );
     planetGrad.addColorStop(0, '#7C3AED');
     planetGrad.addColorStop(0.6, '#5B21B6');
     planetGrad.addColorStop(1, '#4C1D95');

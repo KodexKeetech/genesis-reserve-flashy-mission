@@ -1,8 +1,16 @@
 // Level 30: Cosmic Convergence - Epic Final Boss Background
 
+// Helper to ensure finite values
+function ensureFinite(value, fallback = 0) {
+  return isFinite(value) ? value : fallback;
+}
+
 export function drawLevel30Background(ctx, cameraX, canvasWidth, canvasHeight, time) {
   // Dramatic void gradient
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
+  const gradient = ctx.createLinearGradient(
+    ensureFinite(0), ensureFinite(0), 
+    ensureFinite(0), ensureFinite(canvasHeight)
+  );
   gradient.addColorStop(0, '#150A40');
   gradient.addColorStop(0.3, '#1E0F55');
   gradient.addColorStop(0.6, '#2D1570');
