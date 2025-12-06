@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Trophy, RotateCcw, Play, Sparkles, Save, FolderOpen, Star, Shield, Flame, Skull } from 'lucide-react';
+import { Trophy, RotateCcw, Play, Sparkles, Save, FolderOpen, Star, Shield, Flame, Skull, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DIFFICULTY_MODES, HIDDEN_LEVELS } from './BiomeConfig';
 
@@ -168,6 +168,77 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
     medium: <Flame className="w-5 h-5" />,
     hard: <Skull className="w-5 h-5" />
   };
+
+  // End Game Intro screen (after level 30)
+  if (type === 'endGameIntro') {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-purple-950 via-slate-950 to-black rounded-xl"
+      >
+        <div className="text-center space-y-6 p-8 max-w-2xl">
+          <motion.h1
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2, type: 'spring' }}
+            className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400"
+          >
+            🎉 CONGRATULATIONS! 🎉
+          </motion.h1>
+          
+          <motion.p
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="text-xl text-slate-300"
+          >
+            You've conquered the first 30 levels and defeated the Cosmic Overlord!
+          </motion.p>
+
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="bg-slate-900/50 border-2 border-purple-500 rounded-lg p-6"
+          >
+            <h2 className="text-2xl font-bold text-purple-300 mb-3">📖 Discover the Lore</h2>
+            <p className="text-slate-400 mb-4">
+              Want to know the full story behind Jeff's journey through the magical realms?
+            </p>
+            <Button
+              onClick={() => window.open('https://globalcomix.com/c/jefftherobotwizard', '_blank')}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 mb-4"
+            >
+              <ExternalLink className="w-5 h-5 mr-2" />
+              Read the Comic
+            </Button>
+          </motion.div>
+
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.8 }}
+            className="bg-gradient-to-r from-purple-900/50 to-blue-900/50 border-2 border-blue-400 rounded-lg p-6"
+          >
+            <h2 className="text-2xl font-bold text-blue-300 mb-3">∞ Endless Mystical Mode</h2>
+            <p className="text-slate-300 mb-4">
+              The journey continues in the Ethereal Void - an endless realm where only the strongest survive.
+              <br />
+              <span className="text-purple-300 font-semibold">No checkpoints. No portals. Just you and eternity.</span>
+            </p>
+            <Button
+              onClick={onNextLevel}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-lg px-8 py-3"
+            >
+              Enter the Void ∞
+            </Button>
+          </motion.div>
+        </div>
+      </motion.div>
+    );
+  }
+
   if (type === 'tutorial') {
     return (
       <motion.div
