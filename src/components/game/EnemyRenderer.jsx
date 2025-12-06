@@ -1357,7 +1357,7 @@ function drawVoidLord(ctx, boss, bx, time, isFrozen, rage, pulse) {
 }
 
 function drawStormTitan(ctx, boss, bx, time, isFrozen, rage, pulse) {
-  const float = Math.sin(time * 0.06) * 8;
+  const floatAnim = Math.sin(time * 0.06) * 8;
   
   // Cloud body base
   ctx.fillStyle = isFrozen ? '#67E8F9' : '#E0F2FE';
@@ -1366,15 +1366,15 @@ function drawStormTitan(ctx, boss, bx, time, isFrozen, rage, pulse) {
   
   // Main cloud body
   ctx.beginPath();
-  ctx.arc(bx + 50, boss.y + 55 + float, 35, 0, Math.PI * 2);
-  ctx.arc(bx + 25, boss.y + 60 + float, 25, 0, Math.PI * 2);
-  ctx.arc(bx + 75, boss.y + 60 + float, 25, 0, Math.PI * 2);
+  ctx.arc(bx + 50, boss.y + 55 + floatAnim, 35, 0, Math.PI * 2);
+  ctx.arc(bx + 25, boss.y + 60 + floatAnim, 25, 0, Math.PI * 2);
+  ctx.arc(bx + 75, boss.y + 60 + floatAnim, 25, 0, Math.PI * 2);
   ctx.fill();
   
   // Upper body / head
   ctx.fillStyle = isFrozen ? '#A5F3FC' : '#BAE6FD';
   ctx.beginPath();
-  ctx.arc(bx + 50, boss.y + 30 + float, 30, 0, Math.PI * 2);
+  ctx.arc(bx + 50, boss.y + 30 + floatAnim, 30, 0, Math.PI * 2);
   ctx.fill();
   
   // Lightning crown
@@ -1386,8 +1386,8 @@ function drawStormTitan(ctx, boss, bx, time, isFrozen, rage, pulse) {
     const angle = -Math.PI / 2 + (i - 2) * 0.4;
     const boltLen = 20 + Math.sin(time * 0.3 + i) * 8;
     ctx.beginPath();
-    ctx.moveTo(bx + 50 + Math.cos(angle) * 25, boss.y + 30 + float + Math.sin(angle) * 25);
-    ctx.lineTo(bx + 50 + Math.cos(angle) * (25 + boltLen), boss.y + 30 + float + Math.sin(angle) * (25 + boltLen));
+    ctx.moveTo(bx + 50 + Math.cos(angle) * 25, boss.y + 30 + floatAnim + Math.sin(angle) * 25);
+    ctx.lineTo(bx + 50 + Math.cos(angle) * (25 + boltLen), boss.y + 30 + floatAnim + Math.sin(angle) * (25 + boltLen));
     ctx.stroke();
   }
   
@@ -1395,15 +1395,15 @@ function drawStormTitan(ctx, boss, bx, time, isFrozen, rage, pulse) {
   ctx.fillStyle = isFrozen ? '#fff' : (rage ? '#EF4444' : '#0284C7');
   ctx.shadowBlur = 20;
   ctx.beginPath();
-  ctx.arc(bx + 40, boss.y + 28 + float, 8, 0, Math.PI * 2);
-  ctx.arc(bx + 60, boss.y + 28 + float, 8, 0, Math.PI * 2);
+  ctx.arc(bx + 40, boss.y + 28 + floatAnim, 8, 0, Math.PI * 2);
+  ctx.arc(bx + 60, boss.y + 28 + floatAnim, 8, 0, Math.PI * 2);
   ctx.fill();
   
   // Inner eye glow
   ctx.fillStyle = '#fff';
   ctx.beginPath();
-  ctx.arc(bx + 40, boss.y + 28 + float, 3, 0, Math.PI * 2);
-  ctx.arc(bx + 60, boss.y + 28 + float, 3, 0, Math.PI * 2);
+  ctx.arc(bx + 40, boss.y + 28 + floatAnim, 3, 0, Math.PI * 2);
+  ctx.arc(bx + 60, boss.y + 28 + floatAnim, 3, 0, Math.PI * 2);
   ctx.fill();
   
   // Lightning bolts from hands when attacking
@@ -1412,13 +1412,13 @@ function drawStormTitan(ctx, boss, bx, time, isFrozen, rage, pulse) {
     ctx.lineWidth = 4;
     ctx.shadowBlur = 25;
     ctx.beginPath();
-    ctx.moveTo(bx + 10, boss.y + 60 + float);
+    ctx.moveTo(bx + 10, boss.y + 60 + floatAnim);
     ctx.lineTo(bx - 20, boss.y + 80);
     ctx.lineTo(bx - 10, boss.y + 85);
     ctx.lineTo(bx - 40, boss.y + 110);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(bx + 90, boss.y + 60 + float);
+    ctx.moveTo(bx + 90, boss.y + 60 + floatAnim);
     ctx.lineTo(bx + 120, boss.y + 80);
     ctx.lineTo(bx + 110, boss.y + 85);
     ctx.lineTo(bx + 140, boss.y + 110);
@@ -1681,7 +1681,7 @@ function drawOmegaPrime(ctx, boss, bx, time, isFrozen, rage, pulse) {
 }
 
 function drawArcanist(ctx, boss, bx, time, isFrozen, rage, pulse) {
-  const float = Math.sin(time * 0.05) * 6;
+  const floatAnim = Math.sin(time * 0.05) * 6;
   const runeRotate = time * 0.03;
   
   // Floating arcane circle underneath
@@ -1710,28 +1710,28 @@ function drawArcanist(ctx, boss, bx, time, isFrozen, rage, pulse) {
   ctx.shadowColor = isFrozen ? '#67E8F9' : '#6366F1';
   ctx.shadowBlur = 25;
   ctx.beginPath();
-  ctx.moveTo(bx + 50, boss.y + 20 + float);
-  ctx.bezierCurveTo(bx + 90, boss.y + 40 + float, bx + 85, boss.y + 95, bx + 75, boss.y + 100);
+  ctx.moveTo(bx + 50, boss.y + 20 + floatAnim);
+  ctx.bezierCurveTo(bx + 90, boss.y + 40 + floatAnim, bx + 85, boss.y + 95, bx + 75, boss.y + 100);
   ctx.lineTo(bx + 25, boss.y + 100);
-  ctx.bezierCurveTo(bx + 15, boss.y + 95, bx + 10, boss.y + 40 + float, bx + 50, boss.y + 20 + float);
+  ctx.bezierCurveTo(bx + 15, boss.y + 95, bx + 10, boss.y + 40 + floatAnim, bx + 50, boss.y + 20 + floatAnim);
   ctx.fill();
   
   // Inner robe glow
   ctx.fillStyle = isFrozen ? '#A5F3FC' : `rgba(99, 102, 241, ${pulse * 0.5})`;
   ctx.beginPath();
-  ctx.ellipse(bx + 50, boss.y + 60 + float, 20, 30, 0, 0, Math.PI * 2);
+  ctx.ellipse(bx + 50, boss.y + 60 + floatAnim, 20, 30, 0, 0, Math.PI * 2);
   ctx.fill();
   
   // Hood
   ctx.fillStyle = isFrozen ? '#A5F3FC' : '#312E81';
   ctx.beginPath();
-  ctx.arc(bx + 50, boss.y + 25 + float, 25, 0, Math.PI * 2);
+  ctx.arc(bx + 50, boss.y + 25 + floatAnim, 25, 0, Math.PI * 2);
   ctx.fill();
   
   // Face void (mysterious darkness)
   ctx.fillStyle = '#0F0D1A';
   ctx.beginPath();
-  ctx.ellipse(bx + 50, boss.y + 28 + float, 15, 18, 0, 0, Math.PI * 2);
+  ctx.ellipse(bx + 50, boss.y + 28 + floatAnim, 15, 18, 0, 0, Math.PI * 2);
   ctx.fill();
   
   // Glowing eyes
@@ -1739,8 +1739,8 @@ function drawArcanist(ctx, boss, bx, time, isFrozen, rage, pulse) {
   ctx.shadowColor = ctx.fillStyle;
   ctx.shadowBlur = 20;
   ctx.beginPath();
-  ctx.arc(bx + 43, boss.y + 25 + float, 5, 0, Math.PI * 2);
-  ctx.arc(bx + 57, boss.y + 25 + float, 5, 0, Math.PI * 2);
+  ctx.arc(bx + 43, boss.y + 25 + floatAnim, 5, 0, Math.PI * 2);
+  ctx.arc(bx + 57, boss.y + 25 + floatAnim, 5, 0, Math.PI * 2);
   ctx.fill();
   
   // Floating hands with magic
@@ -1749,31 +1749,31 @@ function drawArcanist(ctx, boss, bx, time, isFrozen, rage, pulse) {
   // Left hand with orb
   ctx.fillStyle = isFrozen ? '#A5F3FC' : '#4338CA';
   ctx.beginPath();
-  ctx.arc(bx + 10, boss.y + 55 + float + handFloat, 12, 0, Math.PI * 2);
+  ctx.arc(bx + 10, boss.y + 55 + floatAnim + handFloat, 12, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = isFrozen ? '#67E8F9' : '#C4B5FD';
   ctx.shadowBlur = 15;
   ctx.beginPath();
-  ctx.arc(bx + 10, boss.y + 55 + float + handFloat, 8, 0, Math.PI * 2);
+  ctx.arc(bx + 10, boss.y + 55 + floatAnim + handFloat, 8, 0, Math.PI * 2);
   ctx.fill();
   
   // Right hand with orb
   ctx.fillStyle = isFrozen ? '#A5F3FC' : '#4338CA';
   ctx.shadowBlur = 0;
   ctx.beginPath();
-  ctx.arc(bx + 90, boss.y + 55 + float - handFloat, 12, 0, Math.PI * 2);
+  ctx.arc(bx + 90, boss.y + 55 + floatAnim - handFloat, 12, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = isFrozen ? '#67E8F9' : '#C4B5FD';
   ctx.shadowBlur = 15;
   ctx.beginPath();
-  ctx.arc(bx + 90, boss.y + 55 + float - handFloat, 8, 0, Math.PI * 2);
+  ctx.arc(bx + 90, boss.y + 55 + floatAnim - handFloat, 8, 0, Math.PI * 2);
   ctx.fill();
   
   // Crown of floating runes
   for (let i = 0; i < 5; i++) {
     const crownAngle = -runeRotate * 2 + i * Math.PI * 2 / 5;
     const crownX = bx + 50 + Math.cos(crownAngle) * 30;
-    const crownY = boss.y + 10 + float + Math.sin(crownAngle) * 8;
+    const crownY = boss.y + 10 + floatAnim + Math.sin(crownAngle) * 8;
     
     ctx.fillStyle = isFrozen ? '#A5F3FC' : `rgba(167, 139, 250, ${pulse})`;
     ctx.shadowBlur = 10;
@@ -1797,12 +1797,12 @@ function drawArcanist(ctx, boss, bx, time, isFrozen, rage, pulse) {
     ctx.shadowBlur = 30;
     // Energy lines from hands to center
     ctx.beginPath();
-    ctx.moveTo(bx + 10, boss.y + 55 + float);
-    ctx.quadraticCurveTo(bx + 50, boss.y + 40 + float, bx + 50, boss.y + 60 + float);
+    ctx.moveTo(bx + 10, boss.y + 55 + floatAnim);
+    ctx.quadraticCurveTo(bx + 50, boss.y + 40 + floatAnim, bx + 50, boss.y + 60 + floatAnim);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(bx + 90, boss.y + 55 + float);
-    ctx.quadraticCurveTo(bx + 50, boss.y + 40 + float, bx + 50, boss.y + 60 + float);
+    ctx.moveTo(bx + 90, boss.y + 55 + floatAnim);
+    ctx.quadraticCurveTo(bx + 50, boss.y + 40 + floatAnim, bx + 50, boss.y + 60 + floatAnim);
     ctx.stroke();
   }
 }
