@@ -347,22 +347,9 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           // Simple flat ground with a few platforms
           state.platforms.push({ x: 0, y: 500, width: 500, height: 100, type: 'ground' });
           state.platforms.push({ x: 300, y: 400, width: 100, height: 20, type: 'magic' });
-          state.platforms.push({ x: 550, y: 500, width: 200, height: 100, type: 'ground' });
+          state.platforms.push({ x: 550, y: 500, width: 400, height: 100, type: 'ground' });
           state.platforms.push({ x: 600, y: 350, width: 80, height: 20, type: 'normal' });
-          
-          // Jumping practice section - stepping stones
-          state.platforms.push({ x: 800, y: 480, width: 60, height: 20, type: 'normal' });
-          state.platforms.push({ x: 900, y: 450, width: 60, height: 20, type: 'normal' });
-          state.platforms.push({ x: 1000, y: 420, width: 60, height: 20, type: 'normal' });
-          state.platforms.push({ x: 1100, y: 390, width: 60, height: 20, type: 'magic' });
-          state.platforms.push({ x: 1200, y: 360, width: 60, height: 20, type: 'normal' });
-          state.platforms.push({ x: 1300, y: 400, width: 60, height: 20, type: 'normal' });
-          state.platforms.push({ x: 1400, y: 450, width: 60, height: 20, type: 'normal' });
-          
-          // More ground platforms
-          state.platforms.push({ x: 1500, y: 500, width: 300, height: 100, type: 'ground' });
-          state.platforms.push({ x: 1650, y: 380, width: 80, height: 20, type: 'magic' });
-          state.platforms.push({ x: 1850, y: 500, width: 1150, height: 100, type: 'ground' });
+          state.platforms.push({ x: 1000, y: 500, width: 2000, height: 100, type: 'ground' });
           
           state.goalX = state.levelWidth - 100;
 
