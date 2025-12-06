@@ -487,39 +487,37 @@ export function drawEnemyProjectileTrail(ctx, proj, cameraX, time) {
 // Ambient particles for environment - spawn well beyond visible area
 export function createAmbientParticle(particles, biomeKey, cameraX) {
   // Spawn particles across a wider area including off-screen zones
-  // This creates a continuous particle field
-  const spawnX = cameraX - 200 + Math.random() * 1200; // Spawn 200px before and after visible area
+  const spawnX = cameraX - 200 + Math.random() * 1200;
   const spawnY = Math.random() * 600;
-  
-  const x = spawnX;
-  const y = spawnY;
   
   if (biomeKey === 'forest') {
     // Falling leaves
-    particles.push({
-      x,
-      y: -10,
-      velocityX: (Math.random() - 0.5) * 0.8,
-      velocityY: 0.8 + Math.random() * 0.8,
-      life: 300,
-      color: Math.random() > 0.5 ? '#22C55E' : '#84CC16',
-      size: 4 + Math.random() * 4,
-      type: 'leaf',
-      rotation: Math.random() * Math.PI * 2,
-      rotationSpeed: (Math.random() - 0.5) * 0.08
-    });
-    // Fireflies (less frequent, separate effect)
-    if (Math.random() < 0.1) { // Reduced spawn rate
+    if (Math.random() < 0.3) {
       particles.push({
-        x: x + (Math.random() - 0.5) * 50,
-        y: y + (Math.random() - 0.5) * 50,
-        velocityX: (Math.random() - 0.5) * 0.3,
-        velocityY: (Math.random() - 0.5) * 0.3,
-        life: 200 + Math.random() * 200,
+        x: spawnX,
+        y: -10,
+        velocityX: (Math.random() - 0.5) * 0.5,
+        velocityY: 1 + Math.random() * 0.5,
+        life: 400,
+        color: Math.random() > 0.5 ? '#22C55E' : '#84CC16',
+        size: 3 + Math.random() * 3,
+        type: 'leaf',
+        rotation: Math.random() * Math.PI * 2,
+        rotationSpeed: (Math.random() - 0.5) * 0.05
+      });
+    }
+    // Fireflies
+    if (Math.random() < 0.05) {
+      particles.push({
+        x: spawnX,
+        y: spawnY,
+        velocityX: (Math.random() - 0.5) * 0.2,
+        velocityY: (Math.random() - 0.5) * 0.2,
+        life: 300,
         color: '#FBBF24',
-        size: 2 + Math.random() * 2,
+        size: 2,
         type: 'firefly',
-        flickerRate: 0.1 + Math.random() * 0.1
+        flickerRate: 0.1
       });
     }
   } else if (biomeKey === 'volcano') {
@@ -631,30 +629,35 @@ export function createAmbientParticle(particles, biomeKey, cameraX) {
 }
 
 export function drawAmbientParticle(ctx, particle, time) {
+  if (!particle || !particle.type) return;
+  
   const alpha = Math.min(1, particle.life / 100);
   ctx.globalAlpha = alpha;
   
-  if (particle.type === 'firefly') {
-    const flicker = Math.sin(time * particle.flickerRate) > 0 ? 1 : 0.3;
-    ctx.globalAlpha = alpha * flicker;
-    ctx.fillStyle = particle.color;
-    ctx.shadowColor = particle.color;
-    ctx.shadowBlur = 15 * flicker;
-    ctx.beginPath();
-    ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.shadowBlur = 0;
-  } else if (particle.type === 'leaf') {
-    ctx.save();
-    ctx.translate(particle.x, particle.y);
-    ctx.rotate(particle.rotation);
-    ctx.fillStyle = particle.color;
-    ctx.beginPath();
-    ctx.ellipse(0, 0, particle.size, particle.size * 0.5, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-    particle.rotation += particle.rotationSpeed;
-  } else if (particle.type === 'ember') {
+  try {
+    if (particle.type === 'firefly') {
+      const flicker = Math.sin(time * (particle.flickerRate || 0.1)) > 0 ? 1 : 0.3;
+      ctx.globalAlpha = alpha * flicker;
+      ctx.fillStyle = particle.color || '#FBBF24';
+      ctx.shadowColor = particle.color || '#FBBF24';
+      ctx.shadowBlur = 15 * flicker;
+      ctx.beginPath();
+      ctx.arc(particle.x, particle.y, particle.size || 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    } else if (particle.type === 'leaf') {
+      ctx.save();
+      ctx.translate(particle.x, particle.y);
+      ctx.rotate(particle.rotation || 0);
+      ctx.fillStyle = particle.color || '#22C55E';
+      ctx.beginPath();
+      ctx.ellipse(0, 0, particle.size || 4, (particle.size || 4) * 0.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      if (particle.rotationSpeed) {
+        particle.rotation = (particle.rotation || 0) + particle.rotationSpeed;
+      }
+    } else if (particle.type === 'ember') {
     ctx.fillStyle = particle.color;
     ctx.shadowColor = particle.color;
     ctx.shadowBlur = 8;
@@ -721,12 +724,15 @@ export function drawAmbientParticle(ctx, particle, time) {
     ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
     ctx.fill();
   } else if (particle.type === 'cosmicDust') {
-    ctx.fillStyle = particle.color;
+    ctx.fillStyle = particle.color || '#C4B5FD';
     ctx.globalAlpha = alpha;
     ctx.beginPath();
-    ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+    ctx.arc(particle.x, particle.y, particle.size || 1.5, 0, Math.PI * 2);
     ctx.fill();
   }
-  
+  } catch (e) {
+  // Silently handle any particle rendering errors
+  }
+
   ctx.globalAlpha = 1;
-}
+  }
