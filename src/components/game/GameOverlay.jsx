@@ -175,14 +175,14 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-purple-950 via-slate-950 to-black rounded-xl"
+        className="absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-purple-950 via-slate-950 to-black rounded-xl overflow-y-auto"
       >
-        <div className="text-center space-y-6 p-8 max-w-2xl">
+        <div className="text-center space-y-3 p-4 max-w-xl">
           <motion.h1
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.2, type: 'spring' }}
-            className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400"
+            className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400"
           >
             🎉 CONGRATULATIONS! 🎉
           </motion.h1>
@@ -191,26 +191,26 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="text-xl text-slate-300"
+            className="text-sm text-slate-300"
           >
-            You've conquered the first 30 levels and defeated the Cosmic Overlord!
+            You've conquered the first 30 levels!
           </motion.p>
 
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.6 }}
-            className="bg-slate-900/50 border-2 border-purple-500 rounded-lg p-6"
+            className="bg-slate-900/50 border border-purple-500 rounded-lg p-3"
           >
-            <h2 className="text-2xl font-bold text-purple-300 mb-3">📖 Discover the Lore</h2>
-            <p className="text-slate-400 mb-4">
-              Want to know the full story behind Jeff's journey through the magical realms?
+            <h2 className="text-base font-bold text-purple-300 mb-2">📖 Discover the Lore</h2>
+            <p className="text-xs text-slate-400 mb-2">
+              Read Jeff's comic adventure!
             </p>
             <Button
               onClick={() => window.open('https://globalcomix.com/c/jefftherobotwizard', '_blank')}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 mb-4"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-sm py-2"
             >
-              <ExternalLink className="w-5 h-5 mr-2" />
+              <ExternalLink className="w-4 h-4 mr-1" />
               Read the Comic
             </Button>
           </motion.div>
@@ -219,17 +219,17 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.8 }}
-            className="bg-gradient-to-r from-purple-900/50 to-blue-900/50 border-2 border-blue-400 rounded-lg p-6"
+            className="bg-gradient-to-r from-purple-900/50 to-blue-900/50 border border-blue-400 rounded-lg p-3"
           >
-            <h2 className="text-2xl font-bold text-blue-300 mb-3">∞ Endless Mystical Mode</h2>
-            <p className="text-slate-300 mb-4">
-              The journey continues in the Ethereal Void - an endless realm where only the strongest survive.
+            <h2 className="text-base font-bold text-blue-300 mb-2">∞ Endless Mode</h2>
+            <p className="text-xs text-slate-300 mb-2">
+              Survive the Ethereal Void - endless challenge!
               <br />
-              <span className="text-purple-300 font-semibold">No checkpoints. No portals. Just you and eternity.</span>
+              <span className="text-purple-300 font-semibold">No checkpoints. No portals.</span>
             </p>
             <Button
               onClick={onNextLevel}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-lg px-8 py-3"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-sm py-2"
             >
               Enter the Void ∞
             </Button>
