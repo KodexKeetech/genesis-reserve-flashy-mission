@@ -3,6 +3,8 @@
 
 export function drawLevel17Background(ctx, cameraX, canvasWidth, canvasHeight, time) {
   if (!isFinite(cameraX)) cameraX = 0; // Ensure cameraX is a finite number
+  if (!isFinite(canvasWidth)) canvasWidth = 800;
+  if (!isFinite(canvasHeight)) canvasHeight = 600;
   // Darker desert/tomb gradient
   const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
   gradient.addColorStop(0, '#57534E');

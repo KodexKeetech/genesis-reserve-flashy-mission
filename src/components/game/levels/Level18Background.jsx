@@ -2,6 +2,8 @@
 
 export function drawLevel18Background(ctx, cameraX, canvasWidth, canvasHeight, time) {
   if (!isFinite(cameraX)) cameraX = 0;
+  if (!isFinite(canvasWidth)) canvasWidth = 800;
+  if (!isFinite(canvasHeight)) canvasHeight = 600;
   // Grand tomb chamber gradient
   const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
   gradient.addColorStop(0, '#1C1917');
