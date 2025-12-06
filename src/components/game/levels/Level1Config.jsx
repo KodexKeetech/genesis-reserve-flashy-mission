@@ -162,7 +162,7 @@ export const LEVEL_1_CONFIG = {
         { type: 'coin', x: 3300, y: 380 },
         { type: 'scrap', x: 3420, y: 370 },
       ],
-      portal: { x: 3000, y: 340 },
+      portal: { x: 1000, y: 340 },
       decorations: [
         { type: 'portal_glow', x: 3400, y: 340 },
         { type: 'ancient_archway', x: 3360, y: 320 },
