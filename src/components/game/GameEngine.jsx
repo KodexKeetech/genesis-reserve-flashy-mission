@@ -4352,6 +4352,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
               // COSMIC OVERLORD - Final Boss with ALL previous boss attacks
               const enraged = boss.health < boss.maxHealth / 2;
               const superEnraged = boss.health < boss.maxHealth / 3;
+              const floatOffset = Math.sin(time * 0.05) * 8;
               
               // Initialize attack cycle
               if (boss.masterAttackCycle === undefined) boss.masterAttackCycle = 0;
@@ -4389,7 +4390,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                     const spread = (i - 2) * 0.3;
                     state.enemyProjectiles.push({
                       x: boss.x + 50,
-                      y: boss.y + 30 + float,
+                      y: boss.y + 30 + floatOffset,
                       velocityX: aimX * 6 + spread,
                       velocityY: aimY * 6 + spread,
                       width: 20,
@@ -4407,7 +4408,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                   const spreadAngle = (i - 2) * 0.4;
                   state.enemyProjectiles.push({
                     x: boss.x + 50,
-                    y: boss.y + 40 + float,
+                    y: boss.y + 40 + floatOffset,
                     velocityX: aimX * 5 + spreadAngle,
                     velocityY: aimY * 5 + spreadAngle,
                     width: 16,
@@ -4424,7 +4425,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                   // Ice breath
                   state.enemyProjectiles.push({
                     x: boss.x + 50,
-                    y: boss.y + 50 + float,
+                    y: boss.y + 50 + floatOffset,
                     velocityX: aimX * 6,
                     velocityY: aimY * 3,
                     width: 60,
@@ -4471,7 +4472,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                   const targetX = player.x + (i - 2) * 60;
                   state.enemyProjectiles.push({
                     x: targetX,
-                    y: boss.y + 80 + float,
+                    y: boss.y + 80 + floatOffset,
                     velocityX: 0,
                     velocityY: 8,
                     width: 20,
@@ -4490,7 +4491,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                     const spread = (i - 2) * 0.35;
                     state.enemyProjectiles.push({
                       x: boss.x + 50,
-                      y: boss.y + 40 + float,
+                      y: boss.y + 40 + floatOffset,
                       velocityX: aimX * 4.5 + spread,
                       velocityY: aimY * 4.5 + spread,
                       width: 18,
@@ -4531,7 +4532,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                   }
                   state.enemyProjectiles.push({
                     x: boss.x + 50,
-                    y: boss.y + 50 + float,
+                    y: boss.y + 50 + floatOffset,
                     velocityX: vx,
                     velocityY: vy,
                     width: 15,
@@ -4549,7 +4550,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                   // Plasma beam
                   state.enemyProjectiles.push({
                     x: boss.x + 50,
-                    y: boss.y + 50 + float,
+                    y: boss.y + 50 + floatOffset,
                     velocityX: dirToPlayer * 7,
                     velocityY: 0,
                     width: 80,
@@ -4563,7 +4564,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                     const angle = (i / 4) * Math.PI - Math.PI / 2;
                     state.enemyProjectiles.push({
                       x: boss.x + 50,
-                      y: boss.y + 30 + float,
+                      y: boss.y + 30 + floatOffset,
                       velocityX: Math.cos(angle) * 2,
                       velocityY: -3,
                       width: 14,
@@ -4606,7 +4607,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                     const angle = (i / 5) * Math.PI * 2;
                     state.enemyProjectiles.push({
                       x: boss.x + 50,
-                      y: boss.y + 50 + float,
+                      y: boss.y + 50 + floatOffset,
                       velocityX: Math.cos(angle) * 3,
                       velocityY: Math.sin(angle) * 3,
                       width: 16,
@@ -4637,7 +4638,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                   for (let i = 0; i < (enraged ? 4 : 3); i++) {
                     state.enemyProjectiles.push({
                       x: boss.x + 50 + (i - 1.5) * 70,
-                      y: boss.y + 40 + float,
+                      y: boss.y + 40 + floatOffset,
                       velocityX: 0,
                       velocityY: 0,
                       width: 35,
