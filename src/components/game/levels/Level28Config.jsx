@@ -3,7 +3,7 @@
 export const level28Config = {
   name: "Cosmic Expanse",
   biome: 'space',
-  width: 4500,
+  levelWidth: 4500,
   sections: [
     {
       type: 'intro',

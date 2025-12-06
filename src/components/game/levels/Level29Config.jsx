@@ -1,10 +1,9 @@
-
 // Level 29: Planetary Gateway - Advanced space level
 
 export const level29Config = {
   name: "Planetary Gateway",
   biome: 'space',
-  width: 4800,
+  levelWidth: 4800,
   sections: [
     {
       type: 'orbital_station',
