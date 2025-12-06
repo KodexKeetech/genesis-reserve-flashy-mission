@@ -31,39 +31,43 @@ export function drawLevel29Background(ctx, cameraX, canvasWidth, canvasHeight, t
   const nebY = 200;
   const nebPulse = Math.sin(time * 0.015) * 0.15 + 0.25;
   
-  const nebGrad = ctx.createRadialGradient(nebX, nebY, 0, nebX, nebY, 250);
-  nebGrad.addColorStop(0, `rgba(168, 85, 247, ${nebPulse})`);
-  nebGrad.addColorStop(0.4, `rgba(139, 92, 246, ${nebPulse * 0.6})`);
-  nebGrad.addColorStop(0.7, `rgba(99, 102, 241, ${nebPulse * 0.3})`);
-  nebGrad.addColorStop(1, 'rgba(79, 70, 229, 0)');
-  ctx.fillStyle = nebGrad;
-  ctx.fillRect(nebX - 250, nebY - 250, 500, 500);
+  if (isFinite(nebX) && isFinite(nebY)) {
+    const nebGrad = ctx.createRadialGradient(nebX, nebY, 0, nebX, nebY, 250);
+    nebGrad.addColorStop(0, `rgba(168, 85, 247, ${nebPulse})`);
+    nebGrad.addColorStop(0.4, `rgba(139, 92, 246, ${nebPulse * 0.6})`);
+    nebGrad.addColorStop(0.7, `rgba(99, 102, 241, ${nebPulse * 0.3})`);
+    nebGrad.addColorStop(1, 'rgba(79, 70, 229, 0)');
+    ctx.fillStyle = nebGrad;
+    ctx.fillRect(nebX - 250, nebY - 250, 500, 500);
+  }
   
   // Large planet (approaching)
   const planetX = Math.round(700 - cameraX * 0.025);
   const planetY = 250;
   
-  const planetGrad = ctx.createRadialGradient(planetX - 30, planetY - 30, 0, planetX, planetY, 80);
-  planetGrad.addColorStop(0, '#8B5CF6');
-  planetGrad.addColorStop(0.5, '#6D28D9');
-  planetGrad.addColorStop(1, '#5B21B6');
-  ctx.fillStyle = planetGrad;
-  ctx.beginPath();
-  ctx.arc(planetX, planetY, 80, 0, Math.PI * 2);
-  ctx.fill();
-  
-  // Planet atmosphere glow
-  ctx.strokeStyle = 'rgba(167, 139, 250, 0.3)';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.arc(planetX, planetY, 85, 0, Math.PI * 2);
-  ctx.stroke();
-  
-  // Small moon
-  const moonX = planetX - 120;
-  const moonY = planetY - 60;
-  ctx.fillStyle = '#C4B5FD';
-  ctx.beginPath();
-  ctx.arc(moonX, moonY, 18, 0, Math.PI * 2);
-  ctx.fill();
+  if (isFinite(planetX) && isFinite(planetY)) {
+    const planetGrad = ctx.createRadialGradient(planetX - 30, planetY - 30, 0, planetX, planetY, 80);
+    planetGrad.addColorStop(0, '#8B5CF6');
+    planetGrad.addColorStop(0.5, '#6D28D9');
+    planetGrad.addColorStop(1, '#5B21B6');
+    ctx.fillStyle = planetGrad;
+    ctx.beginPath();
+    ctx.arc(planetX, planetY, 80, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Planet atmosphere glow
+    ctx.strokeStyle = 'rgba(167, 139, 250, 0.3)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(planetX, planetY, 85, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    // Small moon
+    const moonX = planetX - 120;
+    const moonY = planetY - 60;
+    ctx.fillStyle = '#C4B5FD';
+    ctx.beginPath();
+    ctx.arc(moonX, moonY, 18, 0, Math.PI * 2);
+    ctx.fill();
+  }
 }

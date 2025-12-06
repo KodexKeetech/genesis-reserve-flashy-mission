@@ -32,31 +32,35 @@ export function drawLevel28Background(ctx, cameraX, canvasWidth, canvasHeight, t
     const ny = 150 + i * 200;
     const pulse = Math.sin(time * 0.02 + i * 3) * 0.1 + 0.2;
     
-    const nebulaGrad = ctx.createRadialGradient(nx, ny, 0, nx, ny, 180);
-    nebulaGrad.addColorStop(0, `rgba(139, 92, 246, ${pulse})`);
-    nebulaGrad.addColorStop(0.5, `rgba(99, 102, 241, ${pulse * 0.5})`);
-    nebulaGrad.addColorStop(1, 'rgba(79, 70, 229, 0)');
-    ctx.fillStyle = nebulaGrad;
-    ctx.fillRect(nx - 180, ny - 180, 360, 360);
+    if (isFinite(nx) && isFinite(ny)) {
+      const nebulaGrad = ctx.createRadialGradient(nx, ny, 0, nx, ny, 180);
+      nebulaGrad.addColorStop(0, `rgba(139, 92, 246, ${pulse})`);
+      nebulaGrad.addColorStop(0.5, `rgba(99, 102, 241, ${pulse * 0.5})`);
+      nebulaGrad.addColorStop(1, 'rgba(79, 70, 229, 0)');
+      ctx.fillStyle = nebulaGrad;
+      ctx.fillRect(nx - 180, ny - 180, 360, 360);
+    }
   }
   
   // Distant planet
   const planetX = Math.round(650 - cameraX * 0.02);
   const planetY = 180;
   
-  const planetGrad = ctx.createRadialGradient(planetX - 20, planetY - 20, 0, planetX, planetY, 50);
-  planetGrad.addColorStop(0, '#7C3AED');
-  planetGrad.addColorStop(0.6, '#5B21B6');
-  planetGrad.addColorStop(1, '#4C1D95');
-  ctx.fillStyle = planetGrad;
-  ctx.beginPath();
-  ctx.arc(planetX, planetY, 50, 0, Math.PI * 2);
-  ctx.fill();
-  
-  // Planet ring
-  ctx.strokeStyle = 'rgba(196, 181, 253, 0.4)';
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.ellipse(planetX, planetY, 80, 15, 0.3, 0, Math.PI * 2);
-  ctx.stroke();
+  if (isFinite(planetX) && isFinite(planetY)) {
+    const planetGrad = ctx.createRadialGradient(planetX - 20, planetY - 20, 0, planetX, planetY, 50);
+    planetGrad.addColorStop(0, '#7C3AED');
+    planetGrad.addColorStop(0.6, '#5B21B6');
+    planetGrad.addColorStop(1, '#4C1D95');
+    ctx.fillStyle = planetGrad;
+    ctx.beginPath();
+    ctx.arc(planetX, planetY, 50, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Planet ring
+    ctx.strokeStyle = 'rgba(196, 181, 253, 0.4)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.ellipse(planetX, planetY, 80, 15, 0.3, 0, Math.PI * 2);
+    ctx.stroke();
+  }
 }
