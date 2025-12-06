@@ -23,6 +23,12 @@ import { drawLevel16Background } from './levels/Level16Background';
 import { drawLevel17Background } from './levels/Level17Background';
 import { drawLevel20Background } from './levels/Level20Background';
 import { drawMysticalBackground } from './levels/MysticalBackground';
+import { drawFairyGroveBackground } from './levels/FairyGroveBackground';
+import { drawLavaCoreBackground } from './levels/LavaCoreBackground';
+import { drawFrozenTempleBackground } from './levels/FrozenTempleBackground';
+import { drawHeartOfDarknessBackground } from './levels/HeartOfDarknessBackground';
+import { drawGauntletBackground } from './levels/GauntletBackground';
+import { drawForbiddenLibraryBackground } from './levels/ForbiddenLibraryBackground';
 import { createAmbientParticle, drawAmbientParticle } from './ParticleEffects';
 
 export default function BackgroundCanvas({ currentLevel, hiddenLevelId, gameSettings, cameraXRef, timeRef }) {
@@ -50,7 +56,19 @@ export default function BackgroundCanvas({ currentLevel, hiddenLevelId, gameSett
         ctx.clearRect(0, 0, 800, 600);
 
         // Draw biome-specific background
-        if (currentLevel > 30) {
+        if (hiddenLevelId === 'forest-secret') {
+          drawFairyGroveBackground(ctx, cameraX, 800, 600, time);
+        } else if (hiddenLevelId === 'volcano-secret') {
+          drawLavaCoreBackground(ctx, cameraX, 800, 600, time);
+        } else if (hiddenLevelId === 'ice-secret') {
+          drawFrozenTempleBackground(ctx, cameraX, 800, 600, time);
+        } else if (hiddenLevelId === 'void-secret') {
+          drawHeartOfDarknessBackground(ctx, cameraX, 800, 600, time);
+        } else if (hiddenLevelId === 'ultimate-challenge') {
+          drawGauntletBackground(ctx, cameraX, 800, 600, time);
+        } else if (hiddenLevelId === 'arcane-secret') {
+          drawForbiddenLibraryBackground(ctx, cameraX, 800, 600, time);
+        } else if (currentLevel > 30) {
           drawMysticalBackground(ctx, cameraX, 800, 600, time);
         } else if (currentLevel === 0) {
           drawLevel1Background(ctx, cameraX, 800, 600, time, true);
