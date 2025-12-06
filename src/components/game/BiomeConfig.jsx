@@ -145,32 +145,32 @@ export const BIOMES = {
     }
   },
 
-  nebula: {
-    name: 'Nebula Expanse',
+  ruins: {
+    name: 'Ancient Ruins',
     levels: [16, 17, 18],
     bossLevel: 18,
     background: {
-      sky: ['#020610', '#0C1020', '#020610'],
-      stars: true,
-      particles: 'cosmicDust'
+      sky: ['#78350F', '#A16207', '#854D0E'],
+      stars: false,
+      particles: 'dust'
     },
     platforms: {
-      ground: { fill: '#0F172A', top: '#6366F1', accent: '#818CF8' },
-      normal: { fill: '#1E293B', highlight: '#334155' },
-      magic: { fill: '#7C3AED', glow: '#A855F7' },
-      void: { fill: '#4C1D95', unstable: true }
+      ground: { fill: '#A8A29E', top: '#78716C', accent: '#D6D3D1' },
+      normal: { fill: '#57534E', highlight: '#78716C' },
+      magic: { fill: '#CA8A04', glow: '#EAB308' },
+      crumbling: { fill: '#A8A29E', unstable: true }
     },
     enemiesByLevel: {
-      16: ['voidWalker', 'phantomWisp', 'drone', 'runeConstruct'],
-      17: ['voidWalker', 'phantomWisp', 'drone', 'runeConstruct', 'spellWeaver'],
-      18: ['voidWalker', 'runeConstruct', 'spellweaver']
+      16: ['stoneSentinel', 'mummy'],
+      17: ['stoneSentinel', 'mummy', 'scarab'],
+      18: ['stoneSentinel', 'mummy', 'scarab', 'sandWraith']
     },
-    hazards: ['voidZone'],
+    hazards: ['sandTrap', 'spikeTrap', 'boulder'],
     boss: {
-      name: 'Omega Titan',
-      type: 'omegaTitan',
-      health: 80,
-      color: '#9333EA'
+      name: 'Pharaoh King',
+      type: 'pharaohKing',
+      health: 45,
+      color: '#CA8A04'
     }
   },
 
