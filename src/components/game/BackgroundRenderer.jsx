@@ -35,6 +35,9 @@ export function drawBackground(ctx, biome, time, cameraX) {
     drawStars(ctx, time, cameraX, biome.key === 'void');
   }
 
+  // Black dot particles across all backgrounds
+  drawBlackDots(ctx, time, cameraX);
+
   // Biome-specific background elements
   switch (biome.key) {
     case 'forest':
@@ -82,6 +85,27 @@ function drawStars(ctx, time, cameraX, isVoid) {
       ctx.globalAlpha = twinkle * (0.3 + layer * 0.1);
       ctx.beginPath();
       ctx.arc(starX, starY, Math.max(0.5, size), 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawBlackDots(ctx, time, cameraX) {
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+  
+  for (let layer = 0; layer < 2; layer++) {
+    const parallaxSpeed = 0.03 + layer * 0.04;
+    
+    for (let i = 0; i < 30; i++) {
+      const dotX = Math.round(((i * 97 + layer * 113 - cameraX * parallaxSpeed) % 850 + 850) % 850 - 25);
+      const dotY = (i * 61 + layer * 79) % 600;
+      const size = 1.5 + (i % 3) * 0.5 - layer * 0.3;
+      const drift = Math.sin(time * 0.02 + i) * 0.3 + 0.7;
+      
+      ctx.globalAlpha = drift * (0.3 + layer * 0.1);
+      ctx.beginPath();
+      ctx.arc(dotX, dotY, Math.max(0.5, size), 0, Math.PI * 2);
       ctx.fill();
     }
   }
