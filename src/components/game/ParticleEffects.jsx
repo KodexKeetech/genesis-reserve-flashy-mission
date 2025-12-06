@@ -520,9 +520,9 @@ export function createAmbientParticle(particles, biomeKey, cameraX) {
         flickerRate: 0.1
       });
     }
-  } else if (biomeKey === 'volcano') {
+    } else if (biomeKey === 'volcano') {
     particles.push({
-      x,
+      x: spawnX,
       y: 550 + Math.random() * 50,
       velocityX: (Math.random() - 0.5) * 1.5,
       velocityY: -1.5 - Math.random() * 2,
@@ -531,9 +531,9 @@ export function createAmbientParticle(particles, biomeKey, cameraX) {
       size: 2 + Math.random() * 3,
       type: 'ember'
     });
-  } else if (biomeKey === 'ice') {
+    } else if (biomeKey === 'ice') {
     particles.push({
-      x,
+      x: spawnX,
       y: -10,
       velocityX: (Math.random() - 0.5) * 0.8,
       velocityY: 0.8 + Math.random() * 1.5,
@@ -542,10 +542,10 @@ export function createAmbientParticle(particles, biomeKey, cameraX) {
       size: 2 + Math.random() * 3,
       type: 'snow'
     });
-  } else if (biomeKey === 'void') {
+    } else if (biomeKey === 'void') {
     particles.push({
-      x,
-      y,
+      x: spawnX,
+      y: spawnY,
       velocityX: (Math.random() - 0.5) * 0.8,
       velocityY: -0.3 - Math.random() * 0.8,
       life: 180 + Math.random() * 180,
@@ -553,9 +553,9 @@ export function createAmbientParticle(particles, biomeKey, cameraX) {
       size: 2 + Math.random() * 3,
       type: 'voidParticle'
     });
-  } else if (biomeKey === 'ruins') {
+    } else if (biomeKey === 'ruins') {
     particles.push({
-      x,
+      x: spawnX,
       y: 400 + Math.random() * 100,
       velocityX: (Math.random() - 0.5) * 0.5,
       velocityY: 0,
@@ -564,11 +564,11 @@ export function createAmbientParticle(particles, biomeKey, cameraX) {
       size: 1 + Math.random() * 1.5,
       type: 'sandParticle'
     });
-  } else if (biomeKey === 'crystal') {
+    } else if (biomeKey === 'crystal') {
     const hue = 270 + Math.random() * 60;
     particles.push({
-      x,
-      y,
+      x: spawnX,
+      y: spawnY,
       velocityX: (Math.random() - 0.5) * 0.3,
       velocityY: -0.2 - Math.random() * 0.5,
       life: 250 + Math.random() * 100,
@@ -578,9 +578,9 @@ export function createAmbientParticle(particles, biomeKey, cameraX) {
       rotation: Math.random() * Math.PI * 2,
       rotationSpeed: (Math.random() - 0.5) * 0.03
     });
-  } else if (biomeKey === 'techno') {
+    } else if (biomeKey === 'techno') {
     particles.push({
-      x,
+      x: spawnX,
       y: Math.random() * 600,
       velocityX: (Math.random() - 0.5) * 0.5,
       velocityY: (Math.random() - 0.5) * 0.5,
@@ -589,11 +589,11 @@ export function createAmbientParticle(particles, biomeKey, cameraX) {
       size: 2,
       type: 'dataParticle'
     });
-  } else if (biomeKey === 'arcane') {
+    } else if (biomeKey === 'arcane') {
     const hue = 240 + Math.random() * 60;
     particles.push({
-      x,
-      y,
+      x: spawnX,
+      y: spawnY,
       velocityX: (Math.random() - 0.5) * 0.3,
       velocityY: -0.2 - Math.random() * 0.5,
       life: 200 + Math.random() * 100,
@@ -603,10 +603,10 @@ export function createAmbientParticle(particles, biomeKey, cameraX) {
       rotation: Math.random() * Math.PI * 2,
       rotationSpeed: (Math.random() - 0.5) * 0.04
     });
-  } else if (biomeKey === 'sky') {
+    } else if (biomeKey === 'sky') {
     particles.push({
-      x,
-      y,
+      x: spawnX,
+      y: spawnY,
       velocityX: -0.5 - Math.random() * 0.5,
       velocityY: 0,
       life: 300 + Math.random() * 100,
@@ -614,9 +614,9 @@ export function createAmbientParticle(particles, biomeKey, cameraX) {
       size: 5 + Math.random() * 5,
       type: 'cloudParticle'
     });
-  } else if (biomeKey === 'space') {
+    } else if (biomeKey === 'space') {
     particles.push({
-      x,
+      x: spawnX,
       y: Math.random() * 600,
       velocityX: -0.05 - Math.random() * 0.1,
       velocityY: (Math.random() - 0.5) * 0.05,
@@ -625,7 +625,7 @@ export function createAmbientParticle(particles, biomeKey, cameraX) {
       size: 1.5 + Math.random() * 1,
       type: 'cosmicDust'
     });
-  }
+    }
 }
 
 export function drawAmbientParticle(ctx, particle, time) {
