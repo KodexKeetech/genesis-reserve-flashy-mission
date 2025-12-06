@@ -4664,7 +4664,11 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         bgCtx.clearRect(0, 0, 800, 600);
         
         if (state.biome) {
-          drawBackground(bgCtx, state.biome, time, state.cameraX);
+          if (currentLevel >= 1 && currentLevel <= 3 && state.biome.customLevel) {
+            drawLevel1Background(bgCtx, state.cameraX, 800, 600, time);
+          } else {
+            drawBackground(bgCtx, state.biome, time, state.cameraX);
+          }
         } else {
           bgCtx.fillStyle = '#0F172A';
           bgCtx.fillRect(0, 0, 800, 600);
