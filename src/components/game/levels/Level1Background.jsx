@@ -1,7 +1,16 @@
-// Level 1: Enchanted Forest Background Renderer
-// Creates a layered, atmospheric forest scene
+// Level 1: Tutorial Background - Clean white canvas for learning
 
-export function drawLevel1Background(ctx, cameraX, canvasWidth, canvasHeight, time) {
+export function drawLevel1Background(ctx, cameraX, canvasWidth, canvasHeight, time, isTutorial = false) {
+  if (isTutorial) {
+    // White background for tutorial
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+    
+    // Add tutorial text instructions
+    drawTutorialInstructions(ctx, canvasWidth, canvasHeight);
+    return;
+  }
+  
   // Sky gradient - deep forest night with hints of magic
   const skyGradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
   skyGradient.addColorStop(0, '#0A1628');
