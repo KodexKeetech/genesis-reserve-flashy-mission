@@ -5285,6 +5285,34 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       for (const platform of platforms) {
         const px = Math.round(platform.x - state.cameraX);
         if (px > -platform.width && px < 800) {
+          // Tutorial level - black and white platforms
+          if (currentLevel === 0) {
+            if (platform.type === 'ground') {
+              const groundGrad = ctx.createLinearGradient(px, platform.y, px, platform.y + platform.height);
+              groundGrad.addColorStop(0, '#333333');
+              groundGrad.addColorStop(1, '#000000');
+              ctx.fillStyle = groundGrad;
+              ctx.beginPath();
+              ctx.roundRect(px, platform.y, platform.width, platform.height, 4);
+              ctx.fill();
+              ctx.fillStyle = '#555555';
+              ctx.fillRect(px, platform.y, platform.width, 6);
+            } else if (platform.type === 'magic') {
+              ctx.fillStyle = '#666666';
+              ctx.beginPath();
+              ctx.roundRect(px, platform.y, platform.width, platform.height, 4);
+              ctx.fill();
+            } else {
+              ctx.fillStyle = '#444444';
+              ctx.beginPath();
+              ctx.roundRect(px, platform.y, platform.width, platform.height, 4);
+              ctx.fill();
+              ctx.fillStyle = '#666666';
+              ctx.fillRect(px + 2, platform.y + 2, platform.width - 4, 4);
+            }
+            continue;
+          }
+          
           // Draw crumbling platform with special effect
           if (platform.type === 'crumbling') {
             const crumbleData = state.crumblingPlatforms?.find(c => c.x === platform.x);
@@ -5528,7 +5556,36 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         const ex = Math.round(enemy.x - state.cameraX);
         if (ex > -50 && ex < 850) {
           const isFrozen = enemy.frozen && enemy.frozen > 0;
-          drawEnemy(ctx, enemy, ex, time, isFrozen, state.biome?.key);
+          
+          // Tutorial level - black enemies
+          if (currentLevel === 0) {
+            ctx.fillStyle = '#000000';
+            if (enemy.type === 'slime') {
+              ctx.beginPath();
+              ctx.ellipse(ex + 15, enemy.y + 20, 15, 10, 0, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.fillStyle = '#333333';
+              ctx.beginPath();
+              ctx.arc(ex + 10, enemy.y + 15, 3, 0, Math.PI * 2);
+              ctx.arc(ex + 20, enemy.y + 15, 3, 0, Math.PI * 2);
+              ctx.fill();
+            } else if (enemy.type === 'bat') {
+              ctx.beginPath();
+              ctx.ellipse(ex + 15, enemy.y + 15, 12, 8, 0, 0, Math.PI * 2);
+              ctx.fill();
+              const wingFlap = Math.sin(time * 0.3) * 8;
+              ctx.beginPath();
+              ctx.moveTo(ex + 5, enemy.y + 15);
+              ctx.quadraticCurveTo(ex - 5, enemy.y + 10 - wingFlap, ex, enemy.y + 20);
+              ctx.moveTo(ex + 25, enemy.y + 15);
+              ctx.quadraticCurveTo(ex + 35, enemy.y + 10 - wingFlap, ex + 30, enemy.y + 20);
+              ctx.fill();
+            } else {
+              ctx.fillRect(ex, enemy.y, 30, 30);
+            }
+          } else {
+            drawEnemy(ctx, enemy, ex, time, isFrozen, state.biome?.key);
+          }
         }
       }
       
