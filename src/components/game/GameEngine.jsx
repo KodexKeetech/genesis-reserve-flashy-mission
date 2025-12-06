@@ -4669,8 +4669,21 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       bgCtx.clearRect(0, 0, 800, 600);
       
       if (state.biome) {
-        if (currentLevel >= 1 && currentLevel <= 3 && state.biome.customLevel) {
+        // Use custom optimized backgrounds for specific levels
+        if (currentLevel === 1) {
           drawLevel1Background(bgCtx, state.cameraX, 800, 600, time);
+        } else if (currentLevel === 2) {
+          drawLevel2Background(bgCtx, state.cameraX, 800, 600, time);
+        } else if (currentLevel === 4) {
+          drawLevel4Background(bgCtx, state.cameraX, 800, 600, time);
+        } else if (currentLevel === 5) {
+          drawLevel5Background(bgCtx, state.cameraX, 800, 600, time);
+        } else if (currentLevel === 6) {
+          drawLevel6Background(bgCtx, state.cameraX, 800, 600, time);
+        } else if (currentLevel === 8) {
+          drawLevel8Background(bgCtx, state.cameraX, 800, 600, time);
+        } else if (currentLevel === 9) {
+          drawLevel9Background(bgCtx, state.cameraX, 800, 600, time);
         } else {
           drawBackground(bgCtx, state.biome, time, state.cameraX);
         }
