@@ -169,6 +169,18 @@ export default function Game() {
   useEffect(() => {
     const loadPlayerData = async () => {
       try {
+        const isAuth = await base44.auth.isAuthenticated();
+        if (!isAuth) {
+          // Not logged in - load from localStorage
+          const localData = localStorage.getItem('jeff_player_data');
+          if (localData) {
+            const data = JSON.parse(localData);
+            setMagicScraps(data.magicScraps || 0);
+            setArcaneCrystals(data.arcaneCrystals || 0);
+          }
+          return;
+        }
+        
         const user = await base44.auth.me();
         if (user.upgrades) {
           setPlayerUpgrades(user.upgrades);
@@ -206,7 +218,7 @@ export default function Game() {
           highestLevel: user.highestLevel || 1
         }));
       } catch (e) {
-        // Not logged in - load from localStorage
+        // Error - load from localStorage
         const localData = localStorage.getItem('jeff_player_data');
         if (localData) {
           const data = JSON.parse(localData);
@@ -221,6 +233,24 @@ export default function Game() {
   // Save scraps when level completes or game over
   const saveScraps = useCallback(async (scrapsToAdd, crystalsToAdd = 0) => {
     try {
+      const isAuth = await base44.auth.isAuthenticated();
+      if (!isAuth) {
+        // Not logged in - save to localStorage
+        const localData = localStorage.getItem('jeff_player_data');
+        const existing = localData ? JSON.parse(localData) : { magicScraps: 0, arcaneCrystals: 0, highestLevel: 1 };
+        const newTotal = existing.magicScraps + scrapsToAdd;
+        const newCrystals = existing.arcaneCrystals + crystalsToAdd;
+        const newHighestLevel = Math.max(existing.highestLevel, level);
+        localStorage.setItem('jeff_player_data', JSON.stringify({
+          magicScraps: newTotal,
+          arcaneCrystals: newCrystals,
+          highestLevel: newHighestLevel
+        }));
+        setMagicScraps(newTotal);
+        setArcaneCrystals(newCrystals);
+        return;
+      }
+      
       const user = await base44.auth.me();
       const newTotal = (user.magicScraps || 0) + scrapsToAdd;
       const newLifetime = (user.totalScrapsEarned || 0) + scrapsToAdd;
@@ -241,7 +271,7 @@ export default function Game() {
         highestLevel: newHighestLevel
       }));
     } catch (e) {
-      // Not logged in - save to localStorage instead
+      // Error - save to localStorage instead
       const localData = localStorage.getItem('jeff_player_data');
       const existing = localData ? JSON.parse(localData) : { magicScraps: 0, arcaneCrystals: 0, highestLevel: 1 };
       const newTotal = existing.magicScraps + scrapsToAdd;
@@ -365,9 +395,12 @@ export default function Game() {
   // Save gun preference
   const saveGunPreference = useCallback(async (gun) => {
     try {
-      await base44.auth.updateMe({ lastGun: gun });
+      const isAuth = await base44.auth.isAuthenticated();
+      if (isAuth) {
+        await base44.auth.updateMe({ lastGun: gun });
+      }
     } catch (e) {
-      // Not logged in
+      // Error or not logged in - ignore
     }
   }, []);
 
