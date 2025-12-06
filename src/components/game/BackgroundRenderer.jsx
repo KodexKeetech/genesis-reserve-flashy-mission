@@ -1,3 +1,8 @@
+// Helper to ensure finite values for gradients
+function ensureFinite(value, fallback = 0) {
+  return isFinite(value) ? value : fallback;
+}
+
 // Background and particle rendering for different biomes
 export function drawBackground(ctx, biome, time, cameraX) {
   // Handle arcane biome
@@ -14,8 +19,11 @@ export function drawBackground(ctx, biome, time, cameraX) {
   
   const { background } = biome;
   
-  // Sky gradient
-  const gradient = ctx.createLinearGradient(0, 0, 0, 600);
+  // Sky gradient with safety checks
+  const gradient = ctx.createLinearGradient(
+    ensureFinite(0), ensureFinite(0), 
+    ensureFinite(0), ensureFinite(600)
+  );
   gradient.addColorStop(0, background.sky[0]);
   gradient.addColorStop(0.5, background.sky[1]);
   gradient.addColorStop(1, background.sky[2]);

@@ -1,3 +1,8 @@
+// Helper to ensure finite values
+function ensureFinite(value, fallback = 0) {
+  return isFinite(value) ? value : fallback;
+}
+
 // Enemy rendering functions for different enemy types
 export function drawEnemy(ctx, enemy, ex, time, isFrozen, biomeKey) {
   ctx.save();
@@ -133,7 +138,10 @@ function drawSlime(ctx, enemy, ex, time, isFrozen) {
   ctx.shadowBlur = 0;
   
   // Main body with gradient
-  const bodyGrad = ctx.createRadialGradient(ex + 14, enemy.y + 22 - bounce, 0, ex + 20, enemy.y + 30 - bounce, 22);
+  const bodyGrad = ctx.createRadialGradient(
+    ensureFinite(ex + 14), ensureFinite(enemy.y + 22 - bounce), 0, 
+    ensureFinite(ex + 20), ensureFinite(enemy.y + 30 - bounce), ensureFinite(22)
+  );
   bodyGrad.addColorStop(0, colors.fill);
   bodyGrad.addColorStop(0.7, colors.fill);
   bodyGrad.addColorStop(1, colors.glow);
@@ -335,7 +343,10 @@ function drawFlyer(ctx, enemy, ex, time, isFrozen) {
   }
   
   // Body gradient
-  const bodyGrad = ctx.createRadialGradient(ex + 16, enemy.y + 16 + hover, 0, ex + 20, enemy.y + 20 + hover, 15);
+  const bodyGrad = ctx.createRadialGradient(
+    ensureFinite(ex + 16), ensureFinite(enemy.y + 16 + hover), 0, 
+    ensureFinite(ex + 20), ensureFinite(enemy.y + 20 + hover), ensureFinite(15)
+  );
   bodyGrad.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
   bodyGrad.addColorStop(0.4, colors.fill);
   bodyGrad.addColorStop(1, colors.glow);
@@ -416,7 +427,10 @@ function drawShooter(ctx, enemy, ex, time, isFrozen) {
   ctx.shadowBlur = 10 + (enemy.isEnraged ? 8 : 0);
 
   // Body with metallic gradient
-  const bodyGrad = ctx.createLinearGradient(ex + 5, enemy.y + 15, ex + 35, enemy.y + 40);
+  const bodyGrad = ctx.createLinearGradient(
+    ensureFinite(ex + 5), ensureFinite(enemy.y + 15), 
+    ensureFinite(ex + 35), ensureFinite(enemy.y + 40)
+  );
   bodyGrad.addColorStop(0, bodyColor);
   bodyGrad.addColorStop(0.5, glowColor);
   bodyGrad.addColorStop(1, bodyColor);
@@ -1841,7 +1855,10 @@ function drawCosmicOverlord(ctx, boss, bx, time, isFrozen, rage, pulse) {
 
   // Main cosmic body - shifting void energy
   const bodyHue = (time * 3) % 360;
-  const bodyGrad = ctx.createRadialGradient(centerX, centerY - 10, 0, centerX, centerY, 60);
+  const bodyGrad = ctx.createRadialGradient(
+    ensureFinite(centerX), ensureFinite(centerY - 10), 0, 
+    ensureFinite(centerX), ensureFinite(centerY), ensureFinite(60)
+  );
   bodyGrad.addColorStop(0, isFrozen ? '#F0F9FF' : '#FFFFFF');
   bodyGrad.addColorStop(0.2, isFrozen ? '#A5F3FC' : `hsl(${bodyHue}, 80%, 70%)`);
   bodyGrad.addColorStop(0.5, isFrozen ? '#67E8F9' : `hsl(${(bodyHue + 60) % 360}, 70%, 50%)`);
@@ -1861,7 +1878,10 @@ function drawCosmicOverlord(ctx, boss, bx, time, isFrozen, rage, pulse) {
 
   // Cosmic eye - multi-colored iris
   const eyeHue = (time * 5) % 360;
-  const eyeGrad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 15);
+  const eyeGrad = ctx.createRadialGradient(
+    ensureFinite(centerX), ensureFinite(centerY), 0, 
+    ensureFinite(centerX), ensureFinite(centerY), ensureFinite(15)
+  );
   eyeGrad.addColorStop(0, '#FFFFFF');
   eyeGrad.addColorStop(0.3, isFrozen ? '#A5F3FC' : `hsl(${eyeHue}, 90%, 75%)`);
   eyeGrad.addColorStop(0.6, isFrozen ? '#67E8F9' : `hsl(${(eyeHue + 120) % 360}, 80%, 60%)`);
