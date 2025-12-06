@@ -1750,3 +1750,100 @@ function drawOmegaTitan(ctx, boss, bx, time, isFrozen, rage, pulse) {
   
   ctx.shadowBlur = 0;
 }
+
+function drawCosmicEntity(ctx, boss, bx, time, isFrozen, rage, pulse) {
+  // Ultimate cosmic being - combination of all elements
+  const aura = Math.sin(time * 0.12) * 0.5 + 0.5;
+  const float = Math.sin(time * 0.06) * 10;
+  
+  // Massive cosmic aura
+  const auraGrad = ctx.createRadialGradient(bx + 50, boss.y + 50 + float, 0, bx + 50, boss.y + 50 + float, 100);
+  auraGrad.addColorStop(0, `rgba(168, 85, 247, ${aura * 0.5})`);
+  auraGrad.addColorStop(0.5, `rgba(139, 92, 246, ${aura * 0.3})`);
+  auraGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  ctx.fillStyle = auraGrad;
+  ctx.fillRect(bx - 50, boss.y - 50 + float, 200, 200);
+  
+  // Void energy core
+  const coreGrad = ctx.createRadialGradient(bx + 50, boss.y + 50 + float, 0, bx + 50, boss.y + 50 + float, 45);
+  coreGrad.addColorStop(0, '#FFFFFF');
+  coreGrad.addColorStop(0.3, isFrozen ? '#67E8F9' : '#A855F7');
+  coreGrad.addColorStop(0.7, isFrozen ? '#A5F3FC' : '#7C3AED');
+  coreGrad.addColorStop(1, isFrozen ? '#67E8F9' : '#5B21B6');
+  ctx.fillStyle = coreGrad;
+  ctx.shadowColor = '#9333EA';
+  ctx.shadowBlur = 50;
+  ctx.beginPath();
+  ctx.arc(bx + 50, boss.y + 50 + float, 45, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Rotating cosmic rings
+  for (let ring = 0; ring < 3; ring++) {
+    const rotation = time * (0.02 + ring * 0.015) * (ring % 2 === 0 ? 1 : -1);
+    const ringSize = 55 + ring * 15;
+    
+    ctx.save();
+    ctx.translate(bx + 50, boss.y + 50 + float);
+    ctx.rotate(rotation);
+    ctx.strokeStyle = `rgba(192, 132, 252, ${0.6 - ring * 0.15})`;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(0, 0, ringSize, 0, Math.PI * 1.5);
+    ctx.stroke();
+    ctx.restore();
+  }
+  
+  // Elemental orbs orbiting
+  const elementColors = ['#F97316', '#22D3EE', '#22C55E', '#FBBF24', '#A855F7', '#E879F9'];
+  for (let i = 0; i < 6; i++) {
+    const angle = time * 0.08 + i * Math.PI / 3;
+    const orbX = bx + 50 + Math.cos(angle) * 70;
+    const orbY = boss.y + 50 + float + Math.sin(angle) * 50;
+    
+    ctx.fillStyle = elementColors[i];
+    ctx.shadowColor = elementColors[i];
+    ctx.shadowBlur = 15;
+    ctx.beginPath();
+    ctx.arc(orbX, orbY, 6 + Math.sin(time * 0.15 + i) * 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  
+  // Crown of reality shards
+  for (let i = 0; i < 8; i++) {
+    const crownAngle = -time * 0.05 + i * Math.PI / 4;
+    const crownX = bx + 50 + Math.cos(crownAngle) * 38;
+    const crownY = boss.y + 15 + float + Math.sin(crownAngle) * 12;
+    
+    ctx.save();
+    ctx.translate(crownX, crownY);
+    ctx.rotate(crownAngle);
+    ctx.fillStyle = `rgba(196, 181, 253, ${pulse})`;
+    ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.moveTo(0, -10);
+    ctx.lineTo(6, 0);
+    ctx.lineTo(0, 10);
+    ctx.lineTo(-6, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+  
+  // Cosmic eyes
+  ctx.fillStyle = isFrozen ? '#fff' : (rage ? '#EF4444' : '#E0E7FF');
+  ctx.shadowColor = ctx.fillStyle;
+  ctx.shadowBlur = 30;
+  ctx.beginPath();
+  ctx.arc(bx + 38, boss.y + 45 + float, 10, 0, Math.PI * 2);
+  ctx.arc(bx + 62, boss.y + 45 + float, 10, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Glowing pupils
+  ctx.fillStyle = isFrozen ? '#67E8F9' : '#C084FC';
+  ctx.beginPath();
+  ctx.arc(bx + 38, boss.y + 45 + float, 5, 0, Math.PI * 2);
+  ctx.arc(bx + 62, boss.y + 45 + float, 5, 0, Math.PI * 2);
+  ctx.fill();
+  
+  ctx.shadowBlur = 0;
+}
