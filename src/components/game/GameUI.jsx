@@ -11,7 +11,7 @@ const POWERUP_INFO = {
   SHIELD: { color: '#3B82F6', icon: Shield, name: 'Shield', maxDuration: 400 }
 };
 
-export default function GameUI({ score, health, level, powerUps, abilityCooldowns, sessionScraps = 0, isTutorial = false, hiddenLevelId }) {
+export default function GameUI({ score, health, level, powerUps, abilityCooldowns, sessionScraps = 0, isTutorial = false, hiddenLevelId, lives = 10 }) {
   const activePowerUps = powerUps ? Object.entries(powerUps).filter(
     ([key, value]) => key !== 'shieldHealth' && value > 0
   ) : [];
@@ -91,7 +91,7 @@ export default function GameUI({ score, health, level, powerUps, abilityCooldown
 
       {/* Right side - Score, Level & Abilities */}
       <div className="space-y-1">
-        {/* Top row - Level, Score, Scraps */}
+        {/* Top row - Level, Score, Scraps, Lives */}
         <div className="flex gap-2 justify-end">
           <div className="bg-slate-900/70 backdrop-blur-sm rounded-lg px-2 py-1 border border-blue-500/30 flex items-center gap-1">
                           <Zap className="w-3 h-3 text-blue-400" fill="currentColor" />
@@ -107,6 +107,10 @@ export default function GameUI({ score, health, level, powerUps, abilityCooldown
           <div className="bg-slate-900/70 backdrop-blur-sm rounded-lg px-2 py-1 border border-purple-500/30 flex items-center gap-1">
             <Sparkles className="w-3 h-3 text-purple-400" />
             <span className="text-purple-400 font-bold text-xs">+{sessionScraps}</span>
+          </div>
+          <div className="bg-slate-900/70 backdrop-blur-sm rounded-lg px-2 py-1 border border-red-500/30 flex items-center gap-1">
+            <Heart className="w-3 h-3 text-red-400" fill="currentColor" />
+            <span className="text-red-400 font-bold text-xs">{lives}</span>
           </div>
         </div>
 
