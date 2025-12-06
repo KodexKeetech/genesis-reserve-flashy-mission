@@ -463,7 +463,8 @@ export default function Game() {
       saveLives(lives - 1);
       setHealth(100);
       setRespawnAtCheckpoint(true);
-      setGameState('playing');
+      setGameKey(prev => prev + 1); // Force remount to reset properly
+      setTimeout(() => setGameState('playing'), 50); // Brief delay to ensure clean state
     } else {
       // Out of lives - show comic ad
       saveLives(0);
