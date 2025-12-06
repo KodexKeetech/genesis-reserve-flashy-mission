@@ -17,6 +17,11 @@ import { drawLevel15Background } from './levels/Level15Background';
 import { drawLevel28Background } from './levels/Level28Background';
 import { drawLevel29Background } from './levels/Level29Background';
 import { drawLevel30Background } from './levels/Level30Background';
+import { drawLevel3Background } from './levels/Level3Background';
+import { drawLevel7Background } from './levels/Level7Background';
+import { drawLevel16Background } from './levels/Level16Background';
+import { drawLevel17Background } from './levels/Level17Background';
+import { drawLevel20Background } from './levels/Level20Background';
 import { createAmbientParticle, drawAmbientParticle } from './ParticleEffects';
 
 export default function BackgroundCanvas({ currentLevel, hiddenLevelId, gameSettings, cameraXRef, timeRef }) {
@@ -50,12 +55,16 @@ export default function BackgroundCanvas({ currentLevel, hiddenLevelId, gameSett
           drawLevel1Background(ctx, cameraX, 800, 600, time, false);
         } else if (currentLevel === 2) {
           drawLevel2Background(ctx, cameraX, 800, 600, time);
+        } else if (currentLevel === 3) {
+          drawLevel3Background(ctx, cameraX, 800, 600, time);
         } else if (currentLevel === 4) {
           drawLevel4Background(ctx, cameraX, 800, 600, time);
         } else if (currentLevel === 5) {
           drawLevel5Background(ctx, cameraX, 800, 600, time);
         } else if (currentLevel === 6) {
           drawLevel6Background(ctx, cameraX, 800, 600, time);
+        } else if (currentLevel === 7) {
+          drawLevel7Background(ctx, cameraX, 800, 600, time);
         } else if (currentLevel === 8) {
           drawLevel8Background(ctx, cameraX, 800, 600, time);
         } else if (currentLevel === 9) {
@@ -72,6 +81,12 @@ export default function BackgroundCanvas({ currentLevel, hiddenLevelId, gameSett
           drawLevel14Background(ctx, cameraX, 800, 600, time);
         } else if (currentLevel === 15) {
           drawLevel15Background(ctx, cameraX, 800, 600, time);
+        } else if (currentLevel === 16) {
+          drawLevel16Background(ctx, cameraX, 800, 600, time);
+        } else if (currentLevel === 17) {
+          drawLevel17Background(ctx, cameraX, 800, 600, time);
+        } else if (currentLevel === 20) {
+          drawLevel20Background(ctx, cameraX, 800, 600, time);
         } else if (currentLevel === 28) {
           drawLevel28Background(ctx, cameraX, 800, 600, time);
         } else if (currentLevel === 29) {
