@@ -659,8 +659,20 @@ export default function Game() {
   // Check if on mobile
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 900;
 
+  // Request fullscreen on mobile
+  useEffect(() => {
+    if (isMobile && gameState === 'playing') {
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen().catch(() => {});
+      } else if (elem.webkitRequestFullscreen) {
+        elem.webkitRequestFullscreen().catch(() => {});
+      }
+    }
+  }, [isMobile, gameState]);
+
   return (
-    <div className="h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex flex-col p-1 md:p-4 overflow-hidden">
+    <div className="w-screen h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex flex-col overflow-hidden" style={{ padding: isMobile ? '0' : '0.25rem' }}>
       {/* Ambient background effects */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl" />
@@ -677,10 +689,13 @@ export default function Game() {
       )}
 
       {/* Game Container */}
-      <div className="relative flex-grow flex items-center justify-center" style={{
-        maxHeight: isMobile ? 'calc(100vh - 180px)' : 'calc(100vh - 200px)'
+      <div className="relative flex items-center justify-center" style={{
+        height: isMobile ? 'calc(100vh - 160px)' : 'auto',
+        flexGrow: 1,
+        maxHeight: isMobile ? 'calc(100vh - 160px)' : 'calc(100vh - 200px)'
       }}>
-        <div className="relative w-full h-full max-w-[800px]" style={{ 
+        <div className="relative w-full h-full" style={{ 
+          maxWidth: isMobile ? '100%' : '800px',
           aspectRatio: '800/600'
         }}>
         {/* Settings button inside game container */}
@@ -791,8 +806,9 @@ export default function Game() {
         <TouchControls onInput={handleTouchInput} />
       )}
 
-      {/* Shop Buttons - smaller on mobile */}
-      <div className={`${isMobile ? 'mt-1' : 'mt-4'} flex gap-2 md:gap-3 flex-wrap justify-center flex-shrink-0`}>
+      {/* Shop Buttons - hide on mobile during gameplay */}
+      {(!isMobile || gameState !== 'playing') && (
+        <div className={`${isMobile ? 'mt-1' : 'mt-4'} flex gap-2 md:gap-3 flex-wrap justify-center flex-shrink-0`}>
         <Link to={createPageUrl('UpgradeShop')}>
           <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500">
             <ShoppingBag className="w-5 h-5 mr-2" />
@@ -813,7 +829,8 @@ export default function Game() {
             </div>
           </Button>
         </Link>
-      </div>
+        </div>
+      )}
 
       {/* Controls hint - hide on small screens */}
       <div className="hidden md:flex mt-6 flex-wrap justify-center gap-4 text-slate-500 text-sm">
