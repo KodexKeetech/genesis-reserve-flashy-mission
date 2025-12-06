@@ -257,7 +257,7 @@ export const BIOMES = {
       name: 'The Arcanist',
       type: 'arcanist',
       health: 70,
-      color: '#8B5CF6'
+      color: '#6366F1'
     }
   },
 
@@ -286,7 +286,7 @@ export const BIOMES = {
       name: 'Cosmic Overlord',
       type: 'cosmicOverlord',
       health: 100,
-      color: '#7C3AED'
+      color: '#C026D3'
     }
   }
 };
