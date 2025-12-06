@@ -1868,8 +1868,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     };
 
     const drawJeff = (ctx, player, time, cameraX) => {
-      const x = player.x - cameraX;
-      const y = player.y;
+      const x = Math.round(player.x - cameraX);
+      const y = Math.round(player.y);
       const facingRight = player.facingRight;
       const dir = facingRight ? 1 : -1;
       const centerX = x + player.width / 2;
@@ -4659,23 +4659,18 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         return;
       }
       
-      // RENDER BACKGROUND - Only redraw when camera moves significantly
-      const cameraMoved = Math.abs(state.cameraX - lastCameraX) > 15;
-      if (cameraMoved || time === 1) {
-        bgCtx.clearRect(0, 0, 800, 600);
-        
-        if (state.biome) {
-          if (currentLevel >= 1 && currentLevel <= 3 && state.biome.customLevel) {
-            drawLevel1Background(bgCtx, state.cameraX, 800, 600, time);
-          } else {
-            drawBackground(bgCtx, state.biome, time, state.cameraX);
-          }
+      // RENDER BACKGROUND - Clear and redraw every frame for smooth scrolling
+      bgCtx.clearRect(0, 0, 800, 600);
+      
+      if (state.biome) {
+        if (currentLevel >= 1 && currentLevel <= 3 && state.biome.customLevel) {
+          drawLevel1Background(bgCtx, state.cameraX, 800, 600, time);
         } else {
-          bgCtx.fillStyle = '#0F172A';
-          bgCtx.fillRect(0, 0, 800, 600);
+          drawBackground(bgCtx, state.biome, time, state.cameraX);
         }
-        
-        lastCameraX = state.cameraX;
+      } else {
+        bgCtx.fillStyle = '#0F172A';
+        bgCtx.fillRect(0, 0, 800, 600);
       }
       
       // Update and draw ambient particles every frame on background canvas
@@ -4702,8 +4697,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           if (p.life <= 0 || p.y > 650 || p.y < -50 || p.x < state.cameraX - 300 || p.x > state.cameraX + 1100) {
             ambientParticlesRef.current.splice(i, 1);
           } else {
-            // Draw on background canvas with camera offset
-            drawAmbientParticle(bgCtx, { ...p, x: p.x - state.cameraX }, time);
+            // Draw on background canvas with camera offset - round position for smooth rendering
+            drawAmbientParticle(bgCtx, { ...p, x: Math.round(p.x - state.cameraX), y: Math.round(p.y) }, time);
           }
         }
         bgCtx.restore();
@@ -4785,7 +4780,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       
       // Draw platforms using biome renderer
       for (const platform of platforms) {
-        const px = platform.x - state.cameraX;
+        const px = Math.round(platform.x - state.cameraX);
         if (px > -platform.width && px < 800) {
           // Draw crumbling platform with special effect
           if (platform.type === 'crumbling') {
@@ -4859,7 +4854,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       
       // Draw environmental hazards
       for (const envHazard of state.environmentalHazards) {
-        const hx = envHazard.x - state.cameraX;
+        const hx = Math.round(envHazard.x - state.cameraX);
         if (hx > -envHazard.width && hx < 800) {
           // Draw new hazard types
           if (envHazard.type === 'spikes') {
@@ -4966,8 +4961,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       // Draw collectibles
       for (const collectible of collectibles) {
         if (collectible.collected) continue;
-        const cx = collectible.x - state.cameraX;
-        const bobY = collectible.y + Math.sin(time * 0.1 + collectible.bobOffset) * 5;
+        const cx = Math.round(collectible.x - state.cameraX);
+        const bobY = Math.round(collectible.y + Math.sin(time * 0.1 + collectible.bobOffset) * 5);
         
         ctx.fillStyle = '#FBBF24';
         ctx.shadowColor = '#FBBF24';
@@ -4987,8 +4982,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       // Draw power-up items
       for (const powerUp of state.powerUpItems) {
         if (powerUp.collected) continue;
-        const px = powerUp.x - state.cameraX;
-        const bobY = powerUp.y + Math.sin(time * 0.12 + powerUp.bobOffset) * 6;
+        const px = Math.round(powerUp.x - state.cameraX);
+        const bobY = Math.round(powerUp.y + Math.sin(time * 0.12 + powerUp.bobOffset) * 6);
         const powerUpInfo = POWERUP_TYPES[powerUp.type];
         
         // Skip if unknown power-up type
@@ -5027,7 +5022,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       
       // Draw enemies using the enemy renderer
       for (const enemy of enemies) {
-        const ex = enemy.x - state.cameraX;
+        const ex = Math.round(enemy.x - state.cameraX);
         if (ex > -50 && ex < 850) {
           const isFrozen = enemy.frozen && enemy.frozen > 0;
           drawEnemy(ctx, enemy, ex, time, isFrozen, state.biome?.key);
@@ -5036,14 +5031,14 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       
       // Draw boss if exists
       if (state.boss) {
-        const bx = state.boss.x - state.cameraX;
+        const bx = Math.round(state.boss.x - state.cameraX);
         const isFrozen = state.boss.frozen > 0;
         drawBoss(ctx, state.boss, bx, time, isFrozen, state.biome?.key);
       }
       
       // Draw enemy projectiles with trails
       for (const proj of state.enemyProjectiles) {
-        const px = proj.x - state.cameraX;
+        const px = Math.round(proj.x - state.cameraX);
         
         // Draw trail
         drawEnemyProjectileTrail(ctx, proj, state.cameraX, time);
@@ -5450,7 +5445,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       
       // Draw hazards
       for (const hazard of state.hazards) {
-        const hx = hazard.x - state.cameraX;
+        const hx = Math.round(hazard.x - state.cameraX);
         const pulse = Math.sin(time * 0.2) * 0.3 + 0.7;
         ctx.fillStyle = `rgba(124, 58, 237, ${pulse})`;
         ctx.shadowColor = '#A855F7';
@@ -5469,7 +5464,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       
       // Draw projectiles with trails
       for (const proj of projectiles) {
-        const projX = proj.x - state.cameraX;
+        const projX = Math.round(proj.x - state.cameraX);
+        const projY = Math.round(proj.y);
         const size = proj.isCoin ? 10 : (proj.isPowerShot ? 12 : 8);
 
         // Draw trail first
@@ -5481,31 +5477,31 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.shadowColor = '#FBBF24';
           ctx.shadowBlur = 25 + Math.sin(time * 0.4) * 8;
           ctx.beginPath();
-          ctx.arc(projX + 8, proj.y + 8, size + Math.sin(time * 0.5) * 2, 0, Math.PI * 2);
+          ctx.arc(projX + 8, projY + 8, size + Math.sin(time * 0.5) * 2, 0, Math.PI * 2);
           ctx.fill();
 
           // Inner shine
           ctx.fillStyle = '#FEF3C7';
           ctx.beginPath();
-          ctx.arc(projX + 6, proj.y + 6, size * 0.4, 0, Math.PI * 2);
+          ctx.arc(projX + 6, projY + 6, size * 0.4, 0, Math.PI * 2);
           ctx.fill();
 
           // Sparkle effect
           ctx.fillStyle = '#FFFFFF';
           ctx.beginPath();
-          ctx.arc(projX + 5, proj.y + 5, 2, 0, Math.PI * 2);
+          ctx.arc(projX + 5, projY + 5, 2, 0, Math.PI * 2);
           ctx.fill();
         } else if (proj.type === 'freeze') {
           ctx.fillStyle = '#22D3EE';
           ctx.shadowColor = '#22D3EE';
           ctx.shadowBlur = 25 + Math.sin(time * 0.3) * 5;
           ctx.beginPath();
-          ctx.arc(projX + 8, proj.y + 8, size + Math.sin(time * 0.4) * 2, 0, Math.PI * 2);
+          ctx.arc(projX + 8, projY + 8, size + Math.sin(time * 0.4) * 2, 0, Math.PI * 2);
           ctx.fill();
 
           // Rotating ice crystal
           ctx.save();
-          ctx.translate(projX + 8, proj.y + 8);
+          ctx.translate(projX + 8, projY + 8);
           ctx.rotate(time * 0.2);
           ctx.fillStyle = '#A5F3FC';
           ctx.beginPath();
@@ -5522,18 +5518,18 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.shadowColor = '#F97316';
           ctx.shadowBlur = 35 + Math.sin(time * 0.4) * 10;
           ctx.beginPath();
-          ctx.arc(projX + 8, proj.y + 8, size + Math.sin(time * 0.5) * 3, 0, Math.PI * 2);
+          ctx.arc(projX + 8, projY + 8, size + Math.sin(time * 0.5) * 3, 0, Math.PI * 2);
           ctx.fill();
 
           ctx.fillStyle = '#FBBF24';
           ctx.beginPath();
-          ctx.arc(projX + 8, proj.y + 8, size * 0.5, 0, Math.PI * 2);
+          ctx.arc(projX + 8, projY + 8, size * 0.5, 0, Math.PI * 2);
           ctx.fill();
 
           // Fire flicker
           ctx.fillStyle = '#FEF3C7';
           ctx.beginPath();
-          ctx.arc(projX + 6, proj.y + 6, size * 0.25, 0, Math.PI * 2);
+          ctx.arc(projX + 6, projY + 6, size * 0.25, 0, Math.PI * 2);
           ctx.fill();
         } else {
           // Pulsing magic orb
@@ -5542,12 +5538,12 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.shadowColor = '#A855F7';
           ctx.shadowBlur = 20 + pulse * 3;
           ctx.beginPath();
-          ctx.arc(projX + 8, proj.y + 8, size + pulse, 0, Math.PI * 2);
+          ctx.arc(projX + 8, projY + 8, size + pulse, 0, Math.PI * 2);
           ctx.fill();
 
           ctx.fillStyle = '#E9D5FF';
           ctx.beginPath();
-          ctx.arc(projX + 8, proj.y + 8, size * 0.5, 0, Math.PI * 2);
+          ctx.arc(projX + 8, projY + 8, size * 0.5, 0, Math.PI * 2);
           ctx.fill();
         }
         ctx.shadowBlur = 0;
@@ -5558,7 +5554,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         const maxParticles = gameSettings.graphics === 'low' ? 20 : gameSettings.graphics === 'medium' ? 50 : particles.length;
         for (let i = 0; i < Math.min(maxParticles, particles.length); i++) {
           const particle = particles[i];
-          drawParticle(ctx, { ...particle, x: particle.x - state.cameraX }, time);
+          drawParticle(ctx, { ...particle, x: Math.round(particle.x - state.cameraX), y: Math.round(particle.y) }, time);
         }
       }
       
@@ -5760,7 +5756,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       
       // Draw checkpoint crystal
       if (state.checkpoint) {
-        const cpx = state.checkpoint.x - state.cameraX;
+        const cpx = Math.round(state.checkpoint.x - state.cameraX);
         if (cpx > -50 && cpx < 850) {
           const activated = state.checkpoint.activated;
           const pulse = Math.sin(time * 0.1) * 0.3 + 0.7;
@@ -5809,7 +5805,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       
       // Draw secret portal if exists
       if (state.secretPortal) {
-        const spx = state.secretPortal.x - state.cameraX;
+        const spx = Math.round(state.secretPortal.x - state.cameraX);
         if (spx > -100 && spx < 900) {
           const portalCenterX = spx + state.secretPortal.width / 2;
           const portalCenterY = state.secretPortal.y + state.secretPortal.height / 2;
@@ -5878,7 +5874,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       const shouldShowPortal = !isBossForPortal || (isBossForPortal && state.boss === null);
       
       if (shouldShowPortal) {
-        const goalX = state.goalX - state.cameraX;
+        const goalX = Math.round(state.goalX - state.cameraX);
         if (goalX < 850 && goalX > -100) {
           const portalCenterX = goalX + 30;
           const portalCenterY = 420;
