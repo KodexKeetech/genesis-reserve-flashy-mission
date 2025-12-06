@@ -2148,11 +2148,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         ctx.shadowColor = spellColor;
         ctx.shadowBlur = 25 + Math.sin(time * 0.5) * 12;
         // Magic orb in hand with inner glow
-        const orbSize = 9 + Math.sin(time * 0.5) * 3;
-        const orbGrad = ctx.createRadialGradient(
-          ensureFinite(0), ensureFinite(24), ensureFinite(0), 
-          ensureFinite(0), ensureFinite(24), ensureFinite(orbSize)
-        );
+        const orbSize = ensureFinite(9 + Math.sin(time * 0.5) * 3, 9);
+        const orbGrad = ctx.createRadialGradient(0, 24, 0, 0, 24, orbSize);
         orbGrad.addColorStop(0, '#FFFFFF');
         orbGrad.addColorStop(0.3, spellColor);
         orbGrad.addColorStop(1, spellColor + '80');
@@ -6009,14 +6006,17 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
 
           // Rotating ice crystal
           ctx.save();
-          ctx.translate(projX + 8, projY + 8);
+          const iceTransX = ensureFinite(projX + 8, 0);
+          const iceTransY = ensureFinite(projY + 8, 0);
+          ctx.translate(iceTransX, iceTransY);
           ctx.rotate(time * 0.2);
           ctx.fillStyle = '#A5F3FC';
           ctx.beginPath();
-          ctx.moveTo(0, -size);
-          ctx.lineTo(size * 0.5, 0);
-          ctx.lineTo(0, size);
-          ctx.lineTo(-size * 0.5, 0);
+          const iceSize = ensureFinite(size, 8);
+          ctx.moveTo(0, -iceSize);
+          ctx.lineTo(iceSize * 0.5, 0);
+          ctx.lineTo(0, iceSize);
+          ctx.lineTo(-iceSize * 0.5, 0);
           ctx.closePath();
           ctx.fill();
           ctx.restore();
@@ -6401,9 +6401,11 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.stroke();
           
           // Inner portal swirl
+          const secPortalCX = ensureFinite(portalCenterX, 400);
+          const secPortalCY = ensureFinite(portalCenterY + floatY, 400);
           const gradient = ctx.createRadialGradient(
-            ensureFinite(portalCenterX), ensureFinite(portalCenterY + floatY), ensureFinite(0), 
-            ensureFinite(portalCenterX), ensureFinite(portalCenterY + floatY), ensureFinite(30)
+            secPortalCX, secPortalCY, 0, 
+            secPortalCX, secPortalCY, 30
           );
           gradient.addColorStop(0, '#F0ABFC');
           gradient.addColorStop(0.4, '#D946EF');
@@ -6470,9 +6472,12 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.stroke();
 
           // Inner portal swirl
+          const goalPortalCX = ensureFinite(portalCenterX, 400);
+          const goalPortalCY = ensureFinite(portalCenterY, 420);
+          const goalPortalW = ensureFinite(portalWidth, 50);
           const gradient = ctx.createRadialGradient(
-            ensureFinite(portalCenterX), ensureFinite(portalCenterY), ensureFinite(0), 
-            ensureFinite(portalCenterX), ensureFinite(portalCenterY), ensureFinite(portalWidth)
+            goalPortalCX, goalPortalCY, 0, 
+            goalPortalCX, goalPortalCY, goalPortalW
           );
           gradient.addColorStop(0, '#E9D5FF');
           gradient.addColorStop(0.3, '#C084FC');
