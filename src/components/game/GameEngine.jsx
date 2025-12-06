@@ -1926,7 +1926,9 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
 
       // Back leg (bright red pants + brown boot)
       ctx.save();
-      ctx.translate(ensureFinite(centerX - 6), ensureFinite(y + 42 - bodyBob + breathe));
+      const translateX1 = ensureFinite(centerX - 6, 0);
+      const translateY1 = ensureFinite(y + 42 - bodyBob + breathe, 0);
+      ctx.translate(translateX1, translateY1);
       ctx.rotate(ensureFinite((-legSwing * Math.PI) / 180, 0));
       // Red pants with shading
       const pantsGradBack = ctx.createLinearGradient(
@@ -1960,7 +1962,9 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
 
       // Front leg (bright red pants + brown boot)
       ctx.save();
-      ctx.translate(ensureFinite(centerX + 6), ensureFinite(y + 42 - bodyBob + breathe));
+      const translateX2 = ensureFinite(centerX + 6, 0);
+      const translateY2 = ensureFinite(y + 42 - bodyBob + breathe, 0);
+      ctx.translate(translateX2, translateY2);
       ctx.rotate(ensureFinite((legSwing * Math.PI) / 180, 0));
       // Red pants with shading
       const pantsGradFront = ctx.createLinearGradient(
@@ -2076,7 +2080,9 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
 
       // Back arm (dark glove)
       ctx.save();
-      ctx.translate(ensureFinite(centerX - 13), ensureFinite(y + 22 - bodyBob + breathe));
+      const translateX3 = ensureFinite(centerX - 13, 0);
+      const translateY3 = ensureFinite(y + 22 - bodyBob + breathe, 0);
+      ctx.translate(translateX3, translateY3);
       ctx.rotate(ensureFinite((-armSwing * Math.PI) / 180, 0));
       // Coat sleeve with gradient
       const sleeveGrad = ctx.createLinearGradient(
@@ -2109,7 +2115,9 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
 
       // Front arm (with magic glow if casting)
       ctx.save();
-      ctx.translate(ensureFinite(centerX + 13), ensureFinite(y + 22 - bodyBob + breathe));
+      const translateX4 = ensureFinite(centerX + 13, 0);
+      const translateY4 = ensureFinite(y + 22 - bodyBob + breathe, 0);
+      ctx.translate(translateX4, translateY4);
       const armAngle = player.isCasting ? -45 + castingPose : armSwing;
       ctx.rotate(ensureFinite((armAngle * Math.PI) / 180, 0));
       // Coat sleeve with gradient
