@@ -1,8 +1,8 @@
-// Level 18: Ultimate Showdown - Final Boss
+// Level 18: Pharaoh King Boss Fight
 
 export const level18Config = {
-  name: "Ultimate Showdown",
-  biome: 'space',
+  name: "Pharaoh's Throne",
+  biome: 'ruins',
   width: 1200,
   isBoss: true,
   sections: [
@@ -26,21 +26,21 @@ export const level18Config = {
         { x: 1120, y: 490, type: 'scrap' }
       ],
       boss: {
-        type: 'omegaTitan',
+        type: 'pharaohKing',
         x: 600,
         y: 200
       }
     }
   ],
   backgroundLayers: [
-    { type: 'cosmic_storm', parallax: 0.02, alpha: 0.6 },
-    { type: 'nebula_vortex', parallax: 0.05, alpha: 0.4 },
-    { type: 'star_field', parallax: 0.08, alpha: 0.8 }
+    { type: 'hieroglyphs', parallax: 0.02, alpha: 0.4 },
+    { type: 'torch_glow', parallax: 0.05, alpha: 0.6 },
+    { type: 'pillars', parallax: 0.08, alpha: 0.8 }
   ],
   ambientEffects: {
-    particles: { type: 'energy', density: 0.12 },
-    screenShake: { intensity: 2, frequency: 0.1 },
-    colorTint: 'rgba(120, 80, 200, 0.1)'
+    particles: { type: 'goldenDust', density: 0.1 },
+    screenShake: { intensity: 1, frequency: 0.08 },
+    colorTint: 'rgba(202, 138, 4, 0.12)'
   }
 };
 
