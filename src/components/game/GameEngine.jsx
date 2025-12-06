@@ -5039,6 +5039,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       // Draw enemy projectiles with trails
       for (const proj of state.enemyProjectiles) {
         const px = Math.round(proj.x - state.cameraX);
+        const py = Math.round(proj.y);
         
         // Draw trail
         drawEnemyProjectileTrail(ctx, proj, state.cameraX, time);
@@ -5062,7 +5063,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         } else if (proj.type === 'leaf') {
           // Draw leaf projectile
           ctx.save();
-          ctx.translate(px, proj.y);
+          ctx.translate(px, py);
           ctx.rotate(time * 0.15);
           ctx.fillStyle = '#22C55E';
           ctx.beginPath();
@@ -5083,9 +5084,9 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.shadowBlur = 30;
           ctx.lineWidth = 4;
           ctx.beginPath();
-          ctx.moveTo(px, proj.y);
+          ctx.moveTo(px, py);
           for (let seg = 0; seg < 8; seg++) {
-            const segY = proj.y + seg * 40;
+            const segY = py + seg * 40;
             const offsetX = (Math.random() - 0.5) * 20;
             ctx.lineTo(px + offsetX, segY);
           }
@@ -5102,11 +5103,11 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.shadowColor = '#22D3EE';
           ctx.shadowBlur = 10;
           ctx.beginPath();
-          ctx.moveTo(px, proj.y);
-          ctx.lineTo(px + 8, proj.y + 10);
-          ctx.lineTo(px + 5, proj.y + 30);
-          ctx.lineTo(px - 5, proj.y + 30);
-          ctx.lineTo(px - 8, proj.y + 10);
+          ctx.moveTo(px, py);
+          ctx.lineTo(px + 8, py + 10);
+          ctx.lineTo(px + 5, py + 30);
+          ctx.lineTo(px - 5, py + 30);
+          ctx.lineTo(px - 8, py + 10);
           ctx.closePath();
           ctx.fill();
           ctx.shadowBlur = 0;
@@ -5117,24 +5118,24 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.shadowColor = '#EAB308';
           ctx.shadowBlur = 15;
           ctx.beginPath();
-          ctx.arc(px, proj.y, 9, 0, Math.PI * 2);
+          ctx.arc(px, py, 9, 0, Math.PI * 2);
           ctx.fill();
           // Ankh symbol
           ctx.strokeStyle = '#78350F';
           ctx.lineWidth = 2;
           ctx.beginPath();
-          ctx.arc(px, proj.y - 2, 3, 0, Math.PI * 2);
-          ctx.moveTo(px, proj.y + 1);
-          ctx.lineTo(px, proj.y + 6);
-          ctx.moveTo(px - 3, proj.y + 3);
-          ctx.lineTo(px + 3, proj.y + 3);
+          ctx.arc(px, py - 2, 3, 0, Math.PI * 2);
+          ctx.moveTo(px, py + 1);
+          ctx.lineTo(px, py + 6);
+          ctx.moveTo(px - 3, py + 3);
+          ctx.lineTo(px + 3, py + 3);
           ctx.stroke();
           ctx.shadowBlur = 0;
           continue;
         } else if (proj.type === 'crystal') {
           // Draw crystal shard
           ctx.save();
-          ctx.translate(px, proj.y);
+          ctx.translate(px, py);
           ctx.rotate(time * 0.2);
           ctx.fillStyle = '#E879F9';
           ctx.shadowColor = '#F472B6';
@@ -5154,12 +5155,12 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.fillStyle = `rgba(239, 68, 68, ${0.7 + Math.sin(time * 0.5) * 0.3})`;
           ctx.shadowColor = '#EF4444';
           ctx.shadowBlur = 25;
-          ctx.fillRect(px - 15, proj.y, 30, 300);
+          ctx.fillRect(px - 15, py, 30, 300);
           // Inner core
           ctx.fillStyle = '#FCA5A5';
-          ctx.fillRect(px - 8, proj.y, 16, 300);
+          ctx.fillRect(px - 8, py, 16, 300);
           ctx.fillStyle = '#FEE2E2';
-          ctx.fillRect(px - 3, proj.y, 6, 300);
+          ctx.fillRect(px - 3, py, 6, 300);
           ctx.shadowBlur = 0;
           continue;
         } else if (proj.type === 'missile') {
@@ -5168,14 +5169,14 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.shadowColor = '#10B981';
           ctx.shadowBlur = 8;
           ctx.beginPath();
-          ctx.ellipse(px, proj.y, 6, 10, 0, 0, Math.PI * 2);
+          ctx.ellipse(px, py, 6, 10, 0, 0, Math.PI * 2);
           ctx.fill();
           // Exhaust
           ctx.fillStyle = '#F97316';
           ctx.beginPath();
-          ctx.moveTo(px - 3, proj.y + 8);
-          ctx.lineTo(px, proj.y + 15 + Math.random() * 5);
-          ctx.lineTo(px + 3, proj.y + 8);
+          ctx.moveTo(px - 3, py + 8);
+          ctx.lineTo(px, py + 15 + Math.random() * 5);
+          ctx.lineTo(px + 3, py + 8);
           ctx.closePath();
           ctx.fill();
           ctx.shadowBlur = 0;
@@ -5186,13 +5187,13 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.shadowColor = '#CA8A04';
           ctx.shadowBlur = 6;
           ctx.beginPath();
-          ctx.ellipse(px, proj.y, 7, 5, 0, 0, Math.PI * 2);
+          ctx.ellipse(px, py, 7, 5, 0, 0, Math.PI * 2);
           ctx.fill();
           // Wings
           ctx.fillStyle = '#A16207';
           ctx.beginPath();
-          ctx.ellipse(px - 4, proj.y, 3, 4, -0.3, 0, Math.PI * 2);
-          ctx.ellipse(px + 4, proj.y, 3, 4, 0.3, 0, Math.PI * 2);
+          ctx.ellipse(px - 4, py, 3, 4, -0.3, 0, Math.PI * 2);
+          ctx.ellipse(px + 4, py, 3, 4, 0.3, 0, Math.PI * 2);
           ctx.fill();
           ctx.shadowBlur = 0;
           continue;
@@ -5201,10 +5202,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.fillStyle = `rgba(232, 121, 249, ${0.7 + Math.sin(time * 0.3) * 0.2})`;
           ctx.shadowColor = '#F472B6';
           ctx.shadowBlur = 20;
-          ctx.fillRect(px - proj.width / 2, proj.y, proj.width, proj.height);
+          ctx.fillRect(px - proj.width / 2, py, proj.width, proj.height);
           // Crystal facets
           ctx.fillStyle = '#FBBFEF';
-          ctx.fillRect(px - proj.width / 2 + 3, proj.y + 10, 6, proj.height - 20);
+          ctx.fillRect(px - proj.width / 2 + 3, py + 10, 6, proj.height - 20);
           ctx.shadowBlur = 0;
           continue;
         } else if (proj.type === 'crystalSpike') {
@@ -5213,34 +5214,34 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.shadowColor = '#F472B6';
           ctx.shadowBlur = 10;
           ctx.beginPath();
-          ctx.moveTo(px, proj.y);
-          ctx.lineTo(px + 8, proj.y + 12);
-          ctx.lineTo(px + 5, proj.y + 25);
-          ctx.lineTo(px - 5, proj.y + 25);
-          ctx.lineTo(px - 8, proj.y + 12);
+          ctx.moveTo(px, py);
+          ctx.lineTo(px + 8, py + 12);
+          ctx.lineTo(px + 5, py + 25);
+          ctx.lineTo(px - 5, py + 25);
+          ctx.lineTo(px - 8, py + 12);
           ctx.closePath();
           ctx.fill();
           ctx.shadowBlur = 0;
           continue;
         } else if (proj.type === 'plasmaBeam') {
           // Draw plasma beam - glowing energy projectile
-          const beamGrad = ctx.createLinearGradient(px - 40, proj.y, px + 40, proj.y);
+          const beamGrad = ctx.createLinearGradient(px - 40, py, px + 40, py);
           beamGrad.addColorStop(0, 'rgba(16, 185, 129, 0.3)');
           beamGrad.addColorStop(0.5, '#10B981');
           beamGrad.addColorStop(1, 'rgba(16, 185, 129, 0.3)');
           ctx.fillStyle = beamGrad;
           ctx.shadowColor = '#10B981';
           ctx.shadowBlur = 25 + Math.sin(time * 0.5) * 10;
-          ctx.fillRect(px - proj.width / 2, proj.y - proj.height / 2, proj.width, proj.height);
+          ctx.fillRect(px - proj.width / 2, py - proj.height / 2, proj.width, proj.height);
           // Inner core
           ctx.fillStyle = '#6EE7B7';
-          ctx.fillRect(px - proj.width / 2 + 5, proj.y - proj.height / 4, proj.width - 10, proj.height / 2);
+          ctx.fillRect(px - proj.width / 2 + 5, py - proj.height / 4, proj.width - 10, proj.height / 2);
           ctx.shadowBlur = 0;
           continue;
         } else if (proj.type === 'homingMissile') {
           // Draw homing missile with exhaust trail
           ctx.save();
-          ctx.translate(px, proj.y);
+          ctx.translate(px, py);
           const angle = Math.atan2(proj.velocityY, proj.velocityX);
           ctx.rotate(angle + Math.PI / 2);
           // Missile body
@@ -5283,7 +5284,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           const segments = 5;
           for (let i = 0; i <= segments; i++) {
             const segX = px - proj.width / 2 + (i / segments) * proj.width;
-            const segY = proj.y + (i % 2 === 0 ? 0 : -20) + Math.sin(time * 0.3 + i) * 5;
+            const segY = py + (i % 2 === 0 ? 0 : -20) + Math.sin(time * 0.3 + i) * 5;
             if (i === 0) ctx.moveTo(segX, segY);
             else ctx.lineTo(segX, segY);
           }
@@ -5292,7 +5293,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.fillStyle = '#FFFFFF';
           for (let i = 0; i < 3; i++) {
             const sparkX = px + (Math.random() - 0.5) * proj.width;
-            const sparkY = proj.y - Math.random() * 30;
+            const sparkY = py - Math.random() * 30;
             ctx.beginPath();
             ctx.arc(sparkX, sparkY, 2, 0, Math.PI * 2);
             ctx.fill();
@@ -5309,24 +5310,24 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           for (let i = 0; i < 6; i++) {
             const angle = (i / 6) * Math.PI * 2 + time * 0.1;
             const r = 12;
-            if (i === 0) ctx.moveTo(px + Math.cos(angle) * r, proj.y + Math.sin(angle) * r);
-            else ctx.lineTo(px + Math.cos(angle) * r, proj.y + Math.sin(angle) * r);
+            if (i === 0) ctx.moveTo(px + Math.cos(angle) * r, py + Math.sin(angle) * r);
+            else ctx.lineTo(px + Math.cos(angle) * r, py + Math.sin(angle) * r);
           }
           ctx.closePath();
           ctx.fill();
           // Red eye
           ctx.fillStyle = '#EF4444';
           ctx.beginPath();
-          ctx.arc(px, proj.y, 4, 0, Math.PI * 2);
+          ctx.arc(px, py, 4, 0, Math.PI * 2);
           ctx.fill();
           // Propellers
           ctx.strokeStyle = '#94A3B8';
           ctx.lineWidth = 2;
           ctx.beginPath();
-          ctx.moveTo(px - 15, proj.y - 5);
-          ctx.lineTo(px - 20, proj.y - 10);
-          ctx.moveTo(px + 15, proj.y - 5);
-          ctx.lineTo(px + 20, proj.y - 10);
+          ctx.moveTo(px - 15, py - 5);
+          ctx.lineTo(px - 20, py - 10);
+          ctx.moveTo(px + 15, py - 5);
+          ctx.lineTo(px + 20, py - 10);
           ctx.stroke();
           ctx.shadowBlur = 0;
           continue;
@@ -5336,11 +5337,11 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.shadowColor = '#EF4444';
           ctx.shadowBlur = 12;
           ctx.beginPath();
-          ctx.arc(px, proj.y, 4, 0, Math.PI * 2);
+          ctx.arc(px, py, 4, 0, Math.PI * 2);
           ctx.fill();
           ctx.fillStyle = '#FCA5A5';
           ctx.beginPath();
-          ctx.arc(px, proj.y, 2, 0, Math.PI * 2);
+          ctx.arc(px, py, 2, 0, Math.PI * 2);
           ctx.fill();
           ctx.shadowBlur = 0;
           continue;
@@ -5350,18 +5351,18 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.shadowColor = '#A78BFA';
           ctx.shadowBlur = 15 + Math.sin(time * 0.4) * 5;
           ctx.beginPath();
-          ctx.arc(px, proj.y, 8, 0, Math.PI * 2);
+          ctx.arc(px, py, 8, 0, Math.PI * 2);
           ctx.fill();
           // Inner glow
           ctx.fillStyle = '#C4B5FD';
           ctx.beginPath();
-          ctx.arc(px, proj.y, 4, 0, Math.PI * 2);
+          ctx.arc(px, py, 4, 0, Math.PI * 2);
           ctx.fill();
           // Trailing sparkles
           ctx.fillStyle = '#E0E7FF';
           for (let i = 0; i < 3; i++) {
             const trailX = px - proj.velocityX * (i + 1) * 2;
-            const trailY = proj.y - proj.velocityY * (i + 1) * 2;
+            const trailY = py - proj.velocityY * (i + 1) * 2;
             ctx.beginPath();
             ctx.arc(trailX, trailY, 2 - i * 0.5, 0, Math.PI * 2);
             ctx.fill();
@@ -5377,18 +5378,18 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.shadowBlur = 20;
           // Body
           ctx.beginPath();
-          ctx.ellipse(px, proj.y + 20, 15, 25, 0, 0, Math.PI * 2);
+          ctx.ellipse(px, py + 20, 15, 25, 0, 0, Math.PI * 2);
           ctx.fill();
           // Face
           ctx.fillStyle = '#E0E7FF';
           ctx.beginPath();
-          ctx.ellipse(px, proj.y + 8, 10, 12, 0, 0, Math.PI * 2);
+          ctx.ellipse(px, py + 8, 10, 12, 0, 0, Math.PI * 2);
           ctx.fill();
           // Eyes
           ctx.fillStyle = '#1E1B4B';
           ctx.beginPath();
-          ctx.ellipse(px - 4, proj.y + 6, 3, 4, 0, 0, Math.PI * 2);
-          ctx.ellipse(px + 4, proj.y + 6, 3, 4, 0, 0, Math.PI * 2);
+          ctx.ellipse(px - 4, py + 6, 3, 4, 0, 0, Math.PI * 2);
+          ctx.ellipse(px + 4, py + 6, 3, 4, 0, 0, Math.PI * 2);
           ctx.fill();
           ctx.globalAlpha = 1;
           ctx.shadowBlur = 0;
@@ -5399,18 +5400,18 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.shadowColor = '#8B5CF6';
           ctx.shadowBlur = 10;
           ctx.beginPath();
-          ctx.arc(px, proj.y, 6, 0, Math.PI * 2);
+          ctx.arc(px, py, 6, 0, Math.PI * 2);
           ctx.fill();
           ctx.fillStyle = '#E0E7FF';
           ctx.beginPath();
-          ctx.arc(px, proj.y, 3, 0, Math.PI * 2);
+          ctx.arc(px, py, 3, 0, Math.PI * 2);
           ctx.fill();
           ctx.shadowBlur = 0;
           continue;
         } else if (proj.type === 'arcaneBolt') {
           // Draw arcane bolt from spellweaver
           ctx.save();
-          ctx.translate(px, proj.y);
+          ctx.translate(px, py);
           ctx.rotate(time * 0.3);
           ctx.fillStyle = '#6366F1';
           ctx.shadowColor = '#818CF8';
@@ -5434,11 +5435,11 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         ctx.shadowColor = color;
         ctx.shadowBlur = 15 + Math.sin(time * 0.3) * 5;
         ctx.beginPath();
-        ctx.arc(px, proj.y, size + Math.sin(time * 0.4) * 2, 0, Math.PI * 2);
+        ctx.arc(px, py, size + Math.sin(time * 0.4) * 2, 0, Math.PI * 2);
         ctx.fill();
         ctx.fillStyle = innerColor;
         ctx.beginPath();
-        ctx.arc(px, proj.y, size * 0.5, 0, Math.PI * 2);
+        ctx.arc(px, py, size * 0.5, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
       }
