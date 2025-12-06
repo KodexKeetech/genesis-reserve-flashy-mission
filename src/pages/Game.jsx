@@ -775,6 +775,7 @@ export default function Game() {
           />
         )}
         </div>
+        </div>
       </div>
 
       {/* Touch controls for mobile - fixed at bottom */}
