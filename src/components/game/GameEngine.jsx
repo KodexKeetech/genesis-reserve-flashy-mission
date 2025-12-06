@@ -24,6 +24,9 @@ import { drawLevel9Background } from './levels/Level9Background';
 import { drawLevel10Background } from './levels/Level10Background';
 import { drawLevel11Background } from './levels/Level11Background';
 import { drawLevel12Background } from './levels/Level12Background';
+import { drawLevel13Background } from './levels/Level13Background';
+import { drawLevel14Background } from './levels/Level14Background';
+import { drawLevel15Background } from './levels/Level15Background';
 
 // Helper to get level config
 function getLevelConfig(level) {
@@ -4693,6 +4696,12 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           drawLevel11Background(bgCtx, state.cameraX, 800, 600, time);
         } else if (currentLevel === 12) {
           drawLevel12Background(bgCtx, state.cameraX, 800, 600, time);
+        } else if (currentLevel === 13) {
+          drawLevel13Background(bgCtx, state.cameraX, 800, 600, time);
+        } else if (currentLevel === 14) {
+          drawLevel14Background(bgCtx, state.cameraX, 800, 600, time);
+        } else if (currentLevel === 15) {
+          drawLevel15Background(bgCtx, state.cameraX, 800, 600, time);
         } else {
           drawBackground(bgCtx, state.biome, time, state.cameraX);
         }
