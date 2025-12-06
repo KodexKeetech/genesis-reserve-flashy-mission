@@ -1,109 +1,88 @@
-// Level 5: Ice - Enhanced Background Renderer
+// Level 5: Volcano - Enhanced Background Renderer
 
 export function drawLevel5Background(ctx, cameraX, canvasWidth, canvasHeight, time) {
-  // Arctic sky gradient
+  // Deep volcanic sky gradient
   const skyGradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
-  skyGradient.addColorStop(0, '#0F1C2E');
-  skyGradient.addColorStop(0.4, '#1A2A3E');
-  skyGradient.addColorStop(0.7, '#1E3548');
-  skyGradient.addColorStop(1, '#0F1C2E');
+  skyGradient.addColorStop(0, '#150805');
+  skyGradient.addColorStop(0.3, '#301510');
+  skyGradient.addColorStop(0.7, '#3D1810');
+  skyGradient.addColorStop(1, '#150805');
   ctx.fillStyle = skyGradient;
   ctx.fillRect(0, 0, canvasWidth, canvasHeight);
   
-  // Aurora borealis effect
+  // Volcanic mountains with erupting craters
+  ctx.fillStyle = '#1c1917';
   for (let i = 0; i < 3; i++) {
-    const auroraY = 80 + i * 40;
-    const wave = Math.sin(time * 0.02 + i) * 30;
-    const auroraGrad = ctx.createLinearGradient(0, auroraY - 20, 0, auroraY + 40);
-    const colors = ['rgba(34, 211, 238, 0.25)', 'rgba(139, 92, 246, 0.18)', 'rgba(16, 185, 129, 0.22)'];
-    auroraGrad.addColorStop(0, 'transparent');
-    auroraGrad.addColorStop(0.5, colors[i % 3]);
-    auroraGrad.addColorStop(1, 'transparent');
-    
-    ctx.fillStyle = auroraGrad;
+    const vx = Math.round(((i * 400 - cameraX * 0.04) % 1300) - 200);
     ctx.beginPath();
-    ctx.moveTo(0, auroraY + wave);
-    for (let x = 0; x <= 800; x += 25) {
-      ctx.lineTo(x, auroraY + Math.sin(x * 0.012 + time * 0.03 + i) * 18 + wave);
+    ctx.moveTo(vx, 500);
+    ctx.lineTo(vx + 140, 260);
+    ctx.lineTo(vx + 280, 500);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Lava crater glow
+    const craterGlow = Math.sin(time * 0.1 + i * 1.5) * 0.3 + 0.7;
+    const craterGrad = ctx.createRadialGradient(vx + 140, 260, 0, vx + 140, 260, 60);
+    craterGrad.addColorStop(0, `rgba(251, 191, 36, ${craterGlow})`);
+    craterGrad.addColorStop(0.5, `rgba(249, 115, 22, ${craterGlow * 0.6})`);
+    craterGrad.addColorStop(1, 'rgba(234, 88, 12, 0)');
+    ctx.fillStyle = craterGrad;
+    ctx.fillRect(vx + 80, 230, 120, 70);
+  }
+  
+  // Intense lava glow at bottom
+  const glowPulse = Math.sin(time * 0.06) * 0.2 + 0.7;
+  const lavaGlow = ctx.createLinearGradient(0, 420, 0, 600);
+  lavaGlow.addColorStop(0, 'rgba(234, 88, 12, 0)');
+  lavaGlow.addColorStop(0.4, `rgba(249, 115, 22, ${glowPulse * 0.4})`);
+  lavaGlow.addColorStop(0.7, `rgba(239, 68, 68, ${glowPulse * 0.6})`);
+  lavaGlow.addColorStop(1, `rgba(220, 38, 38, ${glowPulse})`);
+  ctx.fillStyle = lavaGlow;
+  ctx.fillRect(0, 420, 800, 180);
+  
+  // Lava rivers in distance
+  ctx.strokeStyle = `rgba(251, 191, 36, ${glowPulse * 0.5})`;
+  ctx.shadowColor = '#F97316';
+  ctx.shadowBlur = 15;
+  ctx.lineWidth = 3;
+  for (let i = 0; i < 3; i++) {
+    const lx = ((i * 300 - cameraX * 0.1) % 1000) - 100;
+    ctx.beginPath();
+    ctx.moveTo(lx, 450);
+    for (let seg = 0; seg < 6; seg++) {
+      ctx.lineTo(lx + seg * 40 + Math.sin(time * 0.04 + seg) * 15, 480 + seg * 8);
     }
-    ctx.lineTo(800, auroraY + 60);
-    ctx.lineTo(0, auroraY + 60);
-    ctx.fill();
-  }
-  
-  // Distant ice mountains with snow
-  ctx.fillStyle = '#bae6fd';
-  for (let i = 0; i < 3; i++) {
-    const mx = Math.round(((i * 350 - cameraX * 0.04) % 1200) - 150);
-    ctx.beginPath();
-    ctx.moveTo(mx, 480);
-    ctx.lineTo(mx + 140, 220);
-    ctx.lineTo(mx + 280, 480);
-    ctx.closePath();
-    ctx.fill();
-    
-    // Snow caps with highlight
-    ctx.fillStyle = '#f0f9ff';
-    ctx.shadowColor = '#fff';
-    ctx.shadowBlur = 8;
-    ctx.beginPath();
-    ctx.moveTo(mx + 90, 300);
-    ctx.lineTo(mx + 140, 220);
-    ctx.lineTo(mx + 190, 300);
-    ctx.closePath();
-    ctx.fill();
-    ctx.shadowBlur = 0;
-    
-    // Ice highlights
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-    ctx.beginPath();
-    ctx.moveTo(mx + 130, 250);
-    ctx.lineTo(mx + 140, 220);
-    ctx.lineTo(mx + 150, 260);
-    ctx.closePath();
-    ctx.fill();
-    
-    ctx.fillStyle = '#bae6fd';
-  }
-  
-  // Foreground ice formations
-  ctx.fillStyle = '#e0f2fe';
-  for (let i = 0; i < 4; i++) {
-    const ix = Math.round(((i * 220 - cameraX * 0.12) % 1100) - 80);
-    ctx.shadowColor = '#7dd3fc';
-    ctx.shadowBlur = 6;
-    ctx.beginPath();
-    ctx.moveTo(ix + 25, 500);
-    ctx.lineTo(ix + 15, 420);
-    ctx.lineTo(ix + 30, 400);
-    ctx.lineTo(ix + 45, 430);
-    ctx.lineTo(ix + 35, 500);
-    ctx.closePath();
-    ctx.fill();
+    ctx.stroke();
   }
   ctx.shadowBlur = 0;
   
-  // Snowflakes
-  for (let i = 0; i < 8; i++) {
-    const sx = Math.round(((i * 120 - cameraX * 0.08) % 850 + 850) % 850 - 25);
-    const sy = (i * 89 + time * 0.3) % 550;
-    ctx.fillStyle = '#ffffff';
-    ctx.shadowColor = '#fff';
-    ctx.shadowBlur = 4;
-    ctx.globalAlpha = 0.5;
-    ctx.save();
-    ctx.translate(sx, sy);
-    ctx.rotate(time * 0.02 + i);
-    // Snowflake shape
-    for (let j = 0; j < 6; j++) {
-      const angle = (j / 6) * Math.PI * 2;
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.lineTo(Math.cos(angle) * 4, Math.sin(angle) * 4);
-      ctx.stroke();
-    }
-    ctx.restore();
+  // Floating embers and ash
+  for (let i = 0; i < 10; i++) {
+    const emberX = Math.round(((i * 100 - cameraX * 0.18 + time * 0.6) % 900 + 900) % 900 - 50);
+    const emberY = 80 + (i % 4) * 120 + Math.sin(time * 0.04 + i) * 25;
+    const emberGlow = Math.sin(time * 0.15 + i * 2) * 0.5 + 0.5;
+    
+    ctx.fillStyle = i % 3 === 0 ? '#FBBF24' : i % 3 === 1 ? '#F97316' : '#EF4444';
+    ctx.shadowColor = '#F97316';
+    ctx.shadowBlur = 12 * emberGlow;
+    ctx.globalAlpha = emberGlow * 0.8;
+    ctx.beginPath();
+    ctx.arc(emberX, emberY, 3.5, 0, Math.PI * 2);
+    ctx.fill();
   }
   ctx.globalAlpha = 1;
   ctx.shadowBlur = 0;
+  
+  // Smoke/ash clouds
+  for (let i = 0; i < 4; i++) {
+    const smokeX = ((i * 250 - cameraX * 0.06) % 1100) - 100;
+    const smokeY = 200 + i * 80;
+    const smokeGrad = ctx.createRadialGradient(smokeX, smokeY, 0, smokeX, smokeY, 80);
+    smokeGrad.addColorStop(0, 'rgba(120, 53, 15, 0.3)');
+    smokeGrad.addColorStop(0.7, 'rgba(68, 26, 3, 0.15)');
+    smokeGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = smokeGrad;
+    ctx.fillRect(smokeX - 80, smokeY - 80, 160, 160);
+  }
 }

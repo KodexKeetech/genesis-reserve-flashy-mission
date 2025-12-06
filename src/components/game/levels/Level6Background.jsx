@@ -1,105 +1,91 @@
-// Level 6: Void - Enhanced Background Renderer
+
+// Level 6: Volcano Boss Arena - Enhanced Background Renderer
 
 export function drawLevel6Background(ctx, cameraX, canvasWidth, canvasHeight, time) {
-  // Dark void gradient
+  // Hellish volcanic sky
   const skyGradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
-  skyGradient.addColorStop(0, '#0F0517');
-  skyGradient.addColorStop(0.4, '#1A0B2E');
-  skyGradient.addColorStop(0.7, '#2A1458');
-  skyGradient.addColorStop(1, '#0F0517');
+  skyGradient.addColorStop(0, '#0A0302');
+  skyGradient.addColorStop(0.3, '#2D0F08');
+  skyGradient.addColorStop(0.6, '#501410');
+  skyGradient.addColorStop(1, '#0A0302');
   ctx.fillStyle = skyGradient;
   ctx.fillRect(0, 0, canvasWidth, canvasHeight);
   
-  // Void nebula clouds
+  // Massive lava falls on sides
+  for (let side = 0; side < 2; side++) {
+    const fallX = side === 0 ? 50 : canvasWidth - 110; // Adjusted for dynamic canvasWidth, original was 700 for 800 width
+    const fallGrad = ctx.createLinearGradient(fallX, 0, fallX + 60, 500);
+    const fallPulse = Math.sin(time * 0.09 + side * Math.PI) * 0.2 + 0.8;
+    fallGrad.addColorStop(0, `rgba(239, 68, 68, ${fallPulse * 0.5})`);
+    fallGrad.addColorStop(0.4, `rgba(249, 115, 22, ${fallPulse * 0.7})`);
+    fallGrad.addColorStop(0.8, `rgba(251, 191, 36, ${fallPulse})`);
+    fallGrad.addColorStop(1, `rgba(254, 243, 199, ${fallPulse})`);
+    ctx.fillStyle = fallGrad;
+    ctx.shadowColor = '#F97316';
+    ctx.shadowBlur = 30 * fallPulse;
+    ctx.fillRect(fallX, 0, 60, 500);
+  }
+  ctx.shadowBlur = 0;
+  
+  // Magma ocean with waves
+  const waveGlow = Math.sin(time * 0.07) * 0.3 + 0.7;
+  const oceanGrad = ctx.createLinearGradient(0, 380, 0, canvasHeight); // Adjusted for dynamic canvasHeight
+  oceanGrad.addColorStop(0, 'rgba(234, 88, 12, 0)');
+  oceanGrad.addColorStop(0.3, `rgba(249, 115, 22, ${waveGlow * 0.6})`);
+  oceanGrad.addColorStop(0.6, `rgba(239, 68, 68, ${waveGlow * 0.9})`);
+  oceanGrad.addColorStop(1, `rgba(185, 28, 28, ${waveGlow})`);
+  ctx.fillStyle = oceanGrad;
+  ctx.fillRect(0, 380, canvasWidth, canvasHeight - 380); // Adjusted for dynamic canvasWidth and canvasHeight
+  
+  // Lava waves
+  ctx.strokeStyle = `rgba(254, 243, 199, ${waveGlow * 0.6})`;
+  ctx.lineWidth = 2;
   for (let i = 0; i < 3; i++) {
-    const nebX = (i * 350 - cameraX * 0.03 + 100) % 1000 - 100;
-    const nebY = 120 + i * 120;
-    const nebSize = 150 + i * 30;
-    const pulse = Math.sin(time * 0.015 + i) * 0.15 + 0.2;
-    
-    const nebulaGrad = ctx.createRadialGradient(nebX, nebY, 0, nebX, nebY, nebSize);
-    nebulaGrad.addColorStop(0, `rgba(168, 85, 247, ${pulse * 0.4})`);
-    nebulaGrad.addColorStop(0.5, `rgba(124, 58, 237, ${pulse * 0.2})`);
-    nebulaGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = nebulaGrad;
-    ctx.fillRect(nebX - nebSize, nebY - nebSize, nebSize * 2, nebSize * 2);
+    ctx.beginPath();
+    const waveY = 450 + i * 30;
+    for (let x = 0; x <= canvasWidth; x += 20) { // Adjusted for dynamic canvasWidth
+      const y = waveY + Math.sin(x * 0.015 + time * 0.06 + i) * 12;
+      if (x === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
   }
   
-  // Purple stars
-  ctx.fillStyle = '#A855F7';
-  for (let i = 0; i < 25; i++) {
-    const sx = Math.round(((i * 80 - cameraX * 0.02) % 850 + 850) % 850 - 25);
-    const sy = (i * 73) % 350;
-    const twinkle = Math.sin(time * 0.08 + i) * 0.3 + 0.6;
-    ctx.globalAlpha = twinkle * 0.5;
-    ctx.shadowColor = '#A855F7';
-    ctx.shadowBlur = 4;
+  // Massive lava bubbles
+  for (let i = 0; i < 12; i++) {
+    const bx = ((i * 90 - cameraX * 0.04) % (canvasWidth + 100) + (canvasWidth + 100)) % (canvasWidth + 100) - 50; // Adjusted for dynamic canvasWidth
+    const by = canvasHeight - 70 - ((time * 0.8 + i * 40) % 200); // Adjusted for dynamic canvasHeight, 530 for 600 height
+    const bSize = 10 + (i % 4) * 5;
+    const bPulse = Math.sin(time * 0.14 + i * 1.3) * 0.4 + 0.6;
+    
+    ctx.fillStyle = `rgba(251, 191, 36, ${bPulse})`;
+    ctx.shadowColor = '#FBBF24';
+    ctx.shadowBlur = 20 * bPulse;
     ctx.beginPath();
-    ctx.arc(sx, sy, 1.5, 0, Math.PI * 2);
+    ctx.arc(bx, by, bSize, 0, Math.PI * 2);
+    ctx.fill();
+    // Bright core
+    ctx.fillStyle = '#FEF3C7';
+    ctx.beginPath();
+    ctx.arc(bx - 3, by - 3, bSize * 0.4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.shadowBlur = 0;
+  
+  // Ember storm
+  for (let i = 0; i < 25; i++) {
+    const emX = Math.round(((i * 50 - cameraX * 0.25 + time * 1.2) % (canvasWidth + 50) + (canvasWidth + 50)) % (canvasWidth + 50) - 25); // Adjusted for dynamic canvasWidth
+    const emY = (i * 43 + time * 0.4) % canvasHeight; // Adjusted for dynamic canvasHeight
+    const emGlow = Math.sin(time * 0.2 + i * 1.5) * 0.5 + 0.5;
+    
+    ctx.fillStyle = i % 2 === 0 ? '#F97316' : '#FBBF24';
+    ctx.shadowColor = '#F97316';
+    ctx.shadowBlur = 8 * emGlow;
+    ctx.globalAlpha = emGlow * 0.7;
+    ctx.beginPath();
+    ctx.arc(emX, emY, 2.5, 0, Math.PI * 2);
     ctx.fill();
   }
   ctx.globalAlpha = 1;
-  ctx.shadowBlur = 0;
-  
-  // Floating void islands
-  ctx.fillStyle = '#3f3f46';
-  for (let i = 0; i < 3; i++) {
-    const ix = Math.round(((i * 350 - cameraX * 0.08) % 1300) - 150);
-    const iy = 340 + Math.sin(time * 0.03 + i * 2) * 20;
-    
-    // Island shadow
-    ctx.fillStyle = '#27272a';
-    ctx.beginPath();
-    ctx.ellipse(ix + 60, iy + 18, 62, 18, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Island body with gradient
-    const islandGrad = ctx.createLinearGradient(ix, iy - 20, ix + 120, iy + 10);
-    islandGrad.addColorStop(0, '#3f3f46');
-    islandGrad.addColorStop(0.5, '#52525b');
-    islandGrad.addColorStop(1, '#3f3f46');
-    ctx.fillStyle = islandGrad;
-    ctx.beginPath();
-    ctx.ellipse(ix + 60, iy, 60, 25, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Island top vegetation
-    ctx.fillStyle = '#71717a';
-    ctx.beginPath();
-    ctx.ellipse(ix + 60, iy - 10, 55, 12, 0, Math.PI, Math.PI * 2);
-    ctx.fill();
-    
-    // Void crystals on island
-    ctx.fillStyle = '#A855F7';
-    ctx.shadowColor = '#A855F7';
-    ctx.shadowBlur = 10;
-    ctx.beginPath();
-    ctx.moveTo(ix + 40, iy - 10);
-    ctx.lineTo(ix + 35, iy - 25);
-    ctx.lineTo(ix + 45, iy - 10);
-    ctx.closePath();
-    ctx.fill();
-  }
-  ctx.shadowBlur = 0;
-  
-  // Void rifts
-  for (let i = 0; i < 4; i++) {
-    const riftX = Math.round(((i * 200 - cameraX * 0.12) % 1000) - 80);
-    const riftY = 200 + i * 60;
-    const pulse = Math.sin(time * 0.06 + i) * 0.4 + 0.6;
-    
-    ctx.strokeStyle = `rgba(168, 85, 247, ${pulse * 0.6})`;
-    ctx.shadowColor = '#A855F7';
-    ctx.shadowBlur = 15 * pulse;
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(riftX, riftY);
-    ctx.bezierCurveTo(
-      riftX + 50, riftY + Math.sin(time * 0.04 + i) * 25,
-      riftX + 100, riftY - Math.sin(time * 0.04 + i) * 25,
-      riftX + 150, riftY
-    );
-    ctx.stroke();
-  }
   ctx.shadowBlur = 0;
 }
