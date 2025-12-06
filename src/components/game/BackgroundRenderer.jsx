@@ -507,7 +507,7 @@ function drawArcaneBackground(ctx, time, cameraX) {
   
   // Floating arcane runes in background
   for (let i = 0; i < 8; i++) {
-    const runeX = (i * 120 - cameraX * 0.1 + time * 0.3) % 900 - 50;
+    const runeX = Math.round((i * 120 - cameraX * 0.1 + time * 0.3) % 900 - 50);
     const runeY = 100 + Math.sin(time * 0.02 + i) * 30 + (i % 3) * 80;
     const runeAlpha = 0.15 + Math.sin(time * 0.03 + i * 2) * 0.1;
     
@@ -532,7 +532,7 @@ function drawArcaneBackground(ctx, time, cameraX) {
   
   // Crystal formations in background
   for (let i = 0; i < 5; i++) {
-    const crystalX = (i * 200 - cameraX * 0.2) % 1000 - 100;
+    const crystalX = Math.round((i * 200 - cameraX * 0.2) % 1000 - 100);
     const crystalY = 450 + (i % 2) * 30;
     
     ctx.fillStyle = `rgba(99, 102, 241, 0.3)`;
@@ -605,7 +605,7 @@ function drawSecretBackground(ctx, biome, time, cameraX) {
 function drawFairyGroveBackground(ctx, time, cameraX) {
   // Magical giant mushrooms
   for (let i = 0; i < 5; i++) {
-    const mx = ((i * 200 - cameraX * 0.1) % 1100) - 100;
+    const mx = Math.round(((i * 200 - cameraX * 0.1) % 1100) - 100);
     const mushHeight = 150 + (i % 3) * 50;
     
     // Stem
@@ -636,7 +636,7 @@ function drawFairyGroveBackground(ctx, time, cameraX) {
   
   // Fairy lights (many floating orbs)
   for (let i = 0; i < 40; i++) {
-    const fx = ((i * 47 - cameraX * 0.15 + time * 0.3) % 900 + 900) % 900 - 50;
+    const fx = Math.round(((i * 47 - cameraX * 0.15 + time * 0.3) % 900 + 900) % 900 - 50);
     const fy = 100 + Math.sin(time * 0.03 + i * 0.5) * 50 + (i % 5) * 80;
     const pulse = Math.sin(time * 0.1 + i * 2) * 0.4 + 0.6;
     const colors = ['#EC4899', '#8B5CF6', '#22D3EE', '#FBBF24', '#22C55E'];
@@ -656,7 +656,7 @@ function drawFairyGroveBackground(ctx, time, cameraX) {
   ctx.strokeStyle = '#166534';
   ctx.lineWidth = 3;
   for (let i = 0; i < 6; i++) {
-    const vx = ((i * 150 - cameraX * 0.2) % 1000) - 50;
+    const vx = Math.round(((i * 150 - cameraX * 0.2) % 1000) - 50);
     ctx.beginPath();
     ctx.moveTo(vx, 0);
     for (let j = 0; j < 10; j++) {
@@ -677,7 +677,7 @@ function drawLavaCoreBackground(ctx, time, cameraX) {
   
   // Molten rock formations
   for (let i = 0; i < 8; i++) {
-    const rx = ((i * 130 - cameraX * 0.08) % 1100) - 100;
+    const rx = Math.round(((i * 130 - cameraX * 0.08) % 1100) - 100);
     const rh = 80 + (i % 3) * 40;
     
     ctx.fillStyle = '#1C1917';
@@ -704,7 +704,7 @@ function drawLavaCoreBackground(ctx, time, cameraX) {
   
   // Large magma bubbles
   for (let i = 0; i < 15; i++) {
-    const bx = ((i * 80 - cameraX * 0.05) % 900 + 900) % 900 - 50;
+    const bx = Math.round(((i * 80 - cameraX * 0.05) % 900 + 900) % 900 - 50);
     const by = 550 - (time * 0.5 + i * 40) % 200;
     const bsize = 8 + (i % 4) * 4;
     const pulse = Math.sin(time * 0.15 + i) * 0.3 + 0.7;
@@ -722,7 +722,7 @@ function drawLavaCoreBackground(ctx, time, cameraX) {
   ctx.strokeStyle = 'rgba(239, 68, 68, 0.2)';
   ctx.lineWidth = 2;
   for (let i = 0; i < 10; i++) {
-    const hx = ((i * 100 - cameraX * 0.1) % 900) - 50;
+    const hx = Math.round(((i * 100 - cameraX * 0.1) % 900) - 50);
     ctx.beginPath();
     ctx.moveTo(hx, 500);
     for (let j = 0; j < 6; j++) {
@@ -756,7 +756,7 @@ function drawFrozenTempleBackground(ctx, time, cameraX) {
   
   // Ice pillars/temple columns
   for (let i = 0; i < 6; i++) {
-    const px = ((i * 180 - cameraX * 0.12) % 1200) - 100;
+    const px = Math.round(((i * 180 - cameraX * 0.12) % 1200) - 100);
     const ph = 200 + (i % 2) * 80;
     
     ctx.fillStyle = 'rgba(186, 230, 253, 0.6)';
@@ -782,7 +782,7 @@ function drawFrozenTempleBackground(ctx, time, cameraX) {
   
   // Floating ice shards
   for (let i = 0; i < 20; i++) {
-    const sx = ((i * 60 - cameraX * 0.2) % 950 + 950) % 950 - 75;
+    const sx = Math.round(((i * 60 - cameraX * 0.2) % 950 + 950) % 950 - 75);
     const sy = 150 + Math.sin(time * 0.04 + i) * 40 + (i % 4) * 80;
     const rot = time * 0.02 + i;
     
@@ -842,7 +842,7 @@ function drawHeartOfDarknessBackground(ctx, time, cameraX) {
   
   // Void rifts
   for (let i = 0; i < 4; i++) {
-    const rx = ((i * 250 - cameraX * 0.15) % 1000) - 100;
+    const rx = Math.round(((i * 250 - cameraX * 0.15) % 1000) - 100);
     const ry = 350 + (i % 2) * 80;
     const pulse = Math.sin(time * 0.08 + i * 2) * 0.4 + 0.6;
     
@@ -877,7 +877,7 @@ function drawGauntletBackground(ctx, time, cameraX) {
   
   // Pulsing nodes at intersections
   for (let i = 0; i < 15; i++) {
-    const nx = ((i * 100 - cameraX * 0.1) % 900 + 900) % 900 - 50;
+    const nx = Math.round(((i * 100 - cameraX * 0.1) % 900 + 900) % 900 - 50);
     const ny = (i * 70) % 550 + 25;
     const pulse = Math.sin(time * 0.1 + i * 1.5) * 0.5 + 0.5;
     
@@ -892,7 +892,7 @@ function drawGauntletBackground(ctx, time, cameraX) {
   
   // Electric arcs
   for (let i = 0; i < 5; i++) {
-    const ax = ((i * 200 - cameraX * 0.15 + time * 2) % 1000) - 100;
+    const ax = Math.round(((i * 200 - cameraX * 0.15 + time * 2) % 1000) - 100);
     const ay = 100 + (i % 3) * 150;
     
     if (Math.sin(time * 0.2 + i * 3) > 0.7) {
@@ -912,7 +912,7 @@ function drawGauntletBackground(ctx, time, cameraX) {
   
   // Tech panels
   for (let i = 0; i < 4; i++) {
-    const px = ((i * 250 - cameraX * 0.08) % 1100) - 100;
+    const px = Math.round(((i * 250 - cameraX * 0.08) % 1100) - 100);
     ctx.fillStyle = 'rgba(30, 41, 59, 0.6)';
     ctx.strokeStyle = 'rgba(34, 211, 238, 0.4)';
     ctx.lineWidth = 2;
@@ -931,7 +931,7 @@ function drawGauntletBackground(ctx, time, cameraX) {
 function drawForbiddenLibraryBackground(ctx, time, cameraX) {
   // Floating bookshelves
   for (let i = 0; i < 5; i++) {
-    const bx = ((i * 200 - cameraX * 0.1) % 1100) - 100;
+    const bx = Math.round(((i * 200 - cameraX * 0.1) % 1100) - 100);
     const by = 200 + (i % 2) * 150 + Math.sin(time * 0.02 + i) * 10;
     
     // Shelf
@@ -951,7 +951,7 @@ function drawForbiddenLibraryBackground(ctx, time, cameraX) {
   
   // Glowing runes/symbols
   for (let i = 0; i < 12; i++) {
-    const rx = ((i * 100 - cameraX * 0.15 + Math.sin(time * 0.01 + i) * 20) % 950 + 950) % 950 - 75;
+    const rx = Math.round(((i * 100 - cameraX * 0.15 + Math.sin(time * 0.01 + i) * 20) % 950 + 950) % 950 - 75);
     const ry = 80 + (i % 4) * 120 + Math.sin(time * 0.03 + i * 2) * 15;
     const pulse = Math.sin(time * 0.08 + i * 1.5) * 0.4 + 0.6;
     
@@ -1121,7 +1121,7 @@ function drawVoidBackground(ctx, time, cameraX) {
   // Floating islands
   ctx.fillStyle = '#3f3f46';
   for (let i = 0; i < 4; i++) {
-    const ix = ((i * 300 - cameraX * 0.08) % 1300) - 150;
+    const ix = Math.round(((i * 300 - cameraX * 0.08) % 1300) - 150);
     const iy = 320 + Math.sin(time * 0.02 + i * 2) * 25;
     const size = 60 + (i % 2) * 40;
     
@@ -1146,7 +1146,7 @@ function drawVoidBackground(ctx, time, cameraX) {
   
   // Void rifts with glow
   for (let i = 0; i < 6; i++) {
-    const riftX = ((i * 180 - cameraX * 0.12) % 1000) - 80;
+    const riftX = Math.round(((i * 180 - cameraX * 0.12) % 1000) - 80);
     const riftY = 180 + i * 50;
     const pulse = Math.sin(time * 0.06 + i) * 0.4 + 0.6;
     

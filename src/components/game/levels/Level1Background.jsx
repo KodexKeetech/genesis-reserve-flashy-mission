@@ -1,4 +1,3 @@
-
 // Level 1: Enchanted Forest Background Renderer
 // Creates a layered, atmospheric forest scene
 
@@ -42,7 +41,7 @@ function drawForestStars(ctx, cameraX, time) {
   ctx.fillStyle = '#E8F4FF';
   for (const star of starPositions) {
     const twinkle = Math.sin(time * 0.05 + star.x) * 0.3 + 0.7;
-    const x = ((star.x - cameraX * 0.02) % 800 + 800) % 800;
+    const x = Math.round(((star.x - cameraX * 0.02) % 800 + 800) % 800);
     ctx.globalAlpha = twinkle * 0.6;
     ctx.beginPath();
     ctx.arc(x, star.y, star.size, 0, Math.PI * 2);
@@ -52,7 +51,7 @@ function drawForestStars(ctx, cameraX, time) {
 }
 
 function drawMoonGlow(ctx, cameraX, time) {
-  const moonX = 650 - cameraX * 0.02;
+  const moonX = Math.round(650 - cameraX * 0.02);
   const moonY = 80;
   
   // Outer glow
@@ -76,7 +75,7 @@ function drawDistantTrees(ctx, offsetX, canvasWidth, time) {
   
   // Generate distant tree silhouettes
   for (let i = 0; i < 15; i++) {
-    const baseX = (i * 120 - offsetX) % (canvasWidth + 200) - 100;
+    const baseX = Math.round((i * 120 - offsetX) % (canvasWidth + 200) - 100);
     const height = 150 + Math.sin(i * 2.5) * 50;
     const width = 40 + Math.sin(i * 1.7) * 15;
     const y = 150;
@@ -98,7 +97,7 @@ function drawMidTrees(ctx, offsetX, canvasWidth, time) {
   const treeColor = '#132B3A';
   
   for (let i = 0; i < 10; i++) {
-    const baseX = (i * 150 - offsetX + 50) % (canvasWidth + 300) - 150;
+    const baseX = Math.round((i * 150 - offsetX + 50) % (canvasWidth + 300) - 150);
     const height = 220 + Math.sin(i * 3.1) * 60;
     const width = 60 + Math.sin(i * 2.3) * 20;
     const y = 180;
@@ -158,7 +157,7 @@ function drawGroundFog(ctx, offsetX, canvasWidth, canvasHeight, time) {
   const fogY = canvasHeight - 120;
   
   for (let i = 0; i < 8; i++) {
-    const fogX = (i * 150 - offsetX * 0.5 + time * 0.2) % (canvasWidth + 200) - 100;
+    const fogX = Math.round((i * 150 - offsetX * 0.5 + time * 0.2) % (canvasWidth + 200) - 100);
     const fogWidth = 200 + Math.sin(i * 2) * 50;
     const fogHeight = 60 + Math.sin(time * 0.01 + i) * 10;
     const opacity = 0.15 + Math.sin(time * 0.015 + i * 1.5) * 0.05;
