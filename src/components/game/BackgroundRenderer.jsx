@@ -236,7 +236,7 @@ function drawSkyBackground(ctx, time, cameraX) {
     const cloudAlpha = 0.9 - layer * 0.2;
     
     for (let i = 0; i < 6; i++) {
-      const cx = ((i * 180 + layer * 50 - cameraX * parallax) % 1100) - 150;
+      const cx = Math.round(((i * 180 + layer * 50 - cameraX * parallax) % 1100) - 150);
       ctx.fillStyle = `rgba(255, 255, 255, ${cloudAlpha})`;
       
       // Cloud puffs
@@ -251,7 +251,7 @@ function drawSkyBackground(ctx, time, cameraX) {
   
   // Floating islands
   for (let i = 0; i < 4; i++) {
-    const ix = ((i * 300 - cameraX * 0.1) % 1400) - 200;
+    const ix = Math.round(((i * 300 - cameraX * 0.1) % 1400) - 200);
     const iy = 350 + Math.sin(time * 0.02 + i) * 15 + (i % 2) * 50;
     
     // Island bottom (rocky)
@@ -277,7 +277,7 @@ function drawSkyBackground(ctx, time, cameraX) {
   
   // Birds
   for (let i = 0; i < 8; i++) {
-    const bx = ((i * 120 - cameraX * 0.15 + time * 0.5) % 1000) - 100;
+    const bx = Math.round(((i * 120 - cameraX * 0.15 + time * 0.5) % 1000) - 100);
     const by = 100 + (i % 3) * 60 + Math.sin(time * 0.1 + i) * 20;
     
     ctx.strokeStyle = '#1E293B';
@@ -292,7 +292,7 @@ function drawSkyBackground(ctx, time, cameraX) {
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
   ctx.lineWidth = 1;
   for (let i = 0; i < 10; i++) {
-    const wx = ((i * 100 - cameraX * 0.2 + time * 2) % 900) - 50;
+    const wx = Math.round(((i * 100 - cameraX * 0.2 + time * 2) % 900) - 50);
     const wy = 150 + (i % 4) * 100;
     ctx.beginPath();
     ctx.moveTo(wx, wy);
@@ -305,7 +305,7 @@ function drawRuinsBackground(ctx, time, cameraX) {
   // Desert dunes
   ctx.fillStyle = '#D6D3D1';
   for (let i = 0; i < 5; i++) {
-    const dx = ((i * 250 - cameraX * 0.05) % 1400) - 200;
+    const dx = Math.round(((i * 250 - cameraX * 0.05) % 1400) - 200);
     ctx.beginPath();
     ctx.moveTo(dx, 500);
     ctx.quadraticCurveTo(dx + 100, 400 - (i % 2) * 30, dx + 200, 500);
@@ -314,7 +314,7 @@ function drawRuinsBackground(ctx, time, cameraX) {
   
   // Ancient pillars
   for (let i = 0; i < 6; i++) {
-    const px = ((i * 180 - cameraX * 0.12) % 1200) - 100;
+    const px = Math.round(((i * 180 - cameraX * 0.12) % 1200) - 100);
     const ph = 120 + (i % 3) * 40;
     const broken = i % 2 === 0;
     
@@ -339,7 +339,7 @@ function drawRuinsBackground(ctx, time, cameraX) {
   
   // Pyramids in distance
   for (let i = 0; i < 2; i++) {
-    const pyrX = ((i * 500 + 200 - cameraX * 0.03) % 1200) - 100;
+    const pyrX = Math.round(((i * 500 + 200 - cameraX * 0.03) % 1200) - 100);
     ctx.fillStyle = '#CA8A04';
     ctx.globalAlpha = 0.4;
     ctx.beginPath();
@@ -353,7 +353,7 @@ function drawRuinsBackground(ctx, time, cameraX) {
   // Hieroglyphics on pillars
   ctx.fillStyle = '#78350F';
   for (let i = 0; i < 4; i++) {
-    const hx = ((i * 180 - cameraX * 0.12) % 1200) - 100;
+    const hx = Math.round(((i * 180 - cameraX * 0.12) % 1200) - 100);
     for (let j = 0; j < 3; j++) {
       ctx.fillRect(hx + 8, 420 - j * 25, 14, 8);
     }
@@ -363,7 +363,7 @@ function drawRuinsBackground(ctx, time, cameraX) {
 function drawCrystalBackground(ctx, time, cameraX) {
   // Crystal formations
   for (let i = 0; i < 8; i++) {
-    const cx = ((i * 150 - cameraX * 0.1) % 1300) - 100;
+    const cx = Math.round(((i * 150 - cameraX * 0.1) % 1300) - 100);
     const ch = 100 + (i % 3) * 60;
     const hue = 270 + (i % 4) * 20;
     const pulse = Math.sin(time * 0.05 + i) * 0.2 + 0.8;
@@ -395,7 +395,7 @@ function drawCrystalBackground(ctx, time, cameraX) {
   
   // Light reflections
   for (let i = 0; i < 15; i++) {
-    const rx = ((i * 80 - cameraX * 0.15) % 900 + 900) % 900 - 50;
+    const rx = Math.round(((i * 80 - cameraX * 0.15) % 900 + 900) % 900 - 50);
     const ry = 100 + (i % 4) * 100;
     const sparkle = Math.sin(time * 0.15 + i * 2) * 0.5 + 0.5;
     
@@ -432,7 +432,7 @@ function drawTechnoBackground(ctx, time, cameraX) {
   ctx.strokeStyle = 'rgba(16, 185, 129, 0.2)';
   ctx.lineWidth = 1;
   for (let x = 0; x < 20; x++) {
-    const gx = ((x * 50 - cameraX * 0.08) % 1000) - 100;
+    const gx = Math.round(((x * 50 - cameraX * 0.08) % 1000) - 100);
     ctx.beginPath();
     ctx.moveTo(gx, 0);
     ctx.lineTo(gx, 600);
@@ -447,7 +447,7 @@ function drawTechnoBackground(ctx, time, cameraX) {
   
   // Tech panels/servers
   for (let i = 0; i < 5; i++) {
-    const px = ((i * 200 - cameraX * 0.12) % 1200) - 100;
+    const px = Math.round(((i * 200 - cameraX * 0.12) % 1200) - 100);
     const ph = 150 + (i % 2) * 50;
     
     ctx.fillStyle = '#1E293B';
@@ -481,7 +481,7 @@ function drawTechnoBackground(ctx, time, cameraX) {
   
   // Holographic displays
   for (let i = 0; i < 3; i++) {
-    const hx = ((i * 300 + 100 - cameraX * 0.1) % 1000) - 100;
+    const hx = Math.round(((i * 300 + 100 - cameraX * 0.1) % 1000) - 100);
     const hy = 150 + (i % 2) * 100;
     const pulse = Math.sin(time * 0.08 + i * 2) * 0.3 + 0.5;
     
