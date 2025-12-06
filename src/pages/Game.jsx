@@ -669,10 +669,10 @@ export default function Game() {
 
       {/* Game Container - sized to fit viewport */}
       <div className="relative" style={{
-        width: isMobile ? '50vw' : 'min(100vw - 2rem, 800px)',
-        height: isMobile ? 'calc((100vh - 180px) / 2)' : 'min(calc(100vh - 2rem), 600px)',
-        maxWidth: isMobile ? '50vw' : '800px',
-        maxHeight: isMobile ? 'calc((100vh - 180px) / 2)' : '600px'
+        width: isMobile ? '100vw' : 'min(100vw - 2rem, 800px)',
+        height: isMobile ? 'calc(100vh - 180px)' : 'min(calc(100vh - 2rem), 600px)',
+        maxWidth: isMobile ? '100vw' : '800px',
+        maxHeight: isMobile ? 'calc(100vh - 180px)' : '600px'
       }}>
         <div className="relative w-full h-full">
         {/* Settings button inside game container */}
