@@ -376,7 +376,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           state.platforms.push({ x: 600, y: 350, width: 80, height: 20, type: 'normal' });
           state.platforms.push({ x: 1000, y: 500, width: 3100, height: 100, type: 'ground' });
           
-          state.goalX = 4000;
+          state.goalX = 3850;
 
           // Just 2 easy enemies
           state.enemies.push({
