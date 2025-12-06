@@ -406,7 +406,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         // Hand-crafted levels (non-boss regular levels + ALL space levels 28-30)
         // Boss levels (3, 6, 9, etc.) that aren't in config use procedural generation
         const levelData = getLevelConfig(level);
-        const isBossLevelCustom = (level === 3 || level === 6 || level === 9) && level !== 30;
+        const isBossLevelCustom = (level === 3 || level === 6 || level === 9);
         
         if (levelData && !isBossLevelCustom) {
           const { config: LEVEL_CONFIG, behaviors: ENEMY_BEHAVIORS } = levelData;
@@ -551,16 +551,21 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             .filter(p => p.type === 'crumbling')
             .map(p => ({ ...p, touched: false, crumbleTimer: p.crumbleTime || 45, originalY: p.y }));
           
-          // Add checkpoint at middle of level
-          const midX = state.levelWidth / 2;
-          state.checkpoint = {
-            x: midX - 20,
-            y: 340,
-            width: 40,
-            height: 60,
-            activated: false
-          };
-          state.checkpointActivated = false;
+          // Add checkpoint at middle of level (not for boss levels)
+          if (!section.boss) {
+            const midX = state.levelWidth / 2;
+            state.checkpoint = {
+              x: midX - 20,
+              y: 340,
+              width: 40,
+              height: 60,
+              activated: false
+            };
+            state.checkpointActivated = false;
+          } else {
+            state.checkpoint = null;
+            state.checkpointActivated = false;
+          }
           
           // Store secret hint if exists and create secret portal
           if (LEVEL_CONFIG.secretHint) {
