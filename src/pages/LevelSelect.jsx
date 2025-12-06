@@ -61,7 +61,7 @@ export default function LevelSelect() {
           <Link to={createPageUrl('Home')}>
             <Button variant="ghost" className="text-slate-400 hover:text-white">
               <ArrowLeft className="w-5 h-5 mr-2" />
-              Back
+              Home
             </Button>
           </Link>
           <div className="flex items-center gap-2 text-slate-400">
