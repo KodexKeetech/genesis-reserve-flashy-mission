@@ -517,6 +517,29 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             if (section.portal) {
               state.goalX = section.portal.x;
             }
+            
+            // Load boss from section if exists
+            if (section.boss) {
+              const bossDiffSettings = getDifficultySettings(level, difficulty);
+              const biomeForBoss = getBiomeForLevel(level);
+              state.boss = {
+                x: section.boss.x || 650,
+                y: section.boss.y || 400,
+                width: 100,
+                height: 100,
+                health: Math.floor((biomeForBoss.boss?.health || 100) * bossDiffSettings.bossHealthMultiplier),
+                maxHealth: Math.floor((biomeForBoss.boss?.health || 100) * bossDiffSettings.bossHealthMultiplier),
+                type: section.boss.type,
+                name: section.boss.name || biomeForBoss.boss?.name || 'Boss',
+                phase: 1,
+                attackCooldown: 0,
+                isAttacking: false,
+                velocityX: 0,
+                velocityY: 0,
+                frozen: 0,
+                isHardBoss: [15, 18, 21, 24, 27, 30].includes(level)
+              };
+            }
           }
           
           // Add crumbling platforms behavior tracking
