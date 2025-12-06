@@ -1330,7 +1330,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
 
     // Helper to check if a key matches any keybind
     const isKeyPressed = (action) => {
-      const bindings = gameSettings.keybinds?.[action] || [];
+      const bindings = propsRef.current.gameSettings.keybinds?.[action] || [];
       return bindings.some(key => gameStateRef.current.keys[key]);
     };
 
@@ -1820,7 +1820,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
 
     const handleKeyDownWithDash = (e) => {
       handleKeyDown(e);
-      const keybinds = gameSettings.keybinds || {};
+      const keybinds = propsRef.current.gameSettings.keybinds || {};
       
       if (keybinds.dash?.includes(e.code)) {
         handleDash();
@@ -2850,12 +2850,12 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         if (player.specialAbilities.shadowClone.active) {
           const cloneX = player.specialAbilities.shadowClone.cloneX;
           const cloneY = player.specialAbilities.shadowClone.cloneY;
-          const distToPlayer = Math.sqrt(Math.pow(enemy.x - player.x, 2) + Math.pow(enemy.y - player.y, 2));
+          const distToPlayer = Math.sqrt(Math.pow(enemy.x - targetX, 2) + Math.pow(enemy.y - targetY, 2));
           const distToClone = Math.sqrt(Math.pow(enemy.x - cloneX, 2) + Math.pow(enemy.y - cloneY, 2));
-          // 70% chance to target clone if closer or similar distance
-          if (distToClone <= distToPlayer * 1.2 || Math.random() < 0.7) {
-            targetX = cloneX;
-            targetY = cloneY;
+          // Target clone if it's closer
+          if (distToClone < distToPlayer) {
+            targetX = cloneX + 24;
+            targetY = cloneY + 32;
           }
         }
         
@@ -2925,10 +2925,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           enemy.y = enemy.originalY + Math.sin(enemy.orbitAngle) * (enemy.orbitRadius * 0.7);
           
           // Shoot star projectiles at player
-          const distToPlayer = Math.sqrt(Math.pow(player.x - enemy.x, 2) + Math.pow(player.y - enemy.y, 2));
+          const distToPlayer = Math.sqrt(Math.pow(targetX - enemy.x, 2) + Math.pow(targetY - enemy.y, 2));
           if (distToPlayer < 300 && enemy.shootCooldown <= 0) {
-            const dx = player.x - enemy.x;
-            const dy = player.y - enemy.y;
+            const dx = targetX - enemy.x;
+            const dy = targetY - enemy.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
             state.enemyProjectiles.push({
               x: enemy.x + 20,
@@ -2942,7 +2942,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             });
             enemy.shootCooldown = enemy.isEnraged ? 60 : 90;
           }
-          enemy.facingRight = player.x > enemy.x;
+          enemy.facingRight = targetX > enemy.x;
         }
         else if (enemy.type === 'cosmicDrifter') {
           // Cosmic Drifter - Slow floating, pulses gravity waves
@@ -2953,7 +2953,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           enemy.y = enemy.originalY + Math.sin(time * 0.06) * 20;
           
           // Slow drift toward player
-          const dir = player.x > enemy.x ? 1 : -1;
+          const dir = targetX > enemy.x ? 1 : -1;
           enemy.x += dir * 0.6;
           
           // Pulse gravity wave that slows player projectiles nearby
@@ -3011,10 +3011,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           enemy.y = enemy.originalY + Math.sin(enemy.voidPulse) * 8;
           
           // Occasionally create mini void zone near player
-          if (enemy.zoneCooldown <= 0 && Math.abs(player.x - enemy.x) < 200) {
+          if (enemy.zoneCooldown <= 0 && Math.abs(targetX - enemy.x) < 200) {
             state.hazards.push({
-              x: player.x - 20,
-              y: player.y,
+              x: targetX - 20,
+              y: targetY,
               width: 40,
               height: 40,
               life: 90,
@@ -3030,11 +3030,11 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           if (!enemy.chargeState) enemy.chargeState = 'walking';
           if (!enemy.chargeTimer) enemy.chargeTimer = 0;
           
-          const distToPlayer = Math.abs(enemy.x - player.x);
+          const distToPlayer = Math.abs(enemy.x - targetX);
           
           if (enemy.chargeState === 'walking') {
             // Walk slowly toward player
-            const dir = player.x > enemy.x ? 1 : -1;
+            const dir = targetX > enemy.x ? 1 : -1;
             enemy.velocityX = dir * 1.2;
             enemy.x += enemy.velocityX;
             enemy.facingRight = dir > 0;
@@ -3061,7 +3061,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             if (enemy.chargeTimer <= 0) {
               enemy.chargeState = 'lunging';
               enemy.chargeTimer = 20;
-              enemy.velocityX = (player.x > enemy.x ? 1 : -1) * 12;
+              enemy.velocityX = (targetX > enemy.x ? 1 : -1) * 12;
             }
           } else if (enemy.chargeState === 'lunging') {
             // Fast lunge attack
@@ -3089,11 +3089,11 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           enemy.phaseTimer++;
           
           // Orbit around player with wobbly movement
-          const targetX = player.x + Math.cos(enemy.orbitAngle) * enemy.orbitDistance;
-          const targetY = player.y - 50 + Math.sin(enemy.orbitAngle * 2) * 40;
+          const orbitTargetX = targetX + Math.cos(enemy.orbitAngle) * enemy.orbitDistance;
+          const orbitTargetY = targetY - 50 + Math.sin(enemy.orbitAngle * 2) * 40;
           
-          enemy.x += (targetX - enemy.x) * 0.04;
-          enemy.y += (targetY - enemy.y) * 0.04;
+          enemy.x += (orbitTargetX - enemy.x) * 0.04;
+          enemy.y += (orbitTargetY - enemy.y) * 0.04;
           
           // Add erratic jitter
           enemy.x += Math.sin(enemy.phaseTimer * 0.2) * 2;
@@ -3101,8 +3101,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           
           // Occasionally dash toward player
           if (enemy.phaseTimer % 180 === 0) {
-            enemy.x += (player.x - enemy.x) * 0.3;
-            enemy.y += (player.y - enemy.y) * 0.3;
+            enemy.x += (targetX - enemy.x) * 0.3;
+            enemy.y += (targetY - enemy.y) * 0.3;
             // Dash particles
             for (let i = 0; i < 6; i++) {
               particles.push({
@@ -3116,7 +3116,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             }
           }
           
-          enemy.facingRight = player.x > enemy.x;
+          enemy.facingRight = targetX > enemy.x;
         }
         else if (enemy.type === 'spellweaver') {
           // Spellweaver - Keeps distance, teleports when player gets close, casts spells
@@ -3135,7 +3135,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             const teleportDir = Math.random() > 0.5 ? 1 : -1;
             const oldX = enemy.x;
             const oldY = enemy.y;
-            enemy.x = player.x + teleportDir * (180 + Math.random() * 80);
+            enemy.x = targetX + teleportDir * (180 + Math.random() * 80);
             enemy.x = Math.max(50, Math.min(enemy.x, state.levelWidth - 50));
             enemy.y = enemy.originalY + (Math.random() - 0.5) * 60;
             enemy.teleportCooldown = 90;
@@ -3167,8 +3167,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           
           // Cast spell at player
           if (enemy.castCooldown <= 0 && distToPlayer < 350) {
-            const dx = player.x - enemy.x;
-            const dy = player.y - enemy.y;
+            const dx = targetX - enemy.x;
+            const dy = targetY - enemy.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
             
             // Fire arcane bolt
@@ -3186,7 +3186,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             soundManager.createOscillator('triangle', 400, 0.1, 0.2);
           }
           
-          enemy.facingRight = player.x > enemy.x;
+          enemy.facingRight = targetX > enemy.x;
         }
         else if (enemy.type === 'illusionist') {
           // Illusionist - Creates illusion copies, swaps positions with them, confusing movement
@@ -3236,14 +3236,14 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           }
           
           // Move toward player slowly
-          const moveDir = player.x > enemy.x ? 1 : -1;
+          const moveDir = targetX > enemy.x ? 1 : -1;
           enemy.x += moveDir * 0.8;
           enemy.facingRight = moveDir > 0;
           
           // Attack with confusion bolt
           if (enemy.illusionPhase % 150 === 0) {
-            const dx = player.x - enemy.x;
-            const dy = player.y - enemy.y;
+            const dx = targetX - enemy.x;
+            const dy = targetY - enemy.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
             if (dist < 300) {
               state.enemyProjectiles.push({
@@ -3266,13 +3266,13 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             enemy.x += enemy.velocityX;
           }
           enemy.shootCooldown--;
-          enemy.facingRight = player.x > enemy.x;
+          enemy.facingRight = targetX > enemy.x;
           
-          const distToPlayer = Math.abs(enemy.x - player.x);
+          const distToPlayer = Math.abs(enemy.x - targetX);
           const canShoot = !enemy.waitingForSignal || enemy.signalReceived;
           
           if (distToPlayer < 400 && enemy.shootCooldown <= 0 && canShoot) {
-            const dirX = player.x > enemy.x ? 1 : -1;
+            const dirX = targetX > enemy.x ? 1 : -1;
             const speed = enemy.isEnraged ? 7 : 5;
             const projectileCount = enemy.isEnraged ? 3 : 1;
             
@@ -3406,7 +3406,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
               });
             }
           }
-          enemy.facingRight = player.x > enemy.x;
+          enemy.facingRight = targetX > enemy.x;
         }
         // Level 1 enhanced enemy behaviors
         else if (enemy.type === 'slime' && enemy.hopTowardsPlayer) {
@@ -3421,9 +3421,9 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           
           // Hop towards player when in range
           if (enemy.hopCooldown > 0) enemy.hopCooldown--;
-          const distToPlayer = Math.abs(player.x - enemy.x);
+          const distToPlayer = Math.abs(targetX - enemy.x);
           if (distToPlayer < enemy.hopRange && enemy.hopCooldown <= 0) {
-            const hopDir = player.x > enemy.x ? 1 : -1;
+            const hopDir = targetX > enemy.x ? 1 : -1;
             enemy.velocityX = hopDir * 3;
             enemy.facingRight = hopDir > 0;
             enemy.hopCooldown = enemy.hopMaxCooldown;
@@ -3462,15 +3462,15 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             if (enemy.diveCooldown > 0) enemy.diveCooldown--;
             
             // Check for dive opportunity
-            const distX = Math.abs(enemy.x - player.x);
-            const isAbovePlayer = enemy.y < player.y;
+            const distX = Math.abs(enemy.x - targetX);
+            const isAbovePlayer = enemy.y < targetY;
             if (distX < enemy.diveRange && isAbovePlayer && enemy.diveCooldown <= 0) {
               enemy.diveState = 'diving';
               enemy.velocityY = enemy.diveSpeed;
             }
           } else if (enemy.diveState === 'diving') {
             enemy.y += enemy.velocityY;
-            enemy.x += (player.x > enemy.x ? 1 : -1) * 1.5; // Slight tracking
+            enemy.x += (targetX > enemy.x ? 1 : -1) * 1.5; // Slight tracking
             
             if (enemy.y > player.y + 30 || enemy.y > 480) {
               enemy.diveState = 'returning';
@@ -3486,7 +3486,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             }
           }
           
-          enemy.facingRight = enemy.velocityX > 0 || player.x > enemy.x;
+          enemy.facingRight = enemy.velocityX > 0 || targetX > enemy.x;
         }
         // Default movement for flying enemies - more dynamic patterns
         else if (!enemy.patrolPath) {

@@ -305,25 +305,27 @@ export function createArcaneNovaEffect(particles, x, y, radius) {
 }
 
 export function createArcStormEffect(particles, targets) {
-  // Create lightning bolts between targets
+  // Create visible lightning bolts between targets
   for (let i = 0; i < targets.length - 1; i++) {
     const from = targets[i];
     const to = targets[i + 1];
     
-    // Lightning particles along the arc
-    for (let t = 0; t < 8; t++) {
-      const progress = t / 8;
+    // Lightning line segments with visual variety
+    const segments = 10;
+    for (let t = 0; t < segments; t++) {
+      const progress = t / segments;
       const x = from.x + (to.x - from.x) * progress;
       const y = from.y + (to.y - from.y) * progress;
+      const offset = (Math.random() - 0.5) * 25;
       
       particles.push({
-        x: x + (Math.random() - 0.5) * 15,
-        y: y + (Math.random() - 0.5) * 15,
-        velocityX: (Math.random() - 0.5) * 2,
-        velocityY: (Math.random() - 0.5) * 2,
-        life: 12 + Math.random() * 8,
+        x: x + offset,
+        y: y + offset * 0.5,
+        velocityX: (Math.random() - 0.5) * 1,
+        velocityY: (Math.random() - 0.5) * 1,
+        life: 18 + Math.random() * 12,
         color: '#FCD34D',
-        size: 4 + Math.random() * 4,
+        size: 6 + Math.random() * 6,
         type: 'lightning'
       });
     }
@@ -331,20 +333,32 @@ export function createArcStormEffect(particles, targets) {
   
   // Electric burst at each target
   for (const target of targets) {
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 20; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const speed = 2 + Math.random() * 3;
+      const speed = 3 + Math.random() * 5;
       particles.push({
         x: target.x,
         y: target.y,
         velocityX: Math.cos(angle) * speed,
         velocityY: Math.sin(angle) * speed,
-        life: 15 + Math.random() * 10,
+        life: 20 + Math.random() * 15,
         color: i % 2 === 0 ? '#FBBF24' : '#FEF3C7',
-        size: 3 + Math.random() * 3,
+        size: 5 + Math.random() * 5,
         type: 'electricSpark'
       });
     }
+    
+    // Flash at each target
+    particles.push({
+      x: target.x,
+      y: target.y,
+      velocityX: 0,
+      velocityY: 0,
+      life: 10,
+      color: '#FFFFFF',
+      size: 30,
+      type: 'flash'
+    });
   }
 }
 
