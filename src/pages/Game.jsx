@@ -458,15 +458,29 @@ export default function Game() {
     setHealth(100);
     setCheckpointData(null);
     setIsCheckpointActivated(false);
+    setRespawnAtCheckpoint(false);
+    setSessionScraps(0);
+    setSessionCrystals(0);
+    setGameKey(prev => prev + 1);
     setGameState('playing');
   }, []);
 
   const handleStartTutorial = useCallback(() => {
+    setScore(0);
+    setHealth(100);
+    setSessionScraps(0);
+    setSessionCrystals(0);
+    setGameKey(prev => prev + 1);
     setGameState('playing');
     setLevel(0);
   }, []);
 
   const handleSkipTutorial = useCallback(() => {
+    setScore(0);
+    setHealth(100);
+    setSessionScraps(0);
+    setSessionCrystals(0);
+    setGameKey(prev => prev + 1);
     setLevel(1);
     setGameState('playing');
   }, []);
@@ -543,6 +557,7 @@ export default function Game() {
     checkpointRef.current = checkpointData;
     setHealth(50);
     setRespawnAtCheckpoint(true);
+    // Don't increment gameKey - we want to keep the same level instance
     setGameState('playing');
   }, [checkpointData]);
 
