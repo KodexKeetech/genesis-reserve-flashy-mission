@@ -307,7 +307,12 @@ export const BIOMES = {
     },
     enemiesByLevel: {},
     hazards: ['voidZone'],
-    boss: null
+    boss: {
+      name: 'Endless Challenge',
+      type: 'none',
+      health: 0,
+      color: '#A855F7'
+    }
   }
 };
 
