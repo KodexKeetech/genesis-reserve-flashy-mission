@@ -1816,10 +1816,10 @@ function drawCosmicOverlord(ctx, boss, bx, time, isFrozen, rage, pulse) {
     if (!isFinite(bx)) return;
   }
 
-  const float = Math.sin(time * 0.05) * 8;
+  const floatAnim = Math.sin(time * 0.05) * 8;
   const energyPulse = Math.sin(time * 0.1) * 0.3 + 0.7;
   const centerX = bx + boss.width / 2;
-  const centerY = boss.y + boss.height / 2 + float;
+  const centerY = boss.y + boss.height / 2 + floatAnim;
 
   // Massive cosmic aura - rainbow void energy
   for (let ring = 3; ring >= 0; ring--) {
@@ -1890,7 +1890,7 @@ function drawCosmicOverlord(ctx, boss, bx, time, isFrozen, rage, pulse) {
 
   // Cosmic crown - rotating energy spikes
   ctx.save();
-  ctx.translate(centerX, boss.y + 10 + float);
+  ctx.translate(centerX, boss.y + 10 + floatAnim);
   ctx.rotate(time * 0.04);
   for (let i = 0; i < 8; i++) {
     const angle = (i / 8) * Math.PI * 2;
