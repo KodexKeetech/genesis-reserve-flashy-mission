@@ -259,6 +259,35 @@ export const BIOMES = {
       health: 70,
       color: '#8B5CF6'
     }
+  },
+
+  space: {
+    name: 'Cosmic Beyond',
+    levels: [28, 29, 30],
+    bossLevel: 30,
+    background: {
+      sky: ['#020817', '#0A0F1F', '#0F172A'],
+      stars: true,
+      particles: 'cosmic'
+    },
+    platforms: {
+      ground: { fill: '#1E293B', top: '#7C3AED', accent: '#A855F7' },
+      normal: { fill: '#334155', highlight: '#475569' },
+      magic: { fill: '#7C3AED', glow: '#A855F7' },
+      void: { fill: '#4C1D95', unstable: true }
+    },
+    enemiesByLevel: {
+      28: ['voidSlime', 'shadowBat', 'voidWalker'],
+      29: ['voidSlime', 'shadowBat', 'voidWalker', 'phantomWisp'],
+      30: ['voidSlime', 'shadowBat', 'voidWalker', 'phantomWisp']
+    },
+    hazards: ['voidZone', 'cosmicRift'],
+    boss: {
+      name: 'Cosmic Overlord',
+      type: 'cosmicOverlord',
+      health: 100,
+      color: '#7C3AED'
+    }
   }
 };
 
