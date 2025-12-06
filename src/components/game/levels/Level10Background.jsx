@@ -1,3 +1,4 @@
+
 // Level 10: Void - Enhanced Background Renderer
 
 export function drawLevel10Background(ctx, cameraX, canvasWidth, canvasHeight, time) {
@@ -35,15 +36,4 @@ export function drawLevel10Background(ctx, cameraX, canvasWidth, canvasHeight, t
     ctx.fill();
   }
   ctx.globalAlpha = 1;
-  
-  // Floating void islands
-  ctx.fillStyle = '#3f3f46';
-  for (let i = 0; i < 3; i++) {
-    const ix = Math.round(((i * 350 - cameraX * 0.08) % 1300) - 150);
-    const iy = 350 + Math.sin(time * 0.03 + i * 2) * 18;
-    
-    ctx.beginPath();
-    ctx.ellipse(ix + 60, iy, 60, 25, 0, 0, Math.PI * 2);
-    ctx.fill();
-  }
 }

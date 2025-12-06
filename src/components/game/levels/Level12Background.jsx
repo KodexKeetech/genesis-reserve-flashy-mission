@@ -1,3 +1,4 @@
+
 // Level 12: Void Boss - Enhanced Background Renderer
 
 export function drawLevel12Background(ctx, cameraX, canvasWidth, canvasHeight, time) {
@@ -62,13 +63,4 @@ export function drawLevel12Background(ctx, cameraX, canvasWidth, canvasHeight, t
     ctx.fill();
   }
   ctx.globalAlpha = 1;
-  
-  // Floating platforms
-  ctx.fillStyle = '#3f3f46';
-  for (let i = 0; i < 2; i++) {
-    const ix = Math.round(((i * 450 - cameraX * 0.08) % 1300) - 150);
-    ctx.beginPath();
-    ctx.ellipse(ix + 60, 370, 60, 25, 0, 0, Math.PI * 2);
-    ctx.fill();
-  }
 }

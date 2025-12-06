@@ -1,3 +1,4 @@
+
 // Level 11: Void - Enhanced Background Renderer
 
 export function drawLevel11Background(ctx, cameraX, canvasWidth, canvasHeight, time) {
@@ -40,14 +41,4 @@ export function drawLevel11Background(ctx, cameraX, canvasWidth, canvasHeight, t
     ctx.fill();
   }
   ctx.globalAlpha = 1;
-  
-  // Floating islands
-  ctx.fillStyle = '#3f3f46';
-  for (let i = 0; i < 2; i++) {
-    const ix = Math.round(((i * 400 - cameraX * 0.08) % 1300) - 150);
-    const iy = 360;
-    ctx.beginPath();
-    ctx.ellipse(ix + 60, iy, 60, 25, 0, 0, Math.PI * 2);
-    ctx.fill();
-  }
 }
