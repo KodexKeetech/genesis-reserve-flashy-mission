@@ -340,16 +340,6 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           state.levelWidth = 1200;
           state.goalX = 1100;
 
-          // Tutorial hints configuration
-          state.tutorialHints = [
-            { x: 150, y: 450, text: "Use ← → to move", shown: false, triggerX: 0 },
-            { x: 350, y: 350, text: "Press SPACE to jump", shown: false, triggerX: 200 },
-            { x: 650, y: 300, text: "Double jump in mid-air!", shown: false, triggerX: 450 },
-            { x: 700, y: 420, text: "Click or press Z to shoot", shown: false, triggerX: 600 },
-            { x: 950, y: 380, text: "Press SHIFT to dash", shown: false, triggerX: 800 },
-            { x: 1050, y: 450, text: "Reach the portal! →", shown: false, triggerX: 1000 }
-          ];
-
           // Simple flat ground with a few platforms
           state.platforms.push({ x: 0, y: 500, width: 500, height: 100, type: 'ground' });
           state.platforms.push({ x: 300, y: 400, width: 100, height: 20, type: 'magic' });
@@ -6379,67 +6369,6 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           // Ambient particles around portal
           if (Math.random() < 0.3) {
             createSecretPortalEffect(particles, portalCenterX + state.cameraX, portalCenterY + floatY);
-          }
-        }
-      }
-      
-      // Draw tutorial hints
-      if (currentLevel === 0 && state.tutorialHints) {
-        for (const hint of state.tutorialHints) {
-          // Show hint when player reaches trigger point
-          if (player.x > hint.triggerX && !hint.shown) {
-            hint.shown = true;
-          }
-          
-          if (hint.shown) {
-            const hintX = Math.round(hint.x - state.cameraX);
-            const hintY = hint.y;
-            
-            // Visual highlight glow
-            ctx.fillStyle = 'rgba(34, 211, 238, 0.15)';
-            ctx.shadowColor = '#22D3EE';
-            ctx.shadowBlur = 30 + Math.sin(time * 0.2) * 10;
-            ctx.beginPath();
-            ctx.arc(hintX, hintY, 40 + Math.sin(time * 0.15) * 5, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.shadowBlur = 0;
-            
-            // Arrow pointing down
-            ctx.fillStyle = '#22D3EE';
-            ctx.save();
-            ctx.translate(hintX, hintY - 60);
-            const bounce = Math.sin(time * 0.15) * 5;
-            ctx.translate(0, bounce);
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(-8, -12);
-            ctx.lineTo(-3, -12);
-            ctx.lineTo(-3, -25);
-            ctx.lineTo(3, -25);
-            ctx.lineTo(3, -12);
-            ctx.lineTo(8, -12);
-            ctx.closePath();
-            ctx.fill();
-            ctx.restore();
-            
-            // Text hint box
-            ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
-            ctx.strokeStyle = '#22D3EE';
-            ctx.lineWidth = 2;
-            ctx.shadowColor = '#22D3EE';
-            ctx.shadowBlur = 15;
-            const textWidth = ctx.measureText(hint.text).width;
-            ctx.beginPath();
-            ctx.roundRect(hintX - textWidth / 2 - 15, hintY - 100, textWidth + 30, 35, 8);
-            ctx.fill();
-            ctx.stroke();
-            ctx.shadowBlur = 0;
-            
-            // Text
-            ctx.fillStyle = '#FFFFFF';
-            ctx.font = 'bold 14px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText(hint.text, hintX, hintY - 75);
           }
         }
       }

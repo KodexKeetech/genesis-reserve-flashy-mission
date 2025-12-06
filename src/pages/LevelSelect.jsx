@@ -79,34 +79,6 @@ export default function LevelSelect() {
           <p className="text-slate-400">Choose your adventure</p>
         </div>
 
-        {/* Tutorial Card */}
-        <Link to={createPageUrl('Game') + '?startLevel=0'}>
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8"
-          >
-            <Card className="bg-gradient-to-r from-cyan-900/40 to-blue-900/40 border-2 border-cyan-500/50 hover:border-cyan-400 transition-all cursor-pointer">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-full bg-cyan-500/20 border-2 border-cyan-400 flex items-center justify-center text-3xl">
-                      📚
-                    </div>
-                    <div>
-                      <h2 className="text-2xl font-bold text-cyan-300 mb-1">Tutorial</h2>
-                      <p className="text-slate-400">Learn the basics of magic and movement</p>
-                    </div>
-                  </div>
-                  <Button className="bg-cyan-600 hover:bg-cyan-500 text-white px-8">
-                    Start Tutorial
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </Link>
-
         {/* Biomes Grid */}
         <div className="space-y-8">
           {biomeList.map(([biomeKey, biome], biomeIndex) => {
