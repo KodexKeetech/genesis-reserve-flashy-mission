@@ -1906,9 +1906,11 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       ctx.shadowBlur = 0;
 
       // Coat tail (behind) - Dark navy blue long coat with gradient
+      const coatY1 = ensureFinite(y + 28 - bodyBob, 0);
+      const coatY2 = ensureFinite(y + 58, 0);
       const coatGrad = ctx.createLinearGradient(
-        ensureFinite(centerX - 18), ensureFinite(y + 28), 
-        ensureFinite(centerX - 18), ensureFinite(y + 58)
+        ensureFinite(centerX - 18), coatY1, 
+        ensureFinite(centerX - 18), coatY2
       );
       coatGrad.addColorStop(0, '#1E3A5F');
       coatGrad.addColorStop(1, '#152A45');
