@@ -1,47 +1,49 @@
-// Level 16: Nebula Gateway Background
+
+// Level 16: Ancient Ruins Background
 
 export function drawLevel16Background(ctx, cameraX, canvasWidth, canvasHeight, time) {
-  if (!isFinite(cameraX)) cameraX = 0;
-  // Deep space gradient
+  // Desert sky gradient
   const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
-  gradient.addColorStop(0, '#0A0520');
-  gradient.addColorStop(0.5, '#150A35');
-  gradient.addColorStop(1, '#0A0520');
+  gradient.addColorStop(0, '#78350F');
+  gradient.addColorStop(0.5, '#A16207');
+  gradient.addColorStop(1, '#854D0E');
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, canvasWidth, canvasHeight);
   
-  // Purple nebula
-  const nebX = Math.round(400 - cameraX * 0.02);
-  const nebY = 200;
-  if (!isFinite(nebX)) return;
-  const nebulaGrad = ctx.createRadialGradient(nebX, nebY, 0, nebX, nebY, 180);
-  nebulaGrad.addColorStop(0, 'rgba(147, 51, 234, 0.3)');
-  nebulaGrad.addColorStop(0.5, 'rgba(109, 40, 217, 0.2)');
-  nebulaGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-  ctx.fillStyle = nebulaGrad;
-  ctx.fillRect(nebX - 180, nebY - 180, 360, 360);
+  // Sun
+  const sunX = 650 - cameraX * 0.01;
+  const sunY = 100;
+  const sunGrad = ctx.createRadialGradient(sunX, sunY, 20, sunX, sunY, 60);
+  sunGrad.addColorStop(0, '#FEF3C7');
+  sunGrad.addColorStop(0.3, '#FDE68A');
+  sunGrad.addColorStop(1, 'rgba(253, 230, 138, 0)');
+  ctx.fillStyle = sunGrad;
+  ctx.fillRect(sunX - 60, sunY - 60, 120, 120);
   
-  // Stars
-  for (let i = 0; i < 30; i++) {
-    const sx = Math.round(((i * 90 - cameraX * 0.015) % 900 + 900) % 900 - 50);
-    const sy = (i * 67) % 580;
-    ctx.fillStyle = '#FFFFFF';
-    ctx.globalAlpha = 0.6;
+  // Distant pyramids
+  ctx.fillStyle = '#78716C';
+  const pyr1X = 200 - cameraX * 0.1;
+  ctx.beginPath();
+  ctx.moveTo(pyr1X, 300);
+  ctx.lineTo(pyr1X + 80, 200);
+  ctx.lineTo(pyr1X + 160, 300);
+  ctx.closePath();
+  ctx.fill();
+  
+  const pyr2X = 450 - cameraX * 0.12;
+  ctx.beginPath();
+  ctx.moveTo(pyr2X, 300);
+  ctx.lineTo(pyr2X + 100, 180);
+  ctx.lineTo(pyr2X + 200, 300);
+  ctx.closePath();
+  ctx.fill();
+  
+  // Sand dunes
+  ctx.fillStyle = '#A8A29E';
+  for (let i = 0; i < 3; i++) {
+    const duneX = i * 300 - cameraX * 0.3 + 100;
     ctx.beginPath();
-    ctx.arc(sx, sy, 1, 0, Math.PI * 2);
+    ctx.ellipse(duneX, 500, 150, 40, 0, 0, Math.PI * 2);
     ctx.fill();
   }
-  ctx.globalAlpha = 1;
-  
-  // Distant planets
-  const planetX = Math.round(650 - cameraX * 0.025);
-  if (!isFinite(planetX)) return;
-  const planetGrad = ctx.createRadialGradient(planetX - 15, 150, 0, planetX, 160, 40);
-  planetGrad.addColorStop(0, '#8B5CF6');
-  planetGrad.addColorStop(0.7, '#6D28D9');
-  planetGrad.addColorStop(1, '#4C1D95');
-  ctx.fillStyle = planetGrad;
-  ctx.beginPath();
-  ctx.arc(planetX, 160, 40, 0, Math.PI * 2);
-  ctx.fill();
 }

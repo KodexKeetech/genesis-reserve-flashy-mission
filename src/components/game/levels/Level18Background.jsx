@@ -1,68 +1,73 @@
-
-// Level 18: Ultimate Showdown Background
+// Level 18: Pharaoh King Boss Arena Background
 
 export function drawLevel18Background(ctx, cameraX, canvasWidth, canvasHeight, time) {
-  if (!isFinite(cameraX)) cameraX = 0;
-  // Epic space gradient
+  // Grand tomb chamber gradient
   const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
-  gradient.addColorStop(0, '#030112');
-  gradient.addColorStop(0.3, '#0A0520');
-  gradient.addColorStop(0.6, '#150A35');
-  gradient.addColorStop(1, '#030112');
+  gradient.addColorStop(0, '#1C1917');
+  gradient.addColorStop(0.4, '#44403C');
+  gradient.addColorStop(0.7, '#78350F');
+  gradient.addColorStop(1, '#1C1917');
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, canvasWidth, canvasHeight);
   
-  // Energy vortex center
-  const vortexX = 400;
-  const vortexY = 250;
-  for (let i = 5; i >= 0; i--) {
-    const size = 50 + i * 25;
-    const rotation = time * (0.025 + i * 0.012) * (i % 2 === 0 ? 1 : -1);
-    const alpha = 0.2 + i * 0.08;
+  // Central golden glow (pharaoh's power)
+  const glowX = 400;
+  const glowY = 250;
+  const pulse = Math.sin(time * 0.05) * 0.3 + 0.7;
+  const glowGrad = ctx.createRadialGradient(glowX, glowY, 0, glowX, glowY, 200);
+  glowGrad.addColorStop(0, `rgba(234, 179, 8, ${0.2 * pulse})`);
+  glowGrad.addColorStop(0.5, `rgba(202, 138, 4, ${0.1 * pulse})`);
+  glowGrad.addColorStop(1, 'rgba(133, 77, 14, 0)');
+  ctx.fillStyle = glowGrad;
+  ctx.fillRect(glowX - 200, glowY - 200, 400, 400);
+  
+  // Golden hieroglyphics on walls (animated)
+  ctx.fillStyle = '#CA8A04';
+  ctx.shadowColor = '#EAB308';
+  ctx.shadowBlur = 10;
+  for (let i = 0; i < 12; i++) {
+    const hX = i * 70 + Math.sin(time * 0.03 + i) * 5;
+    const hY = 100 + (i % 4) * 80;
+    const alpha = Math.sin(time * 0.04 + i * 0.5) * 0.3 + 0.5;
+    ctx.globalAlpha = alpha;
     
-    ctx.strokeStyle = `rgba(147, 51, 234, ${alpha})`;
-    ctx.shadowColor = '#9333EA';
-    ctx.shadowBlur = 20 * alpha;
-    ctx.lineWidth = 4;
-    ctx.save();
-    ctx.translate(vortexX, vortexY);
-    ctx.rotate(rotation);
-    ctx.beginPath();
-    ctx.arc(0, 0, size, 0, Math.PI * 1.9);
-    ctx.stroke();
-    ctx.restore();
+    // Various hieroglyph shapes
+    if (i % 3 === 0) {
+      ctx.fillRect(hX, hY, 20, 20);
+    } else if (i % 3 === 1) {
+      ctx.beginPath();
+      ctx.arc(hX + 10, hY + 10, 10, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      ctx.beginPath();
+      ctx.moveTo(hX + 10, hY);
+      ctx.lineTo(hX + 20, hY + 20);
+      ctx.lineTo(hX, hY + 20);
+      ctx.closePath();
+      ctx.fill();
+    }
   }
+  ctx.globalAlpha = 1;
   ctx.shadowBlur = 0;
   
-  // Energy waves
-  for (let i = 0; i < 4; i++) {
-    const waveAngle = (i / 4) * Math.PI * 2 + time * 0.02;
-    const wx = vortexX + Math.cos(waveAngle) * 120;
-    const wy = vortexY + Math.sin(waveAngle) * 80;
-    
-    ctx.strokeStyle = 'rgba(168, 85, 247, 0.3)';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(vortexX, vortexY);
-    ctx.quadraticCurveTo(
-      wx + Math.sin(time * 0.08) * 20,
-      wy + Math.cos(time * 0.08) * 20,
-      wx + Math.cos(waveAngle) * 160,
-      wy + Math.sin(waveAngle) * 120
-    );
-    ctx.stroke();
-  }
+  // Massive stone pillars in throne room
+  ctx.fillStyle = '#57534E';
+  ctx.fillRect(50, 100, 60, 400);
+  ctx.fillRect(690, 100, 60, 400);
+  // Pillar caps
+  ctx.fillStyle = '#78716C';
+  ctx.fillRect(30, 100, 100, 30);
+  ctx.fillRect(670, 100, 100, 30);
   
-  // Stars
-  for (let i = 0; i < 35; i++) {
-    const sx = (i * 87) % 800;
-    const sy = (i * 91) % 600;
-    const twinkle = Math.sin(time * 0.1 + i) * 0.3 + 0.7;
-    ctx.fillStyle = '#FFFFFF';
-    ctx.globalAlpha = twinkle * 0.8;
+  // Floor pattern
+  ctx.strokeStyle = '#A8A29E';
+  ctx.lineWidth = 2;
+  ctx.globalAlpha = 0.3;
+  for (let i = 0; i < 10; i++) {
     ctx.beginPath();
-    ctx.arc(sx, sy, 1.5, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.moveTo(i * 80, 500);
+    ctx.lineTo(i * 80, 600);
+    ctx.stroke();
   }
   ctx.globalAlpha = 1;
 }

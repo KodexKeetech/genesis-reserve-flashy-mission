@@ -1,54 +1,47 @@
-// Level 17: Cosmic Depths Background
+
+// Level 17: Ancient Ruins Background (deeper in ruins)
 
 export function drawLevel17Background(ctx, cameraX, canvasWidth, canvasHeight, time) {
-  if (!isFinite(cameraX)) cameraX = 0;
-  // Dark space gradient
+  if (!isFinite(cameraX)) cameraX = 0; // Ensure cameraX is a finite number
+  // Darker desert/tomb gradient
   const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
-  gradient.addColorStop(0, '#050215');
-  gradient.addColorStop(0.5, '#0D0628');
-  gradient.addColorStop(1, '#050215');
+  gradient.addColorStop(0, '#57534E');
+  gradient.addColorStop(0.5, '#78350F');
+  gradient.addColorStop(1, '#44403C');
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, canvasWidth, canvasHeight);
   
-  // Black hole effect
-  const bhX = Math.round(350 - cameraX * 0.03);
-  const bhY = 250;
-  if (!isFinite(bhX)) return;
-  for (let i = 3; i >= 0; i--) {
-    const size = 40 + i * 20;
-    const alpha = 0.15 + i * 0.1;
-    const rotation = time * (0.02 + i * 0.01) * (i % 2 === 0 ? 1 : -1);
+  // Torch glow effects
+  for (let i = 0; i < 3; i++) {
+    const torchX = 150 + i * 300 - cameraX * 0.05;
+    const torchY = 100;
+    const flicker = Math.sin(time * 0.1 + i * 2) * 0.2 + 0.8;
     
-    ctx.strokeStyle = `rgba(139, 92, 246, ${alpha})`;
-    ctx.lineWidth = 3;
-    ctx.save();
-    ctx.translate(bhX, bhY);
-    ctx.rotate(rotation);
-    ctx.beginPath();
-    ctx.arc(0, 0, size, 0, Math.PI * 1.6);
-    ctx.stroke();
-    ctx.restore();
+    const glowGrad = ctx.createRadialGradient(torchX, torchY, 0, torchX, torchY, 80);
+    glowGrad.addColorStop(0, `rgba(251, 191, 36, ${0.3 * flicker})`);
+    glowGrad.addColorStop(0.5, `rgba(234, 179, 8, ${0.15 * flicker})`);
+    glowGrad.addColorStop(1, 'rgba(202, 138, 4, 0)');
+    ctx.fillStyle = glowGrad;
+    ctx.fillRect(torchX - 80, torchY - 80, 160, 160);
   }
   
-  // Stars
-  for (let i = 0; i < 25; i++) {
-    const sx = Math.round(((i * 95 - cameraX * 0.02) % 900 + 900) % 900 - 50);
-    const sy = (i * 73) % 580;
-    ctx.fillStyle = '#C4B5FD';
-    ctx.globalAlpha = 0.5;
-    ctx.beginPath();
-    ctx.arc(sx, sy, 1.2, 0, Math.PI * 2);
-    ctx.fill();
+  // Ancient pillars silhouettes
+  ctx.fillStyle = '#292524';
+  for (let i = 0; i < 4; i++) {
+    const pillarX = i * 200 - cameraX * 0.15 + 50;
+    ctx.fillRect(pillarX, 150, 30, 250);
+    // Pillar cap
+    ctx.fillRect(pillarX - 5, 150, 40, 15);
+  }
+  
+  // Hieroglyphics (simple shapes)
+  ctx.fillStyle = '#CA8A04';
+  ctx.globalAlpha = 0.3;
+  for (let i = 0; i < 8; i++) {
+    const hX = i * 100 - cameraX * 0.08 + 30;
+    const hY = 200 + (i % 3) * 50;
+    ctx.fillRect(hX, hY, 15, 15);
+    ctx.fillRect(hX + 20, hY + 5, 10, 20);
   }
   ctx.globalAlpha = 1;
-  
-  // Distant galaxy
-  const galX = Math.round(550 - cameraX * 0.015);
-  if (!isFinite(galX)) return;
-  const galGrad = ctx.createRadialGradient(galX, 180, 0, galX, 180, 70);
-  galGrad.addColorStop(0, 'rgba(167, 139, 250, 0.25)');
-  galGrad.addColorStop(0.6, 'rgba(109, 40, 217, 0.15)');
-  galGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-  ctx.fillStyle = galGrad;
-  ctx.fillRect(galX - 70, 110, 140, 140);
 }
