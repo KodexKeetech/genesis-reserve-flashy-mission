@@ -8,6 +8,7 @@ import GameOverlay from '@/components/game/GameOverlay';
 import TouchControls from '@/components/game/TouchControls';
 import SettingsMenu from '@/components/game/SettingsMenu';
 import useGamepad from '@/components/game/useGamepad';
+import ComicAdOverlay from '@/components/game/ComicAdOverlay';
 
 import soundManager from '@/components/game/SoundManager';
 
@@ -27,6 +28,8 @@ export default function Game() {
   const [hiddenLevelId, setHiddenLevelId] = useState(hiddenLevelInit || null);
   const [score, setScore] = useState(0);
   const [health, setHealth] = useState(100);
+  const [lives, setLives] = useState(10);
+  const [showComicAd, setShowComicAd] = useState(false);
   const [level, setLevel] = useState(startLevelParamInit ? parseInt(startLevelParamInit, 10) : (hiddenLevelInit ? 100 : 0)); // Start at 0 for tutorial, 100+ for hidden
   const [powerUps, setPowerUps] = useState({});
   const [abilityCooldowns, setAbilityCooldowns] = useState({
@@ -224,11 +227,56 @@ export default function Game() {
           const data = JSON.parse(localData);
           setMagicScraps(data.magicScraps || 0);
           setArcaneCrystals(data.arcaneCrystals || 0);
+          setLives(data.lives !== undefined ? data.lives : 10);
         }
-      }
-    };
-    loadPlayerData();
-  }, []);
+        }
+        };
+        loadPlayerData();
+        }, []);
+
+        // Load lives from user data
+        useEffect(() => {
+        const loadLives = async () => {
+        try {
+        const isAuth = await base44.auth.isAuthenticated();
+        if (isAuth) {
+          const user = await base44.auth.me();
+          setLives(user.lives !== undefined ? user.lives : 10);
+        } else {
+          const localData = localStorage.getItem('jeff_player_data');
+          if (localData) {
+            const data = JSON.parse(localData);
+            setLives(data.lives !== undefined ? data.lives : 10);
+          }
+        }
+        } catch (e) {
+        const localData = localStorage.getItem('jeff_player_data');
+        if (localData) {
+          const data = JSON.parse(localData);
+          setLives(data.lives !== undefined ? data.lives : 10);
+        }
+        }
+        };
+        loadLives();
+        }, []);
+
+        // Save lives
+        const saveLives = useCallback(async (newLives) => {
+        setLives(newLives);
+        try {
+        const isAuth = await base44.auth.isAuthenticated();
+        if (isAuth) {
+        await base44.auth.updateMe({ lives: newLives });
+        }
+        const localData = localStorage.getItem('jeff_player_data');
+        const existing = localData ? JSON.parse(localData) : {};
+        localStorage.setItem('jeff_player_data', JSON.stringify({ ...existing, lives: newLives }));
+        } catch (e) {
+        const localData = localStorage.getItem('jeff_player_data');
+        const existing = localData ? JSON.parse(localData) : {};
+        localStorage.setItem('jeff_player_data', JSON.stringify({ ...existing, lives: newLives }));
+        }
+        }, []);
 
   // Save scraps when level completes or game over
   const saveScraps = useCallback(async (scrapsToAdd, crystalsToAdd = 0) => {
@@ -410,13 +458,34 @@ export default function Game() {
   }, []);
 
   const handleGameOver = useCallback(() => {
-    setGameState('gameOver');
+    if (lives > 1) {
+      // Lose a life and respawn
+      saveLives(lives - 1);
+      setHealth(100);
+      setRespawnAtCheckpoint(true);
+      setGameState('playing');
+    } else {
+      // Out of lives - show comic ad
+      saveLives(0);
+      setShowComicAd(true);
+    }
     if (sessionScraps > 0 || sessionCrystals > 0) {
       saveScraps(sessionScraps, sessionCrystals);
     }
-    // Save the gun the player was using
     saveGunPreference(currentGun);
-  }, [sessionScraps, sessionCrystals, saveScraps, currentGun, saveGunPreference]);
+  }, [sessionScraps, sessionCrystals, saveScraps, currentGun, saveGunPreference, lives, saveLives]);
+
+  const handleAdComplete = useCallback(() => {
+    setShowComicAd(false);
+    setGameState('gameOver');
+    saveLives(10); // Reset lives for next game
+  }, [saveLives]);
+
+  const handleSkipAd = useCallback(() => {
+    setShowComicAd(false);
+    setGameState('gameOver');
+    saveLives(10); // Reset lives for next game
+  }, [saveLives]);
 
   // Use a ref to store checkpoint data that persists across re-renders
   const checkpointRef = useRef(null);
@@ -590,6 +659,10 @@ export default function Game() {
               />
             )}
 
+            {showComicAd && (
+              <ComicAdOverlay onAdComplete={handleAdComplete} onSkipAd={handleSkipAd} />
+            )}
+
 
 
           {showSettings && (
@@ -625,6 +698,7 @@ export default function Game() {
             sessionScraps={sessionScraps}
             isTutorial={level === 0}
             hiddenLevelId={hiddenLevelId}
+            lives={lives}
           />
         )}
         </div>
