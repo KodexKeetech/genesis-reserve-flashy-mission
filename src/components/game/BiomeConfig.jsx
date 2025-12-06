@@ -288,6 +288,26 @@ export const BIOMES = {
       health: 100,
       color: '#C026D3'
     }
+  },
+
+  mystical: {
+    name: 'Ethereal Void',
+    levels: [],
+    bossLevel: null,
+    key: 'mystical',
+    background: {
+      sky: ['#0A0E27', '#1A1535', '#2D1B4E'],
+      stars: true,
+      particles: 'ethereal'
+    },
+    platforms: {
+      ground: { fill: '#1F0A3C', top: '#A855F7', accent: '#C084FC' },
+      normal: { fill: '#2D1B4E', highlight: '#3F2D5F' },
+      magic: { fill: '#8B5CF6', glow: '#A78BFA' }
+    },
+    enemiesByLevel: {},
+    hazards: ['voidZone'],
+    boss: null
   }
 };
 

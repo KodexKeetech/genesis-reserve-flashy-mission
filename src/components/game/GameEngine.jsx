@@ -431,7 +431,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
 
         // Infinite endless mode for levels > 30
         if (level > 30) {
-          const biome = { key: 'mystical', name: 'Ethereal Void' };
+          const biome = getBiomeForLevel(31); // Get mystical biome
+          biome.key = 'mystical';
           state.biome = biome;
           state.levelWidth = 50000; // Very long level
           state.goalX = 100000; // Unreachable - endless mode
