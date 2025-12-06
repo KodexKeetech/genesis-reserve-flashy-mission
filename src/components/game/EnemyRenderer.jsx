@@ -772,6 +772,9 @@ export function drawBoss(ctx, boss, bx, time, isFrozen, biomeKey) {
     case 'arcanist':
       drawArcanist(ctx, boss, bx, time, isFrozen, rage, pulse);
       break;
+    case 'omegaTitan':
+      drawOmegaTitan(ctx, boss, bx, time, isFrozen, rage, pulse);
+      break;
     default:
       // Fallback - draw a generic boss shape
       drawGenericBoss(ctx, boss, bx, time, isFrozen, rage, pulse);
@@ -1648,4 +1651,99 @@ function drawGenericBoss(ctx, boss, bx, time, isFrozen, rage, pulse) {
   ctx.arc(bx + 35, boss.y + 50, 5, 0, Math.PI * 2);
   ctx.arc(bx + 65, boss.y + 50, 5, 0, Math.PI * 2);
   ctx.fill();
+}
+
+function drawOmegaTitan(ctx, boss, bx, time, isFrozen, rage, pulse) {
+  // Ultimate boss - combination of all previous bosses
+  const aura = Math.sin(time * 0.1) * 0.4 + 0.6;
+  
+  // Massive energy aura
+  ctx.fillStyle = `rgba(147, 51, 234, ${aura * 0.3})`;
+  ctx.shadowColor = '#9333EA';
+  ctx.shadowBlur = 50;
+  ctx.beginPath();
+  ctx.arc(bx + 50, boss.y + 50, 80 + aura * 20, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Core body - crystalline armor
+  const bodyGrad = ctx.createLinearGradient(bx + 10, boss.y + 20, bx + 90, boss.y + 100);
+  bodyGrad.addColorStop(0, isFrozen ? '#67E8F9' : '#1E1B4B');
+  bodyGrad.addColorStop(0.5, isFrozen ? '#A5F3FC' : '#4C1D95');
+  bodyGrad.addColorStop(1, isFrozen ? '#67E8F9' : '#1E1B4B');
+  ctx.fillStyle = bodyGrad;
+  ctx.shadowBlur = 30;
+  ctx.beginPath();
+  ctx.roundRect(bx + 10, boss.y + 25, 80, 75, 10);
+  ctx.fill();
+  
+  // Energy veins pulsing through body
+  ctx.strokeStyle = isFrozen ? '#A5F3FC' : `rgba(168, 85, 247, ${pulse})`;
+  ctx.lineWidth = 4;
+  ctx.shadowBlur = 25;
+  ctx.beginPath();
+  ctx.moveTo(bx + 20, boss.y + 35);
+  ctx.quadraticCurveTo(bx + 50, boss.y + 50, bx + 80, boss.y + 40);
+  ctx.moveTo(bx + 25, boss.y + 60);
+  ctx.lineTo(bx + 75, boss.y + 60);
+  ctx.moveTo(bx + 30, boss.y + 85);
+  ctx.quadraticCurveTo(bx + 50, boss.y + 75, bx + 70, boss.y + 85);
+  ctx.stroke();
+  
+  // Reactor core (glowing center)
+  ctx.fillStyle = isFrozen ? '#fff' : (rage ? '#EF4444' : '#A855F7');
+  ctx.shadowColor = ctx.fillStyle;
+  ctx.shadowBlur = 40;
+  ctx.beginPath();
+  ctx.arc(bx + 50, boss.y + 60, 18 + pulse * 5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#FFFFFF';
+  ctx.beginPath();
+  ctx.arc(bx + 50, boss.y + 60, 10, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Head - menacing
+  ctx.fillStyle = isFrozen ? '#67E8F9' : '#312E81';
+  ctx.shadowBlur = 20;
+  ctx.beginPath();
+  ctx.roundRect(bx + 20, boss.y, 60, 35, 8);
+  ctx.fill();
+  
+  // Crown spikes (void lord style)
+  ctx.fillStyle = isFrozen ? '#A5F3FC' : '#7C3AED';
+  for (let i = 0; i < 5; i++) {
+    const spikeX = bx + 25 + i * 13;
+    ctx.beginPath();
+    ctx.moveTo(spikeX, boss.y);
+    ctx.lineTo(spikeX + 5, boss.y - 15 - (i % 2) * 8);
+    ctx.lineTo(spikeX + 10, boss.y);
+    ctx.closePath();
+    ctx.fill();
+  }
+  
+  // Eyes - multi-colored (changes based on attack mode)
+  const eyeColor = isFrozen ? '#fff' : (rage ? '#EF4444' : '#C084FC');
+  ctx.fillStyle = eyeColor;
+  ctx.shadowColor = eyeColor;
+  ctx.shadowBlur = 25;
+  ctx.beginPath();
+  ctx.arc(bx + 35, boss.y + 20, 8, 0, Math.PI * 2);
+  ctx.arc(bx + 65, boss.y + 20, 8, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Floating energy orbs around boss
+  for (let i = 0; i < 8; i++) {
+    const angle = time * 0.1 + i * Math.PI / 4;
+    const orbX = bx + 50 + Math.cos(angle) * 60;
+    const orbY = boss.y + 50 + Math.sin(angle) * 40;
+    const orbColor = ['#F97316', '#22D3EE', '#A855F7', '#22C55E'][i % 4];
+    
+    ctx.fillStyle = orbColor;
+    ctx.shadowColor = orbColor;
+    ctx.shadowBlur = 15;
+    ctx.beginPath();
+    ctx.arc(orbX, orbY, 5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  
+  ctx.shadowBlur = 0;
 }
