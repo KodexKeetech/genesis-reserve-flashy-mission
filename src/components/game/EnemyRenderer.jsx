@@ -1808,8 +1808,18 @@ function drawArcanist(ctx, boss, bx, time, isFrozen, rage, pulse) {
 }
 
 function drawCosmicOverlord(ctx, boss, bx, time, isFrozen, rage, pulse) {
+  // Safety check for boss dimensions
+  if (!boss.width || !boss.height || !isFinite(boss.y) || !isFinite(bx)) {
+    boss.width = boss.width || 100;
+    boss.height = boss.height || 100;
+    if (!isFinite(boss.y)) boss.y = 400;
+    if (!isFinite(bx)) return;
+  }
+
   const float = Math.sin(time * 0.05) * 8;
   const energyPulse = Math.sin(time * 0.1) * 0.3 + 0.7;
+  const centerX = bx + boss.width / 2;
+  const centerY = boss.y + boss.height / 2 + float;
 
   // Massive cosmic aura - rainbow void energy
   for (let ring = 3; ring >= 0; ring--) {
@@ -1821,7 +1831,7 @@ function drawCosmicOverlord(ctx, boss, bx, time, isFrozen, rage, pulse) {
     ctx.strokeStyle = isFrozen ? `rgba(103, 232, 249, ${alpha})` : `hsla(${hue}, 70%, 60%, ${alpha})`;
     ctx.lineWidth = 4;
     ctx.save();
-    ctx.translate(bx + boss.width / 2, boss.y + boss.height / 2 + float);
+    ctx.translate(centerX, centerY);
     ctx.rotate(rotation);
     ctx.beginPath();
     ctx.arc(0, 0, ringSize, 0, Math.PI * 1.8);
@@ -1831,10 +1841,7 @@ function drawCosmicOverlord(ctx, boss, bx, time, isFrozen, rage, pulse) {
 
   // Main cosmic body - shifting void energy
   const bodyHue = (time * 3) % 360;
-  const bodyGrad = ctx.createRadialGradient(
-    bx + 50, boss.y + 40 + float, 0,
-    bx + 50, boss.y + 50 + float, 60
-  );
+  const bodyGrad = ctx.createRadialGradient(centerX, centerY - 10, 0, centerX, centerY, 60);
   bodyGrad.addColorStop(0, isFrozen ? '#F0F9FF' : '#FFFFFF');
   bodyGrad.addColorStop(0.2, isFrozen ? '#A5F3FC' : `hsl(${bodyHue}, 80%, 70%)`);
   bodyGrad.addColorStop(0.5, isFrozen ? '#67E8F9' : `hsl(${(bodyHue + 60) % 360}, 70%, 50%)`);
@@ -1843,18 +1850,18 @@ function drawCosmicOverlord(ctx, boss, bx, time, isFrozen, rage, pulse) {
   ctx.shadowColor = isFrozen ? '#67E8F9' : '#A855F7';
   ctx.shadowBlur = 35 * energyPulse;
   ctx.beginPath();
-  ctx.ellipse(bx + 50, boss.y + 50 + float, 55, 45, 0, 0, Math.PI * 2);
+  ctx.ellipse(centerX, centerY, 55, 45, 0, 0, Math.PI * 2);
   ctx.fill();
 
   // Void core - dark center with all-seeing eye
   ctx.fillStyle = '#0A0520';
   ctx.beginPath();
-  ctx.ellipse(bx + 50, boss.y + 50 + float, 30, 25, 0, 0, Math.PI * 2);
+  ctx.ellipse(centerX, centerY, 30, 25, 0, 0, Math.PI * 2);
   ctx.fill();
 
   // Cosmic eye - multi-colored iris
   const eyeHue = (time * 5) % 360;
-  const eyeGrad = ctx.createRadialGradient(bx + 50, boss.y + 50 + float, 0, bx + 50, boss.y + 50 + float, 15);
+  const eyeGrad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 15);
   eyeGrad.addColorStop(0, '#FFFFFF');
   eyeGrad.addColorStop(0.3, isFrozen ? '#A5F3FC' : `hsl(${eyeHue}, 90%, 75%)`);
   eyeGrad.addColorStop(0.6, isFrozen ? '#67E8F9' : `hsl(${(eyeHue + 120) % 360}, 80%, 60%)`);
@@ -1862,14 +1869,14 @@ function drawCosmicOverlord(ctx, boss, bx, time, isFrozen, rage, pulse) {
   ctx.fillStyle = eyeGrad;
   ctx.shadowBlur = 25;
   ctx.beginPath();
-  ctx.ellipse(bx + 50, boss.y + 50 + float, 18, 15, 0, 0, Math.PI * 2);
+  ctx.ellipse(centerX, centerY, 18, 15, 0, 0, Math.PI * 2);
   ctx.fill();
 
   // Pupil
   ctx.fillStyle = '#000000';
   ctx.shadowBlur = 0;
   ctx.beginPath();
-  ctx.ellipse(bx + 50, boss.y + 50 + float, 8, 7, 0, 0, Math.PI * 2);
+  ctx.ellipse(centerX, centerY, 8, 7, 0, 0, Math.PI * 2);
   ctx.fill();
 
   // Pupil glow
@@ -1877,13 +1884,13 @@ function drawCosmicOverlord(ctx, boss, bx, time, isFrozen, rage, pulse) {
   ctx.shadowColor = rage ? '#EF4444' : '#FFFFFF';
   ctx.shadowBlur = 10;
   ctx.beginPath();
-  ctx.arc(bx + 50, boss.y + 50 + float, 4, 0, Math.PI * 2);
+  ctx.arc(centerX, centerY, 4, 0, Math.PI * 2);
   ctx.fill();
   ctx.shadowBlur = 0;
 
   // Cosmic crown - rotating energy spikes
   ctx.save();
-  ctx.translate(bx + 50, boss.y + 10 + float);
+  ctx.translate(centerX, boss.y + 10 + float);
   ctx.rotate(time * 0.04);
   for (let i = 0; i < 8; i++) {
     const angle = (i / 8) * Math.PI * 2;
@@ -1904,15 +1911,15 @@ function drawCosmicOverlord(ctx, boss, bx, time, isFrozen, rage, pulse) {
   // Energy tendrils from sides
   for (let i = 0; i < 2; i++) {
     const side = i === 0 ? -1 : 1;
-    const tendrilX = bx + 50 + side * 45;
-    const tendrilY = boss.y + 50 + float;
+    const tendrilX = centerX + side * 45;
+    const tendrilY = centerY;
 
     ctx.strokeStyle = isFrozen ? '#67E8F9' : `rgba(192, 132, 252, ${0.7 * energyPulse})`;
     ctx.lineWidth = 4;
     ctx.shadowColor = isFrozen ? '#67E8F9' : '#C084FC';
     ctx.shadowBlur = 15;
     ctx.beginPath();
-    ctx.moveTo(bx + 50, boss.y + 50 + float);
+    ctx.moveTo(centerX, centerY);
     ctx.quadraticCurveTo(
       tendrilX + Math.sin(time * 0.1 + i) * 15,
       tendrilY + Math.cos(time * 0.08 + i) * 20,
@@ -1927,8 +1934,8 @@ function drawCosmicOverlord(ctx, boss, bx, time, isFrozen, rage, pulse) {
   for (let i = 0; i < 6; i++) {
     const orbitAngle = time * 0.06 + (i / 6) * Math.PI * 2;
     const orbitDist = 65 + Math.sin(time * 0.08 + i) * 8;
-    const orbX = bx + 50 + Math.cos(orbitAngle) * orbitDist;
-    const orbY = boss.y + 50 + float + Math.sin(orbitAngle) * (orbitDist * 0.6);
+    const orbX = centerX + Math.cos(orbitAngle) * orbitDist;
+    const orbY = centerY + Math.sin(orbitAngle) * (orbitDist * 0.6);
 
     // Different color for each orb (representing different boss powers)
     const orbColors = ['#22C55E', '#F97316', '#22D3EE', '#7C3AED', '#0284C7', '#CA8A04'];
