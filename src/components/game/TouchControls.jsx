@@ -118,16 +118,20 @@ export default function TouchControls({ onInput }) {
     onInput('cast', false);
   }, [onInput]);
 
-  const handleButtonStart = useCallback((action) => (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onInput(action, true);
+  const handleButtonStart = useCallback((action) => {
+    return (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      onInput(action, true);
+    };
   }, [onInput]);
 
-  const handleButtonEnd = useCallback((action) => (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onInput(action, false);
+  const handleButtonEnd = useCallback((action) => {
+    return (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      onInput(action, false);
+    };
   }, [onInput]);
 
   // Ability buttons config

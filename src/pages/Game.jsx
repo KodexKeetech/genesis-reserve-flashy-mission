@@ -677,7 +677,7 @@ export default function Game() {
       )}
 
       {/* Game Container */}
-      <div className="relative w-[65vw] md:w-full md:max-w-[800px]" style={{ aspectRatio: '800/600' }}>
+      <div className="relative w-full md:max-w-[800px]" style={{ aspectRatio: '800/600', maxHeight: isMobile ? 'calc(100vh - 180px)' : 'calc(100vh - 200px)' }}>
         {/* Settings button inside game container */}
         <Button
           variant="ghost"
