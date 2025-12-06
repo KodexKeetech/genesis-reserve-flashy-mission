@@ -259,6 +259,35 @@ export const BIOMES = {
       health: 70,
       color: '#8B5CF6'
     }
+  },
+
+  space: {
+    name: 'Cosmic Frontier',
+    levels: [28, 29, 30],
+    bossLevel: 30,
+    background: {
+      sky: ['#020610', '#0C1020', '#020610'],
+      stars: true,
+      particles: 'cosmicDust'
+    },
+    platforms: {
+      ground: { fill: '#0F172A', top: '#6366F1', accent: '#818CF8' },
+      normal: { fill: '#1E293B', highlight: '#334155' },
+      magic: { fill: '#7C3AED', glow: '#A855F7' },
+      void: { fill: '#4C1D95', unstable: true }
+    },
+    enemiesByLevel: {
+      28: ['voidWalker', 'phantomWisp', 'drone', 'runeConstruct'],
+      29: ['voidWalker', 'phantomWisp', 'spellweaver', 'illusionist'],
+      30: ['voidWalker', 'runeConstruct', 'spellweaver', 'illusionist']
+    },
+    hazards: ['voidZone', 'cosmicRay'],
+    boss: {
+      name: 'Cosmic Entity',
+      type: 'cosmicEntity',
+      health: 100,
+      color: '#A855F7'
+    }
   }
 };
 
