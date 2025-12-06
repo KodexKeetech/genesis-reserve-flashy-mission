@@ -660,21 +660,29 @@ export default function Game() {
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 900;
 
   return (
-    <div className="w-screen h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center overflow-hidden" style={{ padding: 0 }}>
+    <div className="h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex flex-col p-1 md:p-4 overflow-hidden">
       {/* Ambient background effects */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl" />
       </div>
 
-      {/* Game Container - sized to fit viewport */}
-      <div className="relative" style={{
-        width: isMobile ? '100vw' : 'min(100vw - 2rem, 800px)',
-        height: isMobile ? 'calc(100vh - 180px)' : 'min(calc(100vh - 2rem), 600px)',
-        maxWidth: isMobile ? '100vw' : '800px',
-        maxHeight: isMobile ? 'calc(100vh - 180px)' : '600px'
+      {/* Title - hide on mobile */}
+      {!isMobile && (
+        <div className="flex items-center justify-center gap-4 mb-2 md:mb-6 flex-shrink-0">
+          <h1 className="text-xl sm:text-2xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400 tracking-tight">
+            JEFF: The Robot Wizard
+          </h1>
+        </div>
+      )}
+
+      {/* Game Container */}
+      <div className="relative flex-grow flex items-center justify-center" style={{
+        maxHeight: isMobile ? 'calc(100vh - 180px)' : 'calc(100vh - 200px)'
       }}>
-        <div className="relative w-full h-full">
+        <div className="relative w-full h-full max-w-[800px]" style={{ 
+          aspectRatio: '800/600'
+        }}>
         {/* Settings button inside game container */}
         <Button
           variant="ghost"
@@ -783,9 +791,8 @@ export default function Game() {
         <TouchControls onInput={handleTouchInput} />
       )}
 
-      {/* Shop Buttons - positioned absolutely on mobile */}
-      {!isMobile && (
-        <div className="mt-4 flex gap-2 md:gap-3 flex-wrap justify-center flex-shrink-0">
+      {/* Shop Buttons - smaller on mobile */}
+      <div className={`${isMobile ? 'mt-1' : 'mt-4'} flex gap-2 md:gap-3 flex-wrap justify-center flex-shrink-0`}>
         <Link to={createPageUrl('UpgradeShop')}>
           <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500">
             <ShoppingBag className="w-5 h-5 mr-2" />
@@ -806,28 +813,7 @@ export default function Game() {
             </div>
           </Button>
         </Link>
-        </div>
-      )}
-
-      {/* Mobile Shop Buttons - floating */}
-      {isMobile && gameState !== 'playing' && (
-        <div className="fixed bottom-2 left-0 right-0 flex gap-2 justify-center z-20">
-          <Link to={createPageUrl('UpgradeShop')}>
-            <Button size="sm" className="bg-gradient-to-r from-purple-600 to-blue-600">
-              <ShoppingBag className="w-4 h-4 mr-1" />
-              <Sparkles className="w-3 h-3 mr-1" />
-              {magicScraps}
-            </Button>
-          </Link>
-          <Link to={createPageUrl('AbilityShop')}>
-            <Button size="sm" className="bg-gradient-to-r from-indigo-600 to-purple-600">
-              <Zap className="w-4 h-4 mr-1" />
-              <Gem className="w-3 h-3 mr-1" />
-              {arcaneCrystals}
-            </Button>
-          </Link>
-        </div>
-      )}
+      </div>
 
       {/* Controls hint - hide on small screens */}
       <div className="hidden md:flex mt-6 flex-wrap justify-center gap-4 text-slate-500 text-sm">
