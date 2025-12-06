@@ -67,7 +67,7 @@ function drawStars(ctx, time, cameraX, isVoid) {
     ctx.fillStyle = starColor;
     
     for (let i = 0; i < 20; i++) {
-      const starX = ((i * 137 + layer * 50 - cameraX * parallaxSpeed) % 850 + 850) % 850 - 25;
+      const starX = Math.round(((i * 137 + layer * 50 - cameraX * parallaxSpeed) % 850 + 850) % 850 - 25);
       const starY = (i * 73 + layer * 30) % 350;
       const size = (i % 3) + 1 - layer * 0.3;
       const twinkle = Math.sin(time * 0.08 + i * 1.5 + layer) * 0.4 + 0.6;
@@ -84,14 +84,14 @@ function drawForestBackground(ctx, time, cameraX) {
   // Far mountains (slowest parallax)
   ctx.fillStyle = '#0a1f14';
   for (let i = 0; i < 4; i++) {
-    const mtnX = ((i * 300 - cameraX * 0.05) % 1300) - 200;
+    const mtnX = Math.round(((i * 300 - cameraX * 0.05) % 1300) - 200);
     drawMountainShape(ctx, mtnX, 420, 280, 200);
   }
   
   // Mid-distance trees
   ctx.fillStyle = '#0D3320';
   for (let i = 0; i < 12; i++) {
-    const treeX = ((i * 100 - cameraX * 0.15) % 1200) - 80;
+    const treeX = Math.round(((i * 100 - cameraX * 0.15) % 1200) - 80);
     const treeHeight = 100 + (i % 3) * 40;
     const sway = Math.sin(time * 0.02 + i) * 3;
     ctx.beginPath();
@@ -105,7 +105,7 @@ function drawForestBackground(ctx, time, cameraX) {
   // Close trees (faster parallax)
   ctx.fillStyle = '#166534';
   for (let i = 0; i < 8; i++) {
-    const treeX = ((i * 150 - cameraX * 0.3) % 1300) - 100;
+    const treeX = Math.round(((i * 150 - cameraX * 0.3) % 1300) - 100);
     const treeHeight = 120 + (i % 2) * 50;
     const sway = Math.sin(time * 0.03 + i * 0.5) * 5;
     ctx.beginPath();
@@ -141,7 +141,7 @@ function drawVolcanoBackground(ctx, time, cameraX) {
   // Far volcanic mountains
   ctx.fillStyle = '#1c1917';
   for (let i = 0; i < 3; i++) {
-    const vx = ((i * 400 - cameraX * 0.04) % 1300) - 200;
+    const vx = Math.round(((i * 400 - cameraX * 0.04) % 1300) - 200);
     ctx.beginPath();
     ctx.moveTo(vx, 500);
     ctx.lineTo(vx + 100, 320);
@@ -155,7 +155,7 @@ function drawVolcanoBackground(ctx, time, cameraX) {
   // Mid volcanic rocks
   ctx.fillStyle = '#292524';
   for (let i = 0; i < 5; i++) {
-    const rx = ((i * 250 - cameraX * 0.12) % 1400) - 150;
+    const rx = Math.round(((i * 250 - cameraX * 0.12) % 1400) - 150);
     ctx.beginPath();
     ctx.moveTo(rx, 500);
     ctx.lineTo(rx + 50, 380);
@@ -171,7 +171,7 @@ function drawIceBackground(ctx, time, cameraX) {
   // Far ice mountains with snow caps
   ctx.fillStyle = '#bae6fd';
   for (let i = 0; i < 3; i++) {
-    const mx = ((i * 350 - cameraX * 0.04) % 1200) - 150;
+    const mx = Math.round(((i * 350 - cameraX * 0.04) % 1200) - 150);
     ctx.beginPath();
     ctx.moveTo(mx, 480);
     ctx.lineTo(mx + 100, 280);
@@ -195,7 +195,7 @@ function drawIceBackground(ctx, time, cameraX) {
   // Mid ice formations
   ctx.fillStyle = '#e0f2fe';
   for (let i = 0; i < 5; i++) {
-    const ix = ((i * 200 - cameraX * 0.12) % 1100) - 80;
+    const ix = Math.round(((i * 200 - cameraX * 0.12) % 1100) - 80);
     ctx.beginPath();
     ctx.moveTo(ix, 500);
     ctx.lineTo(ix + 30, 400);
@@ -209,7 +209,7 @@ function drawIceBackground(ctx, time, cameraX) {
   // Ice crystals
   ctx.fillStyle = '#7dd3fc';
   for (let i = 0; i < 6; i++) {
-    const cx = ((i * 180 - cameraX * 0.2) % 1100) - 60;
+    const cx = Math.round(((i * 180 - cameraX * 0.2) % 1100) - 60);
     const shimmer = Math.sin(time * 0.08 + i) * 0.3 + 0.7;
     ctx.globalAlpha = shimmer;
     drawIceCrystalShape(ctx, cx, 450, 25 + (i % 3) * 10);
