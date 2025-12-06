@@ -2,7 +2,7 @@
 // Level 1: Enchanted Forest Background Renderer
 // Creates a layered, atmospheric forest scene
 
-export function drawLevel1Background(ctx, cameraX, canvasWidth, canvasHeight, time) {
+export function drawNightForestBackground(ctx, cameraX, canvasWidth, canvasHeight, time) {
   // Sky gradient - deep forest night with hints of magic
   const skyGradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
   skyGradient.addColorStop(0, '#0A1628');
@@ -26,9 +26,6 @@ export function drawLevel1Background(ctx, cameraX, canvasWidth, canvasHeight, ti
   
   // Light shafts through canopy
   drawLightShafts(ctx, cameraX * 0.2, canvasWidth, canvasHeight, time);
-  
-  // Near trees (frame the scene)
-  drawNearTrees(ctx, cameraX * 0.5, canvasWidth, time);
   
   // Ground fog
   drawGroundFog(ctx, cameraX * 0.8, canvasWidth, canvasHeight, time);
@@ -157,88 +154,6 @@ function drawLightShafts(ctx, offsetX, canvasWidth, canvasHeight, time) {
     ctx.lineTo(baseX - 20, 0);
     ctx.closePath();
     ctx.fill();
-  }
-}
-
-function drawNearTrees(ctx, offsetX, canvasWidth, time) {
-  // Left frame tree - static position
-  drawDetailedTree(ctx, -30, 100, 400, time, true);
-  
-  // Right frame tree - static position
-  drawDetailedTree(ctx, canvasWidth - 50, 120, 380, time, false);
-}
-
-function drawDetailedTree(ctx, x, y, height, time, isLeft) {
-  const trunkWidth = 30;
-  
-  // Trunk with texture
-  const trunkGradient = ctx.createLinearGradient(x, y, x + trunkWidth, y);
-  trunkGradient.addColorStop(0, '#2D1F14');
-  trunkGradient.addColorStop(0.5, '#3D2A1A');
-  trunkGradient.addColorStop(1, '#2D1F14');
-  ctx.fillStyle = trunkGradient;
-  ctx.fillRect(x, y + height * 0.3, trunkWidth, height * 0.7);
-  
-  // Trunk details (bark lines)
-  ctx.strokeStyle = '#1F1510';
-  ctx.lineWidth = 1;
-  for (let i = 0; i < 5; i++) {
-    const lineY = y + height * 0.35 + i * (height * 0.12);
-    ctx.beginPath();
-    ctx.moveTo(x + 5, lineY);
-    ctx.lineTo(x + trunkWidth - 5, lineY + 10);
-    ctx.stroke();
-  }
-  
-  // Roots
-  ctx.fillStyle = '#2D1F14';
-  ctx.beginPath();
-  ctx.moveTo(x - 15, y + height);
-  ctx.quadraticCurveTo(x, y + height - 20, x + trunkWidth/2, y + height);
-  ctx.quadraticCurveTo(x + trunkWidth, y + height - 15, x + trunkWidth + 20, y + height);
-  ctx.lineTo(x + trunkWidth + 20, y + height + 20);
-  ctx.lineTo(x - 15, y + height + 20);
-  ctx.closePath();
-  ctx.fill();
-  
-  // Canopy (multiple layers)
-  const canopyColor = '#0F2818';
-  ctx.fillStyle = canopyColor;
-  
-  for (let layer = 0; layer < 4; layer++) {
-    const layerY = y + layer * 40;
-    const layerWidth = 100 - layer * 10;
-    const sway = Math.sin(time * 0.01 + layer) * 3;
-    
-    ctx.beginPath();
-    ctx.moveTo(x + trunkWidth/2 + sway, layerY);
-    ctx.quadraticCurveTo(
-      x + trunkWidth/2 - layerWidth/2 + sway, layerY + 30,
-      x + trunkWidth/2 - layerWidth/3 + sway, layerY + 60
-    );
-    ctx.quadraticCurveTo(
-      x + trunkWidth/2 + sway, layerY + 50,
-      x + trunkWidth/2 + layerWidth/3 + sway, layerY + 60
-    );
-    ctx.quadraticCurveTo(
-      x + trunkWidth/2 + layerWidth/2 + sway, layerY + 30,
-      x + trunkWidth/2 + sway, layerY
-    );
-    ctx.fill();
-  }
-  
-  // Hanging vines
-  ctx.strokeStyle = '#1A4020';
-  ctx.lineWidth = 2;
-  for (let v = 0; v < 3; v++) {
-    const vineX = x + 10 + v * 15;
-    const vineLength = 40 + v * 20;
-    const sway = Math.sin(time * 0.02 + v * 2) * 5;
-    
-    ctx.beginPath();
-    ctx.moveTo(vineX, y + 100);
-    ctx.quadraticCurveTo(vineX + sway, y + 100 + vineLength/2, vineX + sway * 0.5, y + 100 + vineLength);
-    ctx.stroke();
   }
 }
 
