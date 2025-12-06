@@ -318,7 +318,11 @@ export default function Game() {
         }, []);
 
   // Save scraps when level completes or game over
+  const levelRef = useRef(level);
+  levelRef.current = level;
+
   const saveScraps = useCallback(async (scrapsToAdd, crystalsToAdd = 0) => {
+    const currentLevel = levelRef.current;
     try {
       const isAuth = await base44.auth.isAuthenticated();
       if (!isAuth) {
@@ -327,7 +331,7 @@ export default function Game() {
         const existing = localData ? JSON.parse(localData) : { magicScraps: 0, arcaneCrystals: 0, highestLevel: 1 };
         const newTotal = existing.magicScraps + scrapsToAdd;
         const newCrystals = existing.arcaneCrystals + crystalsToAdd;
-        const newHighestLevel = Math.max(existing.highestLevel, level);
+        const newHighestLevel = Math.max(existing.highestLevel, currentLevel);
         localStorage.setItem('jeff_player_data', JSON.stringify({
           magicScraps: newTotal,
           arcaneCrystals: newCrystals,
@@ -342,7 +346,7 @@ export default function Game() {
       const newTotal = (user.magicScraps || 0) + scrapsToAdd;
       const newLifetime = (user.totalScrapsEarned || 0) + scrapsToAdd;
       const newCrystals = (user.arcaneCrystals || 0) + crystalsToAdd;
-      const newHighestLevel = Math.max(user.highestLevel || 1, level);
+      const newHighestLevel = Math.max(user.highestLevel || 1, currentLevel);
       await base44.auth.updateMe({ 
         magicScraps: newTotal,
         totalScrapsEarned: newLifetime,
@@ -363,7 +367,7 @@ export default function Game() {
       const existing = localData ? JSON.parse(localData) : { magicScraps: 0, arcaneCrystals: 0, highestLevel: 1 };
       const newTotal = existing.magicScraps + scrapsToAdd;
       const newCrystals = existing.arcaneCrystals + crystalsToAdd;
-      const newHighestLevel = Math.max(existing.highestLevel, level);
+      const newHighestLevel = Math.max(existing.highestLevel, currentLevel);
       localStorage.setItem('jeff_player_data', JSON.stringify({
         magicScraps: newTotal,
         arcaneCrystals: newCrystals,
@@ -372,7 +376,7 @@ export default function Game() {
       setMagicScraps(newTotal);
       setArcaneCrystals(newCrystals);
     }
-  }, [level]);
+  }, []);
 
   const handleCrystalsEarned = useCallback((crystals) => {
     setSessionCrystals(prev => prev + crystals);
@@ -461,7 +465,6 @@ export default function Game() {
     setRespawnAtCheckpoint(false);
     setSessionScraps(0);
     setSessionCrystals(0);
-    setGameKey(prev => prev + 1);
     setGameState('playing');
   }, []);
 
@@ -470,7 +473,6 @@ export default function Game() {
     setHealth(100);
     setSessionScraps(0);
     setSessionCrystals(0);
-    setGameKey(prev => prev + 1);
     setGameState('playing');
     setLevel(0);
   }, []);
@@ -480,7 +482,6 @@ export default function Game() {
     setHealth(100);
     setSessionScraps(0);
     setSessionCrystals(0);
-    setGameKey(prev => prev + 1);
     setLevel(1);
     setGameState('playing');
   }, []);
@@ -521,11 +522,13 @@ export default function Game() {
       setGameState('gameOver');
     }
 
-    if (sessionScraps > 0 || sessionCrystals > 0) {
-      saveScraps(sessionScraps, sessionCrystals);
+    const scraps = sessionScrapsRef.current;
+    const crystals = sessionCrystalsRef.current;
+    if (scraps > 0 || crystals > 0) {
+      saveScraps(scraps, crystals);
     }
     saveGunPreference(currentGun);
-  }, [sessionScraps, sessionCrystals, saveScraps, currentGun, saveGunPreference, deathCount]);
+  }, [saveScraps, currentGun, saveGunPreference, deathCount]);
 
   const handleAdComplete = useCallback(() => {
     setShowComicAd(false);
@@ -565,13 +568,21 @@ export default function Game() {
     setRespawnAtCheckpoint(false);
   }, []);
 
+  const sessionScrapsRef = useRef(sessionScraps);
+  const sessionCrystalsRef = useRef(sessionCrystals);
+  sessionScrapsRef.current = sessionScraps;
+  sessionCrystalsRef.current = sessionCrystals;
+
   const handleLevelComplete = useCallback(() => {
     setGameState('levelComplete');
     // Award bonus crystal every 5 levels
-    const bonusCrystal = level % 5 === 0 ? 1 : 0;
-    const totalCrystals = sessionCrystals + bonusCrystal;
-    if (sessionScraps > 0 || totalCrystals > 0) {
-      saveScraps(sessionScraps, totalCrystals);
+    const currentLevel = levelRef.current;
+    const scraps = sessionScrapsRef.current;
+    const crystals = sessionCrystalsRef.current;
+    const bonusCrystal = currentLevel % 5 === 0 ? 1 : 0;
+    const totalCrystals = crystals + bonusCrystal;
+    if (scraps > 0 || totalCrystals > 0) {
+      saveScraps(scraps, totalCrystals);
       setSessionScraps(0);
       setSessionCrystals(0);
     }
@@ -581,12 +592,12 @@ export default function Game() {
     
     // Auto-save progress
     const saveData = {
-      level: level + 1,
+      level: currentLevel + 1,
       score,
       savedAt: new Date().toISOString()
     };
     localStorage.setItem('jeff_save_game', JSON.stringify(saveData));
-  }, [sessionScraps, sessionCrystals, saveScraps, level, currentGun, saveGunPreference, score]);
+  }, [saveScraps, currentGun, saveGunPreference, score]);
 
   const handleScoreChange = useCallback((newScore) => {
     setScore(newScore);
