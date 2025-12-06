@@ -82,9 +82,32 @@ function ensureFinite(value, fallback = 0) {
 
 export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel, hiddenLevelId, difficulty = 'medium', onPowerUpChange, onAbilityCooldowns, onScrapsEarned, onCrystalsEarned, onCoinAmmoChange, savedCoinAmmo, playerUpgrades, unlockedAbilities, abilityUpgrades, gameInput, startingGun = 0, gameSettings = { sound: true, graphics: 'high', particles: true, gameSpeed: 1, keybinds: {} }, onGunChange, onCheckpointActivated, respawnAtCheckpoint, onRespawnComplete, savedCheckpoint }) {
   const canvasRef = useRef(null);
-  const mouseRef = useRef({ x: 400, y: 300 }); // Track mouse position relative to canvas
+  const mouseRef = useRef({ x: 400, y: 300 });
   const cameraXRef = useRef(0);
   const timeRef = useRef(0);
+  
+  // Store all callbacks and props in refs to prevent game loop restarts
+  const callbacksRef = useRef({
+    onScoreChange, onHealthChange, onLevelComplete, onGameOver,
+    onPowerUpChange, onAbilityCooldowns, onScrapsEarned, onCrystalsEarned,
+    onCoinAmmoChange, onGunChange, onCheckpointActivated, onRespawnComplete
+  });
+  const propsRef = useRef({
+    playerUpgrades, unlockedAbilities, abilityUpgrades, difficulty, gameSettings
+  });
+  
+  // Update refs when props change
+  useEffect(() => {
+    callbacksRef.current = {
+      onScoreChange, onHealthChange, onLevelComplete, onGameOver,
+      onPowerUpChange, onAbilityCooldowns, onScrapsEarned, onCrystalsEarned,
+      onCoinAmmoChange, onGunChange, onCheckpointActivated, onRespawnComplete
+    };
+    propsRef.current = {
+      playerUpgrades, unlockedAbilities, abilityUpgrades, difficulty, gameSettings
+    };
+  }, [onScoreChange, onHealthChange, onLevelComplete, onGameOver, onPowerUpChange, onAbilityCooldowns, onScrapsEarned, onCrystalsEarned, onCoinAmmoChange, onGunChange, onCheckpointActivated, onRespawnComplete, playerUpgrades, unlockedAbilities, abilityUpgrades, difficulty, gameSettings]);
+  
   const gameStateRef = useRef({
     player: {
       x: 100,
@@ -160,6 +183,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
 
   const generateLevel = useCallback((level) => {
         const state = gameStateRef.current;
+        const { playerUpgrades } = propsRef.current;
         state.platforms = [];
         state.enemies = [];
         state.collectibles = [];
@@ -1278,18 +1302,18 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       state.player.invincibleTimer = 120;
       state.cameraX = Math.max(0, Math.min(state.player.x - 400, state.levelWidth - 800));
       
-      onHealthChange(state.player.health);
+      callbacksRef.current.onHealthChange(state.player.health);
       soundManager.playPowerUp();
       
       // Clear the pending flag
       pendingCheckpointRespawnRef.current = false;
       
       // Notify parent
-      if (onRespawnComplete) {
-        onRespawnComplete();
+      if (callbacksRef.current.onRespawnComplete) {
+        callbacksRef.current.onRespawnComplete();
       }
     }
-  }, [savedCheckpoint, respawnAtCheckpoint, onHealthChange, onRespawnComplete]);
+  }, [savedCheckpoint, respawnAtCheckpoint]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -1331,6 +1355,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     const doCast = (aimX, aimY, isGamepadAim = false) => {
       const state = gameStateRef.current;
       const player = state.player;
+      const { playerUpgrades } = propsRef.current;
       const upgrades = playerUpgrades || {};
       const castReduction = 1 - (upgrades.magicRegen || 0) * 0.1;
 
@@ -1476,6 +1501,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     // Handle dash (Shift key)
     const handleDash = () => {
       const state = gameStateRef.current;
+      const { playerUpgrades } = propsRef.current;
       const upgrades = playerUpgrades || {};
       const dashCooldown = Math.floor(BASE_DASH_COOLDOWN * (1 - (upgrades.dashEfficiency || 0) * 0.1));
 
@@ -1514,6 +1540,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     const handleAoeBlast = () => {
       const state = gameStateRef.current;
       const player = state.player;
+      const { unlockedAbilities, abilityUpgrades, playerUpgrades } = propsRef.current;
       if (!unlockedAbilities?.aoeBlast) return;
       if (player.specialAbilities.aoeBlast.cooldown > 0) return;
 
@@ -1536,10 +1563,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             createExplosionEffect(state.particles, enemy.x + enemy.width / 2, enemy.y + enemy.height / 2, '#A855F7', 1);
             state.enemies.splice(i, 1);
             state.score += 100;
-            onScoreChange(state.score);
-            const scrapBonus = 1 + ((playerUpgrades || {}).scrapMagnet || 0) * 0.2;
+            callbacksRef.current.onScoreChange(state.score);
+            const scrapBonus = 1 + ((propsRef.current.playerUpgrades || {}).scrapMagnet || 0) * 0.2;
             const scrapsEarned = Math.floor((5 + Math.random() * 5) * scrapBonus);
-            if (onScrapsEarned) onScrapsEarned(scrapsEarned);
+            if (callbacksRef.current.onScrapsEarned) callbacksRef.current.onScrapsEarned(scrapsEarned);
           }
         }
       }
@@ -1566,6 +1593,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     const handleReflectShield = () => {
       const state = gameStateRef.current;
       const player = state.player;
+      const { unlockedAbilities, abilityUpgrades } = propsRef.current;
       if (!unlockedAbilities?.reflectShield) return;
       if (player.specialAbilities.reflectShield.cooldown > 0) return;
       if (player.specialAbilities.reflectShield.active) return;
@@ -1582,6 +1610,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     const handleHover = () => {
       const state = gameStateRef.current;
       const player = state.player;
+      const { unlockedAbilities, abilityUpgrades } = propsRef.current;
       if (!unlockedAbilities?.hover) return;
       if (player.specialAbilities.hover.cooldown > 0) return;
       if (player.specialAbilities.hover.active) return;
@@ -1599,6 +1628,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     const handleTimeSlow = () => {
       const state = gameStateRef.current;
       const player = state.player;
+      const { unlockedAbilities, abilityUpgrades } = propsRef.current;
       if (!unlockedAbilities?.timeSlow) return;
       if (player.specialAbilities.timeSlow.cooldown > 0) return;
       if (player.specialAbilities.timeSlow.active) return;
@@ -1628,6 +1658,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     const handleChainLightning = () => {
       const state = gameStateRef.current;
       const player = state.player;
+      const { unlockedAbilities, abilityUpgrades, playerUpgrades } = propsRef.current;
       if (!unlockedAbilities?.chainLightning) return;
       if (player.specialAbilities.chainLightning.cooldown > 0) return;
 
@@ -1670,7 +1701,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             const idx = state.enemies.indexOf(closestEnemy);
             if (idx > -1) state.enemies.splice(idx, 1);
             state.score += 100;
-            onScoreChange(state.score);
+            callbacksRef.current.onScoreChange(state.score);
           }
           
           hitEnemies.push(closestEnemy);
@@ -1706,6 +1737,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     const handleShadowClone = () => {
       const state = gameStateRef.current;
       const player = state.player;
+      const { unlockedAbilities, abilityUpgrades } = propsRef.current;
       if (!unlockedAbilities?.shadowClone) return;
       if (player.specialAbilities.shadowClone.cooldown > 0) return;
       if (player.specialAbilities.shadowClone.active) return;
@@ -1738,6 +1770,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     const handleTeleport = () => {
       const state = gameStateRef.current;
       const player = state.player;
+      const { unlockedAbilities, abilityUpgrades } = propsRef.current;
       if (!unlockedAbilities?.teleport) return;
       if (player.specialAbilities.teleport.cooldown > 0) return;
 
@@ -2400,6 +2433,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       }
       
       const { player, platforms, enemies, projectiles, particles, collectibles, keys } = state;
+      const { playerUpgrades, unlockedAbilities, abilityUpgrades, difficulty, gameSettings } = propsRef.current;
+      const { onScoreChange, onHealthChange, onPowerUpChange, onAbilityCooldowns, onScrapsEarned, onCrystalsEarned, onCoinAmmoChange, onGunChange } = callbacksRef.current;
       
       // Update power-up timers
       Object.keys(player.powerUps).forEach(key => {
@@ -2409,8 +2444,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       });
       
       // Report power-up status
-      if (onPowerUpChange) {
-        onPowerUpChange({
+      if (callbacksRef.current.onPowerUpChange) {
+        callbacksRef.current.onPowerUpChange({
           SPEED: player.powerUps.SPEED,
           INVINCIBILITY: player.powerUps.INVINCIBILITY,
           POWER_SHOT: player.powerUps.POWER_SHOT,
@@ -2433,27 +2468,27 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       });
       
       // Report cooldowns
-                  const upgrades = playerUpgrades || {};
+                  const upgrades = propsRef.current.playerUpgrades || {};
                   const dashCooldown = Math.floor(BASE_DASH_COOLDOWN * (1 - (upgrades.dashEfficiency || 0) * 0.1));
-                  if (onAbilityCooldowns) {
-                    onAbilityCooldowns({
+                  if (callbacksRef.current.onAbilityCooldowns) {
+                    callbacksRef.current.onAbilityCooldowns({
                       dashCooldown: player.dashCooldown,
                       dashMaxCooldown: dashCooldown,
                       selectedProjectile: player.selectedProjectile,
                       coinAmmo: player.coinAmmo,
                       specialAbilities: player.specialAbilities,
-                      unlockedAbilities: unlockedAbilities
+                      unlockedAbilities: propsRef.current.unlockedAbilities
                     });
                   }
 
                   // Report coin ammo for persistence
-                  if (onCoinAmmoChange) {
-                    onCoinAmmoChange(player.coinAmmo);
+                  if (callbacksRef.current.onCoinAmmoChange) {
+                    callbacksRef.current.onCoinAmmoChange(player.coinAmmo);
                   }
 
                   // Report gun change
-                  if (onGunChange) {
-                    onGunChange(player.selectedProjectile);
+                  if (callbacksRef.current.onGunChange) {
+                    callbacksRef.current.onGunChange(player.selectedProjectile);
                   }
 
 
@@ -2465,7 +2500,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       const input = gameInput?.current || { move: { x: 0, y: 0 }, aim: { x: 0, y: 0 }, jump: false, dash: false, cast: false, switch: false, aoeBlast: false, reflectShield: false, hover: false };
 
       // Handle dashing (keyboard or gamepad/touch)
-      const dashCooldownValue = Math.floor(BASE_DASH_COOLDOWN * (1 - ((playerUpgrades || {}).dashEfficiency || 0) * 0.1));
+      const dashCooldownValue = Math.floor(BASE_DASH_COOLDOWN * (1 - ((propsRef.current.playerUpgrades || {}).dashEfficiency || 0) * 0.1));
       if (input.dash && !lastInputDash && !player.isDashing && player.dashCooldown <= 0) {
         player.isDashing = true;
         player.dashTimer = DASH_DURATION;
@@ -2765,12 +2800,12 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                                 createEnemyDeathEffect(particles, enemies[j].x + enemies[j].width / 2, enemies[j].y + enemies[j].height / 2, enemyColor, enemies[j].type);
                                 enemies.splice(j, 1);
                                 state.score += 100;
-                                onScoreChange(state.score);
+                                callbacksRef.current.onScoreChange(state.score);
 
                                 // Award magic scraps
-                                const scrapBonus = 1 + ((playerUpgrades || {}).scrapMagnet || 0) * 0.2;
+                                const scrapBonus = 1 + ((propsRef.current.playerUpgrades || {}).scrapMagnet || 0) * 0.2;
                                 const scrapsEarned = Math.floor((5 + Math.random() * 5) * scrapBonus);
-                                if (onScrapsEarned) onScrapsEarned(scrapsEarned);
+                                if (callbacksRef.current.onScrapsEarned) callbacksRef.current.onScrapsEarned(scrapsEarned);
                               } else {
                                 soundManager.playEnemyHit();
                                 createImpactEffect(particles, enemies[j].x + enemies[j].width / 2, enemies[j].y + enemies[j].height / 2, '#FFFFFF', 10);
@@ -3535,7 +3570,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             player.invincibleTimer = 60;
             player.velocityY = -8;
             player.velocityX = player.x < enemy.x ? -5 : 5;
-            onHealthChange(player.health);
+            callbacksRef.current.onHealthChange(player.health);
             createDamageEffect(particles, player.x + player.width / 2, player.y + player.height / 2);
             state.bossNoDamage = false;
             }
@@ -3562,16 +3597,16 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             }
 
             state.score += 75;
-            onScoreChange(state.score);
+            callbacksRef.current.onScoreChange(state.score);
 
             // Enhanced power-up collect effect
             createPowerUpCollectEffect(particles, powerUp.x + powerUp.width / 2, powerUp.y + powerUp.height / 2, powerUpInfo.color);
           } else if (powerUp.type === 'HEAL') {
             // Heal player
             player.health = Math.min(player.health + 30, player.maxHealth);
-            onHealthChange(player.health);
+            callbacksRef.current.onHealthChange(player.health);
             state.score += 50;
-            onScoreChange(state.score);
+            callbacksRef.current.onScoreChange(state.score);
             // Heal particles
             for (let i = 0; i < 10; i++) {
               particles.push({
@@ -3593,7 +3628,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           collectible.collected = true;
           state.score += 50;
           player.coinAmmo++; // Add coin ammo
-          onScoreChange(state.score);
+          callbacksRef.current.onScoreChange(state.score);
 
           // Play collect sound
                           soundManager.playCollect();
@@ -3732,7 +3767,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                 createExplosionEffect(particles, state.enemies[j].x + state.enemies[j].width / 2, state.enemies[j].y + state.enemies[j].height / 2, '#3B82F6', 1);
                 state.enemies.splice(j, 1);
                 state.score += 100;
-                onScoreChange(state.score);
+                callbacksRef.current.onScoreChange(state.score);
               }
               state.enemyProjectiles.splice(i, 1);
               break;
@@ -3753,7 +3788,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             player.health -= projDamage;
             player.invincible = true;
             player.invincibleTimer = 40;
-            onHealthChange(player.health);
+            callbacksRef.current.onHealthChange(player.health);
             state.bossNoDamage = false; // Player took damage
           }
           state.enemyProjectiles.splice(i, 1);
@@ -3782,7 +3817,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             player.invincible = true;
             player.invincibleTimer = 30;
             player.velocityY = -5;
-            onHealthChange(player.health);
+            callbacksRef.current.onHealthChange(player.health);
           }
         }
         
@@ -3880,7 +3915,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                 player.invincibleTimer = 60;
                 player.velocityY = -8;
                 player.velocityX = player.x < boulderRect.x + 50 ? -6 : 6;
-                onHealthChange(player.health);
+                callbacksRef.current.onHealthChange(player.health);
               }
             }
             
@@ -3892,7 +3927,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                   soundManager.playEnemyDefeat();
                   state.enemies.splice(i, 1);
                   state.score += 100;
-                  onScoreChange(state.score);
+                  callbacksRef.current.onScoreChange(state.score);
                 }
               }
             }
@@ -3933,7 +3968,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             player.invincible = true;
             player.invincibleTimer = 40;
             player.velocityY = -6;
-            onHealthChange(player.health);
+            callbacksRef.current.onHealthChange(player.health);
           }
         }
       }
@@ -3987,15 +4022,15 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
               soundManager.playEnemyDefeat();
               createBossDeathEffect(particles, boss.x + boss.width / 2, boss.y + boss.height / 2, state.biome.boss.color);
               state.score += 500;
-              onScoreChange(state.score);
+              callbacksRef.current.onScoreChange(state.score);
 
-              const scrapBonus = 1 + ((playerUpgrades || {}).scrapMagnet || 0) * 0.2;
+              const scrapBonus = 1 + ((propsRef.current.playerUpgrades || {}).scrapMagnet || 0) * 0.2;
               const bossScrap = Math.floor(50 * scrapBonus);
-              if (onScrapsEarned) onScrapsEarned(bossScrap);
+              if (callbacksRef.current.onScrapsEarned) callbacksRef.current.onScrapsEarned(bossScrap);
 
               let crystals = 2;
               if (state.bossNoDamage) crystals += 1;
-              if (onCrystalsEarned) onCrystalsEarned(crystals);
+              if (callbacksRef.current.onCrystalsEarned) callbacksRef.current.onCrystalsEarned(crystals);
 
               state.boss = null;
             }
@@ -4997,17 +5032,17 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                 // Massive boss death explosion
                 createBossDeathEffect(particles, state.boss.x + state.boss.width / 2, state.boss.y + state.boss.height / 2, state.biome.boss.color);
                 state.score += 500;
-                onScoreChange(state.score);
+                callbacksRef.current.onScoreChange(state.score);
 
                 // Award bonus scraps for boss
-                const scrapBonus = 1 + ((playerUpgrades || {}).scrapMagnet || 0) * 0.2;
+                const scrapBonus = 1 + ((propsRef.current.playerUpgrades || {}).scrapMagnet || 0) * 0.2;
                 const bossScrap = Math.floor(50 * scrapBonus);
-                if (onScrapsEarned) onScrapsEarned(bossScrap);
+                if (callbacksRef.current.onScrapsEarned) callbacksRef.current.onScrapsEarned(bossScrap);
 
                 // Award arcane crystals for boss kill
                 let crystals = 2;
                 if (state.bossNoDamage) crystals += 1;
-                if (onCrystalsEarned) onCrystalsEarned(crystals);
+                if (callbacksRef.current.onCrystalsEarned) callbacksRef.current.onCrystalsEarned(crystals);
 
                 state.boss = null;
               }
@@ -5032,7 +5067,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
               player.invincibleTimer = 60;
               player.velocityY = -10;
               player.velocityX = player.x < state.boss.x ? -8 : 8;
-              onHealthChange(player.health);
+              callbacksRef.current.onHealthChange(player.health);
               state.bossNoDamage = false;
             }
           }
@@ -5091,7 +5126,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       
       if (player.x > state.goalX - 30 && player.x < state.goalX + 90 && bossDefeated) {
         soundManager.playLevelComplete();
-        onLevelComplete();
+        callbacksRef.current.onLevelComplete();
         return;
       }
       
@@ -5103,8 +5138,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           state.checkpoint.activated = true;
           soundManager.playPowerUp();
           // Notify parent about checkpoint activation
-          if (onCheckpointActivated) {
-            onCheckpointActivated({ ...state.checkpoint });
+          if (callbacksRef.current.onCheckpointActivated) {
+            callbacksRef.current.onCheckpointActivated({ ...state.checkpoint });
           }
           // Checkpoint activation particles
           for (let i = 0; i < 20; i++) {
@@ -5126,7 +5161,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       if (player.health <= 0) {
         soundManager.playGameOver();
         state.gameRunning = false;
-        onGameOver();
+        callbacksRef.current.onGameOver();
         return;
       }
       
@@ -6540,7 +6575,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       canvas.removeEventListener('click', handleClick);
       canvas.removeEventListener('mousemove', handleMouseMove);
     };
-  }, [currentLevel, onScoreChange, onHealthChange, onLevelComplete, onGameOver, generateLevel, onPowerUpChange, onAbilityCooldowns, unlockedAbilities, abilityUpgrades, playerUpgrades, onScrapsEarned, onCrystalsEarned, gameSettings, onGunChange, difficulty]);
+  }, [currentLevel, generateLevel]);
 
   const restartGame = () => {
     const state = gameStateRef.current;
