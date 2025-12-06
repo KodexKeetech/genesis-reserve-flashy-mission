@@ -343,7 +343,6 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           const biome = getBiomeForLevel(1); // Use forest biome for tutorial
           state.biome = biome;
           state.levelWidth = 2400;
-          state.goalX = 2300;
 
           // Simple flat ground with a few platforms
           state.platforms.push({ x: 0, y: 500, width: 500, height: 100, type: 'ground' });
@@ -351,6 +350,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           state.platforms.push({ x: 550, y: 500, width: 400, height: 100, type: 'ground' });
           state.platforms.push({ x: 600, y: 350, width: 80, height: 20, type: 'normal' });
           state.platforms.push({ x: 1000, y: 500, width: 1400, height: 100, type: 'ground' });
+          
+          state.goalX = state.levelWidth - 100;
 
           // Just 2 easy enemies
           state.enemies.push({
