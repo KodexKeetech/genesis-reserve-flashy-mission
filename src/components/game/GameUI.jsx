@@ -1,8 +1,10 @@
 import React from 'react';
-import { Heart, Star, Zap, Wind, Shield, Flame, Snowflake, Map, Sparkles, Circle, Coins } from 'lucide-react';
+import { Heart, Star, Zap, Wind, Shield, Flame, Snowflake, Map, Sparkles, Circle, Coins, X } from 'lucide-react';
 import { SPECIAL_ABILITIES } from './AbilitySystem';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getBiomeForLevel, isBossLevel, HIDDEN_LEVELS } from './BiomeConfig';
+import { createPageUrl } from '@/utils';
+import { Link } from 'react-router-dom';
 
 const POWERUP_INFO = {
   SPEED: { color: '#22D3EE', icon: Wind, name: 'Speed', maxDuration: 300 },
@@ -36,6 +38,20 @@ export default function GameUI({ score, health, level, powerUps, abilityCooldown
             <span><kbd className="px-1 bg-slate-700 rounded text-yellow-400">Q</kbd> Switch</span>
           </div>
         </div>
+      )}
+      
+      {/* Exit Tutorial Button */}
+      {isTutorial && (
+        <Link to={createPageUrl('LevelSelect')} className="pointer-events-auto">
+          <motion.button
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="absolute top-0 right-0 bg-slate-800/90 backdrop-blur-sm hover:bg-slate-700 text-slate-300 hover:text-white px-3 py-1.5 rounded-bl-lg rounded-tr-lg border border-slate-600 hover:border-slate-500 transition-all flex items-center gap-1 text-xs"
+          >
+            <X className="w-3 h-3" />
+            Exit Tutorial
+          </motion.button>
+        </Link>
       )}
       {/* Left side - Health & Power-ups */}
       <div className="space-y-1">
