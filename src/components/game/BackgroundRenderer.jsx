@@ -479,13 +479,6 @@ function drawCrystalBackground(ctx, time, cameraX) {
       ctx.globalAlpha = 1;
     }
   }
-  
-  // Ambient glow
-  const glowGrad = ctx.createRadialGradient(400, 300, 0, 400, 300, 400);
-  glowGrad.addColorStop(0, 'rgba(232, 121, 249, 0.1)');
-  glowGrad.addColorStop(1, 'rgba(232, 121, 249, 0)');
-  ctx.fillStyle = glowGrad;
-  ctx.fillRect(0, 0, 800, 600);
 }
 
 function drawTechnoBackground(ctx, time, cameraX) {
