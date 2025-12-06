@@ -1,3 +1,4 @@
+
 // Level 1: Enchanted Forest Background Renderer
 // Creates a layered, atmospheric forest scene
 
@@ -22,9 +23,6 @@ export function drawLevel1Background(ctx, cameraX, canvasWidth, canvasHeight, ti
   
   // Mid-distance trees
   drawMidTrees(ctx, cameraX * 0.3, canvasWidth, time);
-  
-  // Light shafts through canopy
-  drawLightShafts(ctx, cameraX * 0.2, canvasWidth, canvasHeight, time);
   
   // Ground fog
   drawGroundFog(ctx, cameraX * 0.8, canvasWidth, canvasHeight, time);
