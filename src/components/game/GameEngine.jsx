@@ -3,7 +3,7 @@ import soundManager from './SoundManager';
 import { getBiomeForLevel, isBossLevel, getEnemiesForLevel, getDifficultySettings } from './BiomeConfig';
 import { drawBackground, drawPlatform, drawEnvironmentalHazard } from './BackgroundRenderer';
 import { drawEnemy, drawBoss } from './EnemyRenderer';
-import { createImpactEffect, createDamageEffect, createExplosionEffect, createMagicCastEffect, createPowerUpCollectEffect, createCoinCollectEffect, createEnemyDeathEffect, createBossHitEffect, createBossDeathEffect, createAmbientParticle, drawParticle, drawAmbientParticle, drawProjectileTrail, drawEnemyProjectileTrail, createSecretPortalEffect } from './ParticleEffects';
+import { createImpactEffect, createDamageEffect, createExplosionEffect, createMagicCastEffect, createPowerUpCollectEffect, createCoinCollectEffect, createEnemyDeathEffect, createBossHitEffect, createBossDeathEffect, createAmbientParticle, drawParticle, drawAmbientParticle, drawProjectileTrail, drawEnemyProjectileTrail, createSecretPortalEffect, createArcaneNovaEffect, createArcStormEffect } from './ParticleEffects';
 import { getAbilityStats, SPECIAL_ABILITIES } from './AbilitySystem';
 import { LEVEL_1_CONFIG, LEVEL_1_ENEMY_BEHAVIORS } from './levels/Level1Config';
 import { LEVEL_2_CONFIG, LEVEL_2_ENEMY_BEHAVIORS } from './levels/Level2Config';
@@ -124,7 +124,6 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         timeSlow: { cooldown: 0, active: false, timer: 0 },
         chainLightning: { cooldown: 0, active: false },
         shadowClone: { cooldown: 0, active: false, timer: 0, cloneX: 0, cloneY: 0 },
-        magneticPull: { cooldown: 0, active: false },
         teleport: { cooldown: 0, active: false }
       }
     },
@@ -1547,18 +1546,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         }
       }
       
-      // Visual effect - expanding ring
-      for (let i = 0; i < 30; i++) {
-        const angle = (i / 30) * Math.PI * 2;
-        state.particles.push({
-          x: centerX,
-          y: centerY,
-          velocityX: Math.cos(angle) * 8,
-          velocityY: Math.sin(angle) * 8,
-          life: 30,
-          color: '#A855F7'
-        });
-      }
+      // Visual effect - expanding magic ring with runes
+      createArcaneNovaEffect(state.particles, centerX, centerY, stats.radius);
       
       player.specialAbilities.aoeBlast.cooldown = stats.baseCooldown;
       soundManager.createOscillator('sine', 200, 0.3, 0.4);
@@ -1639,6 +1628,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       const playerCenterX = player.x + player.width / 2;
       const playerCenterY = player.y + player.height / 2;
       
+      let hitTargets = [{ x: playerCenterX, y: playerCenterY }];
       let hitEnemies = [];
       let currentX = playerCenterX;
       let currentY = playerCenterY;
@@ -1659,22 +1649,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         }
         
         if (closestEnemy) {
-          // Draw lightning to this enemy
           const ex = closestEnemy.x + closestEnemy.width / 2;
           const ey = closestEnemy.y + closestEnemy.height / 2;
           
-          // Lightning particles
-          for (let i = 0; i < 5; i++) {
-            const t = i / 5;
-            state.particles.push({
-              x: currentX + (ex - currentX) * t,
-              y: currentY + (ey - currentY) * t + (Math.random() - 0.5) * 20,
-              velocityX: (Math.random() - 0.5) * 2,
-              velocityY: (Math.random() - 0.5) * 2,
-              life: 15,
-              color: '#FCD34D'
-            });
-          }
+          hitTargets.push({ x: ex, y: ey });
           
           // Damage enemy
           closestEnemy.health -= stats.damage;
@@ -1702,7 +1680,13 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         if (dist < stats.chainRange) {
           state.boss.health -= stats.damage;
           soundManager.playEnemyHit();
+          hitTargets.push({ x: bx, y: by });
         }
+      }
+      
+      // Visual effect - lightning arc between targets
+      if (hitTargets.length > 1) {
+        createArcStormEffect(state.particles, hitTargets);
       }
       
       player.specialAbilities.chainLightning.cooldown = stats.baseCooldown;
@@ -1740,69 +1724,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       soundManager.createOscillator('sine', 350, 0.15, 0.3);
     };
 
-    const handleMagneticPull = () => {
-      const state = gameStateRef.current;
-      const player = state.player;
-      if (!unlockedAbilities?.magneticPull) return;
-      if (player.specialAbilities.magneticPull.cooldown > 0) return;
 
-      const stats = getAbilityStats('magneticPull', abilityUpgrades);
-      
-      const playerCenterX = player.x + player.width / 2;
-      const playerCenterY = player.y + player.height / 2;
-      
-      // Pull collectibles
-      for (const collectible of state.collectibles) {
-        if (collectible.collected) continue;
-        const dx = collectible.x - playerCenterX;
-        const dy = collectible.y - playerCenterY;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < stats.radius) {
-          collectible.x = playerCenterX - 12;
-          collectible.y = playerCenterY - 12;
-        }
-      }
-      
-      // Pull power-ups
-      for (const powerUp of state.powerUpItems) {
-        if (powerUp.collected) continue;
-        const dx = powerUp.x - playerCenterX;
-        const dy = powerUp.y - playerCenterY;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < stats.radius) {
-          powerUp.x = playerCenterX - 14;
-          powerUp.y = playerCenterY - 14;
-        }
-      }
-      
-      // Pull enemies slightly (stagger them)
-      for (const enemy of state.enemies) {
-        const dx = enemy.x - playerCenterX;
-        const dy = enemy.y - playerCenterY;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < stats.radius && dist > 50) {
-          enemy.x -= (dx / dist) * 30;
-          enemy.y -= (dy / dist) * 15;
-        }
-      }
-      
-      // Visual effect
-      for (let i = 0; i < 25; i++) {
-        const angle = (i / 25) * Math.PI * 2;
-        const r = stats.radius;
-        state.particles.push({
-          x: playerCenterX + Math.cos(angle) * r,
-          y: playerCenterY + Math.sin(angle) * r,
-          velocityX: -Math.cos(angle) * 5,
-          velocityY: -Math.sin(angle) * 5,
-          life: 20,
-          color: '#EC4899'
-        });
-      }
-      
-      player.specialAbilities.magneticPull.cooldown = stats.baseCooldown;
-      soundManager.createOscillator('sine', 150, 0.25, 0.3);
-    };
 
     const handleTeleport = () => {
       const state = gameStateRef.current;
@@ -1881,9 +1803,6 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       }
       if (keybinds.shadowClone?.includes(e.code)) {
         handleShadowClone();
-      }
-      if (keybinds.magneticPull?.includes(e.code)) {
-        handleMagneticPull();
       }
       if (keybinds.teleport?.includes(e.code)) {
         handleTeleport();
@@ -2608,9 +2527,6 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       }
       if (input.shadowClone) {
         handleShadowClone();
-      }
-      if (input.magneticPull) {
-        handleMagneticPull();
       }
       if (input.teleport) {
         handleTeleport();
