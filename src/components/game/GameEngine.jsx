@@ -74,6 +74,11 @@ const POWERUP_TYPES = {
 
 import { HIDDEN_LEVELS, hasSecretExit } from './BiomeConfig';
 
+// Helper to ensure finite values for gradients
+function ensureFinite(value, fallback = 0) {
+  return isFinite(value) ? value : fallback;
+}
+
 export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel, hiddenLevelId, difficulty = 'medium', onPowerUpChange, onAbilityCooldowns, onScrapsEarned, onCrystalsEarned, onCoinAmmoChange, savedCoinAmmo, playerUpgrades, unlockedAbilities, abilityUpgrades, gameInput, startingGun = 0, gameSettings = { sound: true, graphics: 'high', particles: true, gameSpeed: 1, keybinds: {} }, onGunChange, onCheckpointActivated, respawnAtCheckpoint, onRespawnComplete, savedCheckpoint }) {
   const canvasRef = useRef(null);
   const backgroundCanvasRef = useRef(null);
@@ -1895,7 +1900,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       ctx.shadowBlur = 0;
 
       // Coat tail (behind) - Dark navy blue long coat with gradient
-      const coatGrad = ctx.createLinearGradient(centerX - 18, y + 28, centerX - 18, y + 58);
+      const coatGrad = ctx.createLinearGradient(
+        ensureFinite(centerX - 18), ensureFinite(y + 28), 
+        ensureFinite(centerX - 18), ensureFinite(y + 58)
+      );
       coatGrad.addColorStop(0, '#1E3A5F');
       coatGrad.addColorStop(1, '#152A45');
       ctx.fillStyle = coatGrad;
@@ -1912,10 +1920,13 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
 
       // Back leg (bright red pants + brown boot)
       ctx.save();
-      ctx.translate(centerX - 6, y + 42 - bodyBob + breathe);
-      ctx.rotate((-legSwing * Math.PI) / 180);
+      ctx.translate(ensureFinite(centerX - 6), ensureFinite(y + 42 - bodyBob + breathe));
+      ctx.rotate(ensureFinite((-legSwing * Math.PI) / 180, 0));
       // Red pants with shading
-      const pantsGradBack = ctx.createLinearGradient(-4, 0, 4, 0);
+      const pantsGradBack = ctx.createLinearGradient(
+        ensureFinite(-4), ensureFinite(0), 
+        ensureFinite(4), ensureFinite(0)
+      );
       pantsGradBack.addColorStop(0, '#8B1538');
       pantsGradBack.addColorStop(0.5, '#DC2626');
       pantsGradBack.addColorStop(1, '#991B1B');
@@ -1943,10 +1954,13 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
 
       // Front leg (bright red pants + brown boot)
       ctx.save();
-      ctx.translate(centerX + 6, y + 42 - bodyBob + breathe);
-      ctx.rotate((legSwing * Math.PI) / 180);
+      ctx.translate(ensureFinite(centerX + 6), ensureFinite(y + 42 - bodyBob + breathe));
+      ctx.rotate(ensureFinite((legSwing * Math.PI) / 180, 0));
       // Red pants with shading
-      const pantsGradFront = ctx.createLinearGradient(-4, 0, 4, 0);
+      const pantsGradFront = ctx.createLinearGradient(
+        ensureFinite(-4), ensureFinite(0), 
+        ensureFinite(4), ensureFinite(0)
+      );
       pantsGradFront.addColorStop(0, '#991B1B');
       pantsGradFront.addColorStop(0.5, '#EF4444');
       pantsGradFront.addColorStop(1, '#DC2626');
@@ -1973,7 +1987,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       ctx.restore();
 
       // Belt with metallic look
-      const beltGrad = ctx.createLinearGradient(centerX - 12, y + 38, centerX - 12, y + 42);
+      const beltGrad = ctx.createLinearGradient(
+        ensureFinite(centerX - 12), ensureFinite(y + 38), 
+        ensureFinite(centerX - 12), ensureFinite(y + 42)
+      );
       beltGrad.addColorStop(0, '#7A6950');
       beltGrad.addColorStop(0.5, '#5D4E37');
       beltGrad.addColorStop(1, '#4A3F2D');
@@ -1998,7 +2015,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       ctx.fill();
 
       // Navy blue coat - main body with gradient
-      const coatBodyGrad = ctx.createLinearGradient(centerX - 16, y + 20, centerX + 16, y + 55);
+      const coatBodyGrad = ctx.createLinearGradient(
+        ensureFinite(centerX - 16), ensureFinite(y + 20), 
+        ensureFinite(centerX + 16), ensureFinite(y + 55)
+      );
       coatBodyGrad.addColorStop(0, '#1E3A5F');
       coatBodyGrad.addColorStop(0.5, '#234B73');
       coatBodyGrad.addColorStop(1, '#162D47');
@@ -2080,11 +2100,14 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
 
       // Front arm (with magic glow if casting)
       ctx.save();
-      ctx.translate(centerX + 13, y + 22 - bodyBob + breathe);
+      ctx.translate(ensureFinite(centerX + 13), ensureFinite(y + 22 - bodyBob + breathe));
       const armAngle = player.isCasting ? -45 + castingPose : armSwing;
-      ctx.rotate((armAngle * Math.PI) / 180);
+      ctx.rotate(ensureFinite((armAngle * Math.PI) / 180, 0));
       // Coat sleeve with gradient
-      const sleeveGrad2 = ctx.createLinearGradient(-5, 0, 5, 0);
+      const sleeveGrad2 = ctx.createLinearGradient(
+        ensureFinite(-5), ensureFinite(0), 
+        ensureFinite(5), ensureFinite(0)
+      );
       sleeveGrad2.addColorStop(0, '#1E3A5F');
       sleeveGrad2.addColorStop(0.5, '#2A4A70');
       sleeveGrad2.addColorStop(1, '#1E3A5F');
@@ -2105,7 +2128,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         ctx.shadowBlur = 25 + Math.sin(time * 0.5) * 12;
         // Magic orb in hand with inner glow
         const orbSize = 9 + Math.sin(time * 0.5) * 3;
-        const orbGrad = ctx.createRadialGradient(0, 24, 0, 0, 24, orbSize);
+        const orbGrad = ctx.createRadialGradient(
+          ensureFinite(0), ensureFinite(24), ensureFinite(0), 
+          ensureFinite(0), ensureFinite(24), ensureFinite(orbSize)
+        );
         orbGrad.addColorStop(0, '#FFFFFF');
         orbGrad.addColorStop(0.3, spellColor);
         orbGrad.addColorStop(1, spellColor + '80');
@@ -2137,7 +2163,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       ctx.restore();
 
       // Gray scarf with depth
-      const scarfGrad = ctx.createLinearGradient(centerX - 12, y + 14, centerX + 12, y + 22);
+      const scarfGrad = ctx.createLinearGradient(
+        ensureFinite(centerX - 12), ensureFinite(y + 14), 
+        ensureFinite(centerX + 12), ensureFinite(y + 22)
+      );
       scarfGrad.addColorStop(0, '#7A8A9A');
       scarfGrad.addColorStop(0.5, '#B0B8C4');
       scarfGrad.addColorStop(1, '#8A9AAA');
@@ -2156,7 +2185,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       ctx.stroke();
 
       // Robot head - enhanced with metallic cyan look
-      const headGrad = ctx.createLinearGradient(centerX - 10, y - 2, centerX + 10, y + 16);
+      const headGrad = ctx.createLinearGradient(
+        ensureFinite(centerX - 10), ensureFinite(y - 2), 
+        ensureFinite(centerX + 10), ensureFinite(y + 16)
+      );
       headGrad.addColorStop(0, '#A5E8F5');
       headGrad.addColorStop(0.3, '#7DD3E8');
       headGrad.addColorStop(0.7, '#5BC0D8');
@@ -2240,7 +2272,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       ctx.stroke();
 
       // Hat cylindrical top with gradient
-      const hatGrad = ctx.createLinearGradient(centerX - 9, y - 30, centerX + 9, y - 10);
+      const hatGrad = ctx.createLinearGradient(
+        ensureFinite(centerX - 9), ensureFinite(y - 30), 
+        ensureFinite(centerX + 9), ensureFinite(y - 10)
+      );
       hatGrad.addColorStop(0, '#4A5568');
       hatGrad.addColorStop(0.3, '#3D4852');
       hatGrad.addColorStop(0.7, '#3D4852');
@@ -2266,7 +2301,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       ctx.fill();
       
       // Hat band with buckle
-      const bandGrad = ctx.createLinearGradient(centerX - 9, y - 12, centerX - 9, y - 8);
+      const bandGrad = ctx.createLinearGradient(
+        ensureFinite(centerX - 9), ensureFinite(y - 12), 
+        ensureFinite(centerX - 9), ensureFinite(y - 8)
+      );
       bandGrad.addColorStop(0, '#1A2530');
       bandGrad.addColorStop(0.5, '#2D3748');
       bandGrad.addColorStop(1, '#1A2530');
@@ -5640,7 +5678,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           continue;
         } else if (proj.type === 'plasmaBeam') {
           // Draw plasma beam - glowing energy projectile
-          const beamGrad = ctx.createLinearGradient(px - 40, py, px + 40, py);
+          const beamGrad = ctx.createLinearGradient(
+            ensureFinite(px - 40), ensureFinite(py), 
+            ensureFinite(px + 40), ensureFinite(py)
+          );
           beamGrad.addColorStop(0, 'rgba(16, 185, 129, 0.3)');
           beamGrad.addColorStop(0.5, '#10B981');
           beamGrad.addColorStop(1, 'rgba(16, 185, 129, 0.3)');
@@ -6330,8 +6371,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           
           // Inner portal swirl
           const gradient = ctx.createRadialGradient(
-            portalCenterX, portalCenterY + floatY, 0,
-            portalCenterX, portalCenterY + floatY, 30
+            ensureFinite(portalCenterX), ensureFinite(portalCenterY + floatY), ensureFinite(0), 
+            ensureFinite(portalCenterX), ensureFinite(portalCenterY + floatY), ensureFinite(30)
           );
           gradient.addColorStop(0, '#F0ABFC');
           gradient.addColorStop(0.4, '#D946EF');
@@ -6398,7 +6439,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.stroke();
 
           // Inner portal swirl
-          const gradient = ctx.createRadialGradient(portalCenterX, portalCenterY, 0, portalCenterX, portalCenterY, portalWidth);
+          const gradient = ctx.createRadialGradient(
+            ensureFinite(portalCenterX), ensureFinite(portalCenterY), ensureFinite(0), 
+            ensureFinite(portalCenterX), ensureFinite(portalCenterY), ensureFinite(portalWidth)
+          );
           gradient.addColorStop(0, '#E9D5FF');
           gradient.addColorStop(0.3, '#C084FC');
           gradient.addColorStop(0.6, '#A855F7');
