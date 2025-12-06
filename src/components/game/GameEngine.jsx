@@ -5134,8 +5134,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       
       if (state.biome) {
         // Use custom optimized backgrounds for specific levels
-        if (currentLevel === 1) {
-          drawLevel1Background(bgCtx, state.cameraX, 800, 600, time);
+        if (currentLevel === 0) {
+          drawLevel1Background(bgCtx, state.cameraX, 800, 600, time, true);
+        } else if (currentLevel === 1) {
+          drawLevel1Background(bgCtx, state.cameraX, 800, 600, time, false);
         } else if (currentLevel === 2) {
           drawLevel2Background(bgCtx, state.cameraX, 800, 600, time);
         } else if (currentLevel === 4) {
