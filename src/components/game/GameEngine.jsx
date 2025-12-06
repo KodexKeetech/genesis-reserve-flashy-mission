@@ -552,7 +552,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
             .map(p => ({ ...p, touched: false, crumbleTimer: p.crumbleTime || 45, originalY: p.y }));
           
           // Add checkpoint at middle of level (not for boss levels)
-          if (!section.boss) {
+          if (!state.boss) {
             const midX = state.levelWidth / 2;
             state.checkpoint = {
               x: midX - 20,
