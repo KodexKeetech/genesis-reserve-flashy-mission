@@ -1,7 +1,7 @@
+
 // Level 12: Void Boss - Enhanced Background Renderer
 
 export function drawLevel12Background(ctx, cameraX, canvasWidth, canvasHeight, time) {
-  if (!isFinite(cameraX)) cameraX = 0;
   // Deepest void gradient
   const skyGradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
   skyGradient.addColorStop(0, '#050209');

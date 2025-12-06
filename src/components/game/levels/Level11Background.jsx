@@ -2,7 +2,6 @@
 // Level 11: Void - Enhanced Background Renderer
 
 export function drawLevel11Background(ctx, cameraX, canvasWidth, canvasHeight, time) {
-  if (!isFinite(cameraX)) cameraX = 0;
   // Deep void gradient
   const skyGradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
   skyGradient.addColorStop(0, '#0A0312');

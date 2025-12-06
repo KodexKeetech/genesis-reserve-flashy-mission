@@ -111,7 +111,6 @@ export default function LevelSelect() {
                           {biomeKey === 'ruins' && '🏛️'}
                           {biomeKey === 'crystal' && '💎'}
                           {biomeKey === 'techno' && '🤖'}
-                          {biomeKey === 'arcane' && '🔮'}
                         </div>
                         <div>
                           <h3 className="text-xl font-bold text-white">{biome.name}</h3>
