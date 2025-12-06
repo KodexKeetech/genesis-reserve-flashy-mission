@@ -1891,9 +1891,11 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       const breathe = !isMoving ? ensureFinite(Math.sin(time * 0.08) * 1.5, 0) : 0;
 
       // Apply scale transform
-      ctx.translate(ensureFinite(centerX), ensureFinite(y + player.height));
+      const transX = ensureFinite(centerX, 400);
+      const transY = ensureFinite(y + player.height, 364);
+      ctx.translate(transX, transY);
       ctx.scale(ensureFinite(scaleX, 1), ensureFinite(scaleY, 1));
-      ctx.translate(ensureFinite(-centerX), ensureFinite(-(y + player.height)));
+      ctx.translate(-transX, -transY);
 
       // Magic aura glow (subtle ambient effect)
       const auraAlpha = 0.1 + Math.sin(time * 0.05) * 0.05;
@@ -1901,7 +1903,9 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       ctx.shadowBlur = 25 + Math.sin(time * 0.1) * 8;
       ctx.fillStyle = `rgba(168, 85, 247, ${auraAlpha})`;
       ctx.beginPath();
-      ctx.ellipse(ensureFinite(centerX), ensureFinite(y + 32 - bodyBob), 28, 35, 0, 0, Math.PI * 2);
+      const auraX = ensureFinite(centerX, 400);
+      const auraY = ensureFinite(y + 32 - bodyBob, 332);
+      ctx.ellipse(auraX, auraY, 28, 35, 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.shadowBlur = 0;
 
@@ -1933,10 +1937,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       ctx.translate(translateX1, translateY1);
       ctx.rotate(ensureFinite((-legSwing * Math.PI) / 180, 0));
       // Red pants with shading
-      const pantsGradBack = ctx.createLinearGradient(
-        ensureFinite(-4), ensureFinite(0), 
-        ensureFinite(4), ensureFinite(0)
-      );
+      const pantsGradBack = ctx.createLinearGradient(-4, 0, 4, 0);
       pantsGradBack.addColorStop(0, '#8B1538');
       pantsGradBack.addColorStop(0.5, '#DC2626');
       pantsGradBack.addColorStop(1, '#991B1B');
@@ -1969,10 +1970,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       ctx.translate(translateX2, translateY2);
       ctx.rotate(ensureFinite((legSwing * Math.PI) / 180, 0));
       // Red pants with shading
-      const pantsGradFront = ctx.createLinearGradient(
-        ensureFinite(-4), ensureFinite(0), 
-        ensureFinite(4), ensureFinite(0)
-      );
+      const pantsGradFront = ctx.createLinearGradient(-4, 0, 4, 0);
       pantsGradFront.addColorStop(0, '#991B1B');
       pantsGradFront.addColorStop(0.5, '#EF4444');
       pantsGradFront.addColorStop(1, '#DC2626');
@@ -2090,10 +2088,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       ctx.translate(translateX3, translateY3);
       ctx.rotate(ensureFinite((-armSwing * Math.PI) / 180, 0));
       // Coat sleeve with gradient
-      const sleeveGrad = ctx.createLinearGradient(
-        ensureFinite(-5), ensureFinite(0), 
-        ensureFinite(5), ensureFinite(0)
-      );
+      const sleeveGrad = ctx.createLinearGradient(-5, 0, 5, 0);
       sleeveGrad.addColorStop(0, '#152A45');
       sleeveGrad.addColorStop(0.5, '#1E3A5F');
       sleeveGrad.addColorStop(1, '#162D47');
@@ -2126,10 +2121,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       const armAngle = player.isCasting ? -45 + castingPose : armSwing;
       ctx.rotate(ensureFinite((armAngle * Math.PI) / 180, 0));
       // Coat sleeve with gradient
-      const sleeveGrad2 = ctx.createLinearGradient(
-        ensureFinite(-5), ensureFinite(0), 
-        ensureFinite(5), ensureFinite(0)
-      );
+      const sleeveGrad2 = ctx.createLinearGradient(-5, 0, 5, 0);
       sleeveGrad2.addColorStop(0, '#1E3A5F');
       sleeveGrad2.addColorStop(0.5, '#2A4A70');
       sleeveGrad2.addColorStop(1, '#1E3A5F');
