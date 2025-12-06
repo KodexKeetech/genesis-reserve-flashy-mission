@@ -27,6 +27,12 @@ import { drawLevel12Background } from './levels/Level12Background';
 import { drawLevel13Background } from './levels/Level13Background';
 import { drawLevel14Background } from './levels/Level14Background';
 import { drawLevel15Background } from './levels/Level15Background';
+import { drawLevel28Background } from './levels/Level28Background';
+import { drawLevel29Background } from './levels/Level29Background';
+import { drawLevel30Background } from './levels/Level30Background';
+import { level28Config } from './levels/Level28Config';
+import { level29Config } from './levels/Level29Config';
+import { level30Config } from './levels/Level30Config';
 
 // Helper to get level config
 function getLevelConfig(level) {
@@ -40,6 +46,9 @@ function getLevelConfig(level) {
     case 7: return { config: LEVEL_7_CONFIG, behaviors: LEVEL_7_ENEMY_BEHAVIORS };
     case 8: return { config: LEVEL_8_CONFIG, behaviors: LEVEL_8_ENEMY_BEHAVIORS };
     case 9: return { config: LEVEL_9_CONFIG, behaviors: LEVEL_9_ENEMY_BEHAVIORS };
+    case 28: return { config: level28Config, behaviors: {} };
+    case 29: return { config: level29Config, behaviors: {} };
+    case 30: return { config: level30Config, behaviors: {} };
     default: return null;
   }
 }
@@ -390,10 +399,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           return;
         }
 
-        // LEVELS 1, 2, 4, 5, 7, 8 - Hand-crafted NON-BOSS levels only
-        // Boss levels (3, 6, 9) use procedural generation below for proper boss fights
+        // Hand-crafted levels (non-boss regular levels + ALL space levels 28-30)
+        // Boss levels (3, 6, 9, etc.) that aren't in config use procedural generation
         const levelData = getLevelConfig(level);
-        const isBossLevelCustom = level === 3 || level === 6 || level === 9;
+        const isBossLevelCustom = (level === 3 || level === 6 || level === 9) && level !== 30;
         
         if (levelData && !isBossLevelCustom) {
           const { config: LEVEL_CONFIG, behaviors: ENEMY_BEHAVIORS } = levelData;
@@ -5125,6 +5134,12 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           drawLevel14Background(bgCtx, state.cameraX, 800, 600, time);
         } else if (currentLevel === 15) {
           drawLevel15Background(bgCtx, state.cameraX, 800, 600, time);
+        } else if (currentLevel === 28) {
+          drawLevel28Background(bgCtx, state.cameraX, 800, 600, time);
+        } else if (currentLevel === 29) {
+          drawLevel29Background(bgCtx, state.cameraX, 800, 600, time);
+        } else if (currentLevel === 30) {
+          drawLevel30Background(bgCtx, state.cameraX, 800, 600, time);
         } else {
           drawBackground(bgCtx, state.biome, time, state.cameraX);
         }
@@ -5881,6 +5896,26 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           for (let i = 0; i < 5; i++) {
             const angle = (i / 5) * Math.PI * 2 - Math.PI / 2;
             const r = i % 2 === 0 ? 8 : 4;
+            if (i === 0) ctx.moveTo(Math.cos(angle) * r, Math.sin(angle) * r);
+            else ctx.lineTo(Math.cos(angle) * r, Math.sin(angle) * r);
+          }
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+          ctx.shadowBlur = 0;
+          continue;
+        } else if (proj.type === 'starBolt') {
+          // Draw star bolt from starling
+          ctx.save();
+          ctx.translate(px, py);
+          ctx.rotate(time * 0.4);
+          ctx.fillStyle = '#F0ABFC';
+          ctx.shadowColor = '#D946EF';
+          ctx.shadowBlur = 15;
+          ctx.beginPath();
+          for (let i = 0; i < 5; i++) {
+            const angle = (i / 5) * Math.PI * 2;
+            const r = i % 2 === 0 ? 7 : 3;
             if (i === 0) ctx.moveTo(Math.cos(angle) * r, Math.sin(angle) * r);
             else ctx.lineTo(Math.cos(angle) * r, Math.sin(angle) * r);
           }
