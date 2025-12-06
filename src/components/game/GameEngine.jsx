@@ -3,7 +3,8 @@ import soundManager from './SoundManager';
 import { getBiomeForLevel, isBossLevel, getEnemiesForLevel, getDifficultySettings } from './BiomeConfig';
 import { drawBackground, drawPlatform, drawEnvironmentalHazard } from './BackgroundRenderer';
 import { drawEnemy, drawBoss } from './EnemyRenderer';
-import { createImpactEffect, createDamageEffect, createExplosionEffect, createMagicCastEffect, createPowerUpCollectEffect, createCoinCollectEffect, createEnemyDeathEffect, createBossHitEffect, createBossDeathEffect, createAmbientParticle, drawParticle, drawAmbientParticle, drawProjectileTrail, drawEnemyProjectileTrail, createSecretPortalEffect, createArcaneNovaEffect, createArcStormEffect } from './ParticleEffects';
+import { createImpactEffect, createDamageEffect, createExplosionEffect, createMagicCastEffect, createPowerUpCollectEffect, createCoinCollectEffect, createEnemyDeathEffect, createBossHitEffect, createBossDeathEffect, drawParticle, drawProjectileTrail, drawEnemyProjectileTrail, createSecretPortalEffect, createArcaneNovaEffect, createArcStormEffect } from './ParticleEffects';
+import BackgroundCanvas from './BackgroundCanvas';
 import { getAbilityStats, SPECIAL_ABILITIES } from './AbilitySystem';
 import { LEVEL_1_CONFIG, LEVEL_1_ENEMY_BEHAVIORS } from './levels/Level1Config';
 import { LEVEL_2_CONFIG, LEVEL_2_ENEMY_BEHAVIORS } from './levels/Level2Config';
@@ -81,9 +82,9 @@ function ensureFinite(value, fallback = 0) {
 
 export default function GameEngine({ onScoreChange, onHealthChange, onLevelComplete, onGameOver, currentLevel, hiddenLevelId, difficulty = 'medium', onPowerUpChange, onAbilityCooldowns, onScrapsEarned, onCrystalsEarned, onCoinAmmoChange, savedCoinAmmo, playerUpgrades, unlockedAbilities, abilityUpgrades, gameInput, startingGun = 0, gameSettings = { sound: true, graphics: 'high', particles: true, gameSpeed: 1, keybinds: {} }, onGunChange, onCheckpointActivated, respawnAtCheckpoint, onRespawnComplete, savedCheckpoint }) {
   const canvasRef = useRef(null);
-  const backgroundCanvasRef = useRef(null);
   const mouseRef = useRef({ x: 400, y: 300 }); // Track mouse position relative to canvas
-  const ambientParticlesRef = useRef([]);
+  const cameraXRef = useRef(0);
+  const timeRef = useRef(0);
   const gameStateRef = useRef({
     player: {
       x: 100,
@@ -1293,12 +1294,8 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-    const backgroundCanvas = backgroundCanvasRef.current;
-    const bgCtx = backgroundCanvas.getContext('2d');
     let animationId;
     let time = 0;
-    let lastCameraX = 0;
-    let lastBackgroundDraw = 0;
     
     // Fixed timestep for consistent game speed across devices
     const TARGET_FPS = 60;
@@ -2395,6 +2392,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       if (accumulator >= adjustedFrameTime) {
         accumulator -= adjustedFrameTime;
         time++;
+        timeRef.current = time;
       } else {
         // Skip game update this frame, just render
         animationId = requestAnimationFrame(gameLoop);
@@ -2709,6 +2707,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       state.cameraX += (targetCameraX - state.cameraX) * 0.1;
       state.cameraX = Math.max(0, Math.min(state.cameraX, state.levelWidth - 800));
       state.cameraX = Math.round(state.cameraX);
+      cameraXRef.current = state.cameraX;
       
       // Update cast timer
       if (player.castTimer > 0) player.castTimer--;
@@ -5131,91 +5130,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         return;
       }
       
-      // RENDER BACKGROUND - Only redraw if camera moved significantly or time updated
-      const cameraMoved = Math.abs(state.cameraX - lastCameraX) > 5;
-      const timePassed = time - lastBackgroundDraw > 0;
-      
-      if (cameraMoved || timePassed) {
-        lastCameraX = state.cameraX;
-        lastBackgroundDraw = time;
-        
-        bgCtx.clearRect(0, 0, 800, 600);
-        
-        if (state.biome) {
-          // Use custom optimized backgrounds for specific levels
-          if (currentLevel === 0) {
-            drawLevel1Background(bgCtx, state.cameraX, 800, 600, time, true);
-          } else if (currentLevel === 1) {
-            drawLevel1Background(bgCtx, state.cameraX, 800, 600, time, false);
-          } else if (currentLevel === 2) {
-            drawLevel2Background(bgCtx, state.cameraX, 800, 600, time);
-          } else if (currentLevel === 4) {
-            drawLevel4Background(bgCtx, state.cameraX, 800, 600, time);
-          } else if (currentLevel === 5) {
-            drawLevel5Background(bgCtx, state.cameraX, 800, 600, time);
-          } else if (currentLevel === 6) {
-            drawLevel6Background(bgCtx, state.cameraX, 800, 600, time);
-          } else if (currentLevel === 8) {
-            drawLevel8Background(bgCtx, state.cameraX, 800, 600, time);
-          } else if (currentLevel === 9) {
-            drawLevel9Background(bgCtx, state.cameraX, 800, 600, time);
-          } else if (currentLevel === 10) {
-            drawLevel10Background(bgCtx, state.cameraX, 800, 600, time);
-          } else if (currentLevel === 11) {
-            drawLevel11Background(bgCtx, state.cameraX, 800, 600, time);
-          } else if (currentLevel === 12) {
-            drawLevel12Background(bgCtx, state.cameraX, 800, 600, time);
-          } else if (currentLevel === 13) {
-            drawLevel13Background(bgCtx, state.cameraX, 800, 600, time);
-          } else if (currentLevel === 14) {
-            drawLevel14Background(bgCtx, state.cameraX, 800, 600, time);
-          } else if (currentLevel === 15) {
-            drawLevel15Background(bgCtx, state.cameraX, 800, 600, time);
-          } else if (currentLevel === 28) {
-            drawLevel28Background(bgCtx, state.cameraX, 800, 600, time);
-          } else if (currentLevel === 29) {
-            drawLevel29Background(bgCtx, state.cameraX, 800, 600, time);
-          } else if (currentLevel === 30) {
-            drawLevel30Background(bgCtx, state.cameraX, 800, 600, time);
-          } else {
-            drawBackground(bgCtx, state.biome, time, state.cameraX);
-          }
-        } else {
-          bgCtx.fillStyle = '#0F172A';
-          bgCtx.fillRect(0, 0, 800, 600);
-        }
-      }
-      
-      // Update and draw ambient particles every frame on background canvas
-      if (gameSettings.particles && state.biome) {
-        // Spawn new ambient particles occasionally
-        if (Math.random() < 0.1) {
-          createAmbientParticle(ambientParticlesRef.current, state.biome.key, state.cameraX);
-        }
-        
-        // Keep ambient particle count reasonable
-        if (ambientParticlesRef.current.length > 50) {
-          ambientParticlesRef.current = ambientParticlesRef.current.slice(-50);
-        }
-        
-        // Update and draw all ambient particles
-        bgCtx.save();
-        for (let i = ambientParticlesRef.current.length - 1; i >= 0; i--) {
-          const p = ambientParticlesRef.current[i];
-          p.x += p.velocityX;
-          p.y += p.velocityY;
-          p.life--;
-          
-          // Remove if out of bounds or expired
-          if (p.life <= 0 || p.y > 650 || p.y < -50 || p.x < state.cameraX - 300 || p.x > state.cameraX + 1100) {
-            ambientParticlesRef.current.splice(i, 1);
-          } else {
-            // Draw on background canvas with camera offset - round position for smooth rendering
-            drawAmbientParticle(bgCtx, { ...p, x: Math.round(p.x - state.cameraX), y: Math.round(p.y) }, time);
-          }
-        }
-        bgCtx.restore();
-      }
+
       
       // Clear foreground canvas only
       ctx.clearRect(0, 0, 800, 600);
@@ -6638,12 +6553,12 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
 
   return (
     <div className="relative w-full h-full">
-      <canvas
-        ref={backgroundCanvasRef}
-        width={800}
-        height={600}
-        className="absolute inset-0 rounded-xl"
-        style={{ imageRendering: 'pixelated' }}
+      <BackgroundCanvas
+        currentLevel={currentLevel}
+        hiddenLevelId={hiddenLevelId}
+        gameSettings={gameSettings}
+        cameraXRef={cameraXRef}
+        timeRef={timeRef}
       />
       <canvas
         ref={canvasRef}
