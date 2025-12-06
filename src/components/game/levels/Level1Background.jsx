@@ -29,13 +29,11 @@ export function drawLevel1Background(ctx, cameraX, canvasWidth, canvasHeight, ti
 
 function drawForestStars(ctx, cameraX, time) {
   const starPositions = [
-    { x: 100, y: 30, size: 1.5 },
-    { x: 250, y: 50, size: 1 },
-    { x: 400, y: 25, size: 2 },
-    { x: 550, y: 60, size: 1 },
-    { x: 700, y: 35, size: 1.5 },
-    { x: 150, y: 80, size: 1 },
-    { x: 600, y: 45, size: 1 },
+    { x: 100, y: 30, size: 1.5 }, { x: 250, y: 50, size: 1 },
+    { x: 400, y: 25, size: 2 }, { x: 550, y: 60, size: 1 },
+    { x: 700, y: 35, size: 1.5 }, { x: 150, y: 80, size: 1 },
+    { x: 600, y: 45, size: 1 }, { x: 320, y: 65, size: 1.2 },
+    { x: 480, y: 38, size: 1.3 }, { x: 650, y: 55, size: 1.1 }
   ];
   
   ctx.fillStyle = '#E8F4FF';
@@ -43,29 +41,56 @@ function drawForestStars(ctx, cameraX, time) {
     const twinkle = Math.sin(time * 0.05 + star.x) * 0.3 + 0.7;
     const x = Math.round(((star.x - cameraX * 0.02) % 800 + 800) % 800);
     ctx.globalAlpha = twinkle * 0.6;
+    ctx.shadowColor = '#E8F4FF';
+    ctx.shadowBlur = star.size * 3;
     ctx.beginPath();
     ctx.arc(x, star.y, star.size, 0, Math.PI * 2);
     ctx.fill();
+    // Star cross
+    if (star.size > 1.3) {
+      ctx.globalAlpha = twinkle * 0.4;
+      ctx.strokeStyle = '#E8F4FF';
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(x - star.size * 2, star.y);
+      ctx.lineTo(x + star.size * 2, star.y);
+      ctx.moveTo(x, star.y - star.size * 2);
+      ctx.lineTo(x, star.y + star.size * 2);
+      ctx.stroke();
+    }
   }
   ctx.globalAlpha = 1;
+  ctx.shadowBlur = 0;
 }
 
 function drawMoonGlow(ctx, cameraX, time) {
   const moonX = Math.round(650 - cameraX * 0.02);
   const moonY = 80;
+  const moonPulse = Math.sin(time * 0.02) * 0.05 + 0.95;
   
   // Outer glow
   const glowGradient = ctx.createRadialGradient(moonX, moonY, 0, moonX, moonY, 120);
-  glowGradient.addColorStop(0, 'rgba(200, 220, 255, 0.15)');
-  glowGradient.addColorStop(0.5, 'rgba(150, 180, 220, 0.05)');
+  glowGradient.addColorStop(0, `rgba(200, 220, 255, ${0.15 * moonPulse})`);
+  glowGradient.addColorStop(0.5, `rgba(150, 180, 220, ${0.05 * moonPulse})`);
   glowGradient.addColorStop(1, 'rgba(100, 150, 200, 0)');
   ctx.fillStyle = glowGradient;
   ctx.fillRect(moonX - 120, moonY - 120, 240, 240);
   
-  // Moon
-  ctx.fillStyle = 'rgba(220, 230, 245, 0.8)';
+  // Moon with crater details
+  ctx.fillStyle = `rgba(220, 230, 245, ${0.8 * moonPulse})`;
+  ctx.shadowColor = '#E8F4FF';
+  ctx.shadowBlur = 15;
   ctx.beginPath();
   ctx.arc(moonX, moonY, 25, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  
+  // Craters
+  ctx.fillStyle = 'rgba(180, 190, 210, 0.4)';
+  ctx.beginPath();
+  ctx.arc(moonX - 8, moonY - 5, 4, 0, Math.PI * 2);
+  ctx.arc(moonX + 6, moonY + 3, 3, 0, Math.PI * 2);
+  ctx.arc(moonX + 2, moonY + 10, 5, 0, Math.PI * 2);
   ctx.fill();
 }
 

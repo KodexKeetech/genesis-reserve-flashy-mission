@@ -111,24 +111,35 @@ function drawSlime(ctx, enemy, ex, time, isFrozen) {
   const squish = isFrozen ? 0 : Math.sin(time * 0.2) * 3;
   const bounce = isFrozen ? 0 : Math.abs(Math.sin(time * 0.15)) * 2;
   
-  // Subtle glow underneath
+  // Glow underneath
   ctx.fillStyle = `${colors.glow}40`;
+  ctx.shadowColor = colors.glow;
+  ctx.shadowBlur = 15;
   ctx.beginPath();
   ctx.ellipse(ex + 20, enemy.y + 42, 18, 6, 0, 0, Math.PI * 2);
   ctx.fill();
+  ctx.shadowBlur = 0;
   
-  ctx.fillStyle = colors.fill;
+  // Main body with gradient
+  const bodyGrad = ctx.createRadialGradient(ex + 14, enemy.y + 22 - bounce, 0, ex + 20, enemy.y + 30 - bounce, 22);
+  bodyGrad.addColorStop(0, colors.fill);
+  bodyGrad.addColorStop(0.7, colors.fill);
+  bodyGrad.addColorStop(1, colors.glow);
+  ctx.fillStyle = bodyGrad;
   ctx.shadowColor = colors.glow;
-  ctx.shadowBlur = 12 + (enemy.isEnraged ? 8 : 0);
+  ctx.shadowBlur = 15 + (enemy.isEnraged ? 10 : 0);
   ctx.beginPath();
   ctx.ellipse(ex + 20, enemy.y + 30 - bounce, 20 + squish * 0.5, 15 + squish, 0, 0, Math.PI * 2);
   ctx.fill();
   
-  // Highlight
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+  // Highlight with more shine
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+  ctx.shadowBlur = 5;
+  ctx.shadowColor = '#fff';
   ctx.beginPath();
-  ctx.ellipse(ex + 14, enemy.y + 22 - bounce, 6, 4, -0.3, 0, Math.PI * 2);
+  ctx.ellipse(ex + 14, enemy.y + 22 - bounce, 7, 5, -0.3, 0, Math.PI * 2);
   ctx.fill();
+  ctx.shadowBlur = 0;
 
   // Eyes with blinking
   const blink = Math.sin(time * 0.05) > 0.95;
@@ -143,6 +154,21 @@ function drawSlime(ctx, enemy, ex, time, isFrozen) {
     ctx.arc(ex + 13, enemy.y + 26 - bounce, 2, 0, Math.PI * 2);
     ctx.arc(ex + 29, enemy.y + 26 - bounce, 2, 0, Math.PI * 2);
     ctx.fill();
+    // Eye shine
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+    ctx.beginPath();
+    ctx.arc(ex + 11, enemy.y + 24 - bounce, 1, 0, Math.PI * 2);
+    ctx.arc(ex + 27, enemy.y + 24 - bounce, 1, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  
+  // Mouth
+  if (!blink && !isFrozen) {
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(ex + 20, enemy.y + 32 - bounce, 5, 0.2, Math.PI - 0.2);
+    ctx.stroke();
   }
 }
 
@@ -284,76 +310,148 @@ function drawFlyer(ctx, enemy, ex, time, isFrozen) {
   const hover = isFrozen ? 0 : Math.sin(time * 0.3) * 5;
   const wingFlap = isFrozen ? 0 : Math.sin(time * 0.5) * 15;
   
-  // Motion blur/trail effect when moving fast
+  // Motion blur/trail when moving fast
   if (Math.abs(enemy.velocityX) > 1 && !isFrozen) {
-    ctx.globalAlpha = 0.3;
-    ctx.fillStyle = colors.fill;
-    ctx.beginPath();
-    ctx.ellipse(ex + 20 - enemy.velocityX * 3, enemy.y + 20 + hover, 10, 8, 0, 0, Math.PI * 2);
-    ctx.fill();
+    for (let t = 1; t <= 2; t++) {
+      ctx.globalAlpha = 0.2 - t * 0.08;
+      ctx.fillStyle = colors.fill;
+      ctx.beginPath();
+      ctx.ellipse(ex + 20 - enemy.velocityX * t * 2, enemy.y + 20 + hover, 10, 8, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
     ctx.globalAlpha = 1;
   }
   
-  ctx.fillStyle = colors.fill;
+  // Body gradient
+  const bodyGrad = ctx.createRadialGradient(ex + 16, enemy.y + 16 + hover, 0, ex + 20, enemy.y + 20 + hover, 15);
+  bodyGrad.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
+  bodyGrad.addColorStop(0.4, colors.fill);
+  bodyGrad.addColorStop(1, colors.glow);
+  ctx.fillStyle = bodyGrad;
   ctx.shadowColor = colors.glow;
-  ctx.shadowBlur = 12 + (enemy.isEnraged ? 10 : 0);
+  ctx.shadowBlur = 15 + (enemy.isEnraged ? 12 : 0);
   ctx.beginPath();
   ctx.ellipse(ex + 20, enemy.y + 20 + hover, 12, 10, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Enhanced wings with gradient
-  ctx.fillStyle = colors.fill;
+  // Enhanced wings with feather detail
+  const wingGrad = ctx.createLinearGradient(ex - 15, enemy.y + 10, ex + 8, enemy.y + 25);
+  wingGrad.addColorStop(0, colors.glow);
+  wingGrad.addColorStop(0.5, colors.fill);
+  wingGrad.addColorStop(1, colors.glow);
+  ctx.fillStyle = wingGrad;
   ctx.beginPath();
   ctx.moveTo(ex + 8, enemy.y + 20 + hover);
   ctx.quadraticCurveTo(ex - 15, enemy.y + 5 + wingFlap + hover, ex - 8, enemy.y + 28 + hover);
   ctx.lineTo(ex + 8, enemy.y + 22 + hover);
   ctx.closePath();
   ctx.fill();
+  // Wing feathers
+  ctx.strokeStyle = colors.glow;
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 3; i++) {
+    ctx.beginPath();
+    ctx.moveTo(ex + 5, enemy.y + 22 + hover + i * 2);
+    ctx.lineTo(ex - 6 - i * 2, enemy.y + 15 + wingFlap + hover + i * 3);
+    ctx.stroke();
+  }
+  
+  ctx.fillStyle = wingGrad;
   ctx.beginPath();
   ctx.moveTo(ex + 32, enemy.y + 20 + hover);
   ctx.quadraticCurveTo(ex + 55, enemy.y + 5 - wingFlap + hover, ex + 48, enemy.y + 28 + hover);
   ctx.lineTo(ex + 32, enemy.y + 22 + hover);
   ctx.closePath();
   ctx.fill();
+  for (let i = 0; i < 3; i++) {
+    ctx.beginPath();
+    ctx.moveTo(ex + 35, enemy.y + 22 + hover + i * 2);
+    ctx.lineTo(ex + 46 + i * 2, enemy.y + 15 - wingFlap + hover + i * 3);
+    ctx.stroke();
+  }
 
-  // Eyes with glow
+  // Eyes with glow and pupil
   ctx.fillStyle = colors.eye;
   ctx.shadowColor = colors.eye;
-  ctx.shadowBlur = 8;
+  ctx.shadowBlur = 10;
   ctx.beginPath();
-  ctx.arc(ex + 15, enemy.y + 18 + hover, 3, 0, Math.PI * 2);
-  ctx.arc(ex + 25, enemy.y + 18 + hover, 3, 0, Math.PI * 2);
+  ctx.arc(ex + 15, enemy.y + 18 + hover, 4, 0, Math.PI * 2);
+  ctx.arc(ex + 25, enemy.y + 18 + hover, 4, 0, Math.PI * 2);
   ctx.fill();
+  // Pupils
+  ctx.fillStyle = '#000';
   ctx.shadowBlur = 0;
+  ctx.beginPath();
+  ctx.arc(ex + 15, enemy.y + 18 + hover, 1.5, 0, Math.PI * 2);
+  ctx.arc(ex + 25, enemy.y + 18 + hover, 1.5, 0, Math.PI * 2);
+  ctx.fill();
+  // Eye shine
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.arc(ex + 14, enemy.y + 17 + hover, 1, 0, Math.PI * 2);
+  ctx.arc(ex + 24, enemy.y + 17 + hover, 1, 0, Math.PI * 2);
+  ctx.fill();
 }
 
 function drawShooter(ctx, enemy, ex, time, isFrozen) {
   const isFrost = enemy.type === 'frostShooter';
-  ctx.fillStyle = isFrozen ? '#67E8F9' : (isFrost ? '#0EA5E9' : '#DC2626');
-  ctx.shadowColor = isFrozen ? '#67E8F9' : (isFrost ? '#38BDF8' : '#EF4444');
-  ctx.shadowBlur = 8;
+  const isPrism = enemy.type === 'prismShooter';
+  const bodyColor = isFrozen ? '#67E8F9' : (isFrost ? '#0EA5E9' : isPrism ? '#E879F9' : '#DC2626');
+  const glowColor = isFrozen ? '#67E8F9' : (isFrost ? '#38BDF8' : isPrism ? '#F472B6' : '#EF4444');
+  
+  ctx.fillStyle = bodyColor;
+  ctx.shadowColor = glowColor;
+  ctx.shadowBlur = 10 + (enemy.isEnraged ? 8 : 0);
 
-  // Body
+  // Body with metallic gradient
+  const bodyGrad = ctx.createLinearGradient(ex + 5, enemy.y + 15, ex + 35, enemy.y + 40);
+  bodyGrad.addColorStop(0, bodyColor);
+  bodyGrad.addColorStop(0.5, glowColor);
+  bodyGrad.addColorStop(1, bodyColor);
+  ctx.fillStyle = bodyGrad;
   ctx.beginPath();
   ctx.roundRect(ex + 5, enemy.y + 15, 30, 25, 4);
   ctx.fill();
+  
+  // Armor plating details
+  ctx.strokeStyle = `rgba(255, 255, 255, 0.2)`;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(ex + 20, enemy.y + 16);
+  ctx.lineTo(ex + 20, enemy.y + 38);
+  ctx.stroke();
 
   // Cannon
   const cannonDir = enemy.facingRight ? 1 : -1;
-  ctx.fillStyle = isFrozen ? '#A5F3FC' : (isFrost ? '#0369A1' : '#991B1B');
+  const cannonColor = isFrozen ? '#A5F3FC' : (isFrost ? '#0369A1' : isPrism ? '#C026D3' : '#991B1B');
+  ctx.fillStyle = cannonColor;
+  ctx.shadowBlur = 15;
   ctx.beginPath();
   ctx.roundRect(ex + 15 + cannonDir * 10, enemy.y + 22, 18, 10, 2);
   ctx.fill();
-
-  // Eye
-  ctx.fillStyle = isFrozen ? '#fff' : '#FBBF24';
+  // Cannon barrel opening
+  ctx.fillStyle = isFrozen ? '#fff' : (isFrost ? '#7DD3FC' : isPrism ? '#FBBF24' : '#F97316');
   ctx.beginPath();
-  ctx.arc(ex + 20, enemy.y + 25, 6, 0, Math.PI * 2);
+  ctx.arc(ex + 25 + cannonDir * 18, enemy.y + 27, 3, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Eye with targeting reticle
+  ctx.fillStyle = isFrozen ? '#fff' : '#FBBF24';
+  ctx.shadowBlur = 12;
+  ctx.beginPath();
+  ctx.arc(ex + 20, enemy.y + 25, 7, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = isFrozen ? '#67E8F9' : '#000';
+  ctx.shadowBlur = 0;
   ctx.beginPath();
   ctx.arc(ex + 20 + cannonDir * 2, enemy.y + 25, 3, 0, Math.PI * 2);
   ctx.fill();
+  // Targeting circle
+  ctx.strokeStyle = glowColor;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(ex + 20, enemy.y + 25, 9, 0, Math.PI * 2);
+  ctx.stroke();
 }
 
 function drawDiver(ctx, enemy, ex, time, isFrozen) {
@@ -781,19 +879,26 @@ function drawTreant(ctx, boss, bx, time, isFrozen, rage, pulse) {
 }
 
 function drawMagmaGolem(ctx, boss, bx, time, isFrozen, rage, pulse) {
-  const glow = rage ? 30 : 15;
+  const glow = rage ? 35 : 18;
+  const lavaPulse = Math.sin(time * 0.15) * 0.3 + 0.7;
   
-  // Body
-  ctx.fillStyle = isFrozen ? '#67E8F9' : '#1C1917';
+  // Body with lava veins
+  const bodyGrad = ctx.createLinearGradient(bx + 15, boss.y + 30, bx + 85, boss.y + 100);
+  bodyGrad.addColorStop(0, isFrozen ? '#67E8F9' : '#1C1917');
+  bodyGrad.addColorStop(0.5, isFrozen ? '#A5F3FC' : '#292524');
+  bodyGrad.addColorStop(1, isFrozen ? '#67E8F9' : '#0A0A0A');
+  ctx.fillStyle = bodyGrad;
   ctx.shadowColor = isFrozen ? '#67E8F9' : '#F97316';
   ctx.shadowBlur = glow;
   ctx.beginPath();
   ctx.roundRect(bx + 15, boss.y + 30, 70, 70, 10);
   ctx.fill();
 
-  // Lava cracks
-  ctx.strokeStyle = isFrozen ? '#A5F3FC' : `rgba(249, 115, 22, ${pulse})`;
-  ctx.lineWidth = 3;
+  // Glowing lava cracks with animation
+  ctx.strokeStyle = isFrozen ? '#A5F3FC' : `rgba(249, 115, 22, ${pulse * lavaPulse})`;
+  ctx.shadowColor = '#FBBF24';
+  ctx.shadowBlur = 20 * pulse;
+  ctx.lineWidth = 4;
   ctx.beginPath();
   ctx.moveTo(bx + 30, boss.y + 35);
   ctx.lineTo(bx + 50, boss.y + 60);
@@ -801,86 +906,205 @@ function drawMagmaGolem(ctx, boss, bx, time, isFrozen, rage, pulse) {
   ctx.moveTo(bx + 40, boss.y + 70);
   ctx.lineTo(bx + 60, boss.y + 90);
   ctx.stroke();
+  // Inner lava glow
+  ctx.strokeStyle = isFrozen ? '#fff' : `rgba(251, 191, 36, ${pulse})`;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+  
+  // Molten core chest
+  ctx.fillStyle = isFrozen ? '#A5F3FC' : `rgba(239, 68, 68, ${lavaPulse})`;
+  ctx.shadowColor = '#F97316';
+  ctx.shadowBlur = 25 * pulse;
+  ctx.beginPath();
+  ctx.arc(bx + 50, boss.y + 60, 15, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#FEF3C7';
+  ctx.beginPath();
+  ctx.arc(bx + 50, boss.y + 60, 8, 0, Math.PI * 2);
+  ctx.fill();
 
-  // Head
+  // Head with rocky texture
   ctx.fillStyle = isFrozen ? '#67E8F9' : '#292524';
+  ctx.shadowBlur = glow;
   ctx.beginPath();
   ctx.roundRect(bx + 25, boss.y + 5, 50, 35, 8);
   ctx.fill();
-
-  // Eyes
-  ctx.fillStyle = isFrozen ? '#fff' : (rage ? '#EF4444' : '#F97316');
-  ctx.shadowBlur = 20;
+  // Rock bumps
+  ctx.fillStyle = isFrozen ? '#A5F3FC' : '#3D3735';
   ctx.beginPath();
-  ctx.arc(bx + 40, boss.y + 20, 8, 0, Math.PI * 2);
-  ctx.arc(bx + 60, boss.y + 20, 8, 0, Math.PI * 2);
+  ctx.arc(bx + 32, boss.y + 15, 5, 0, Math.PI * 2);
+  ctx.arc(bx + 50, boss.y + 10, 6, 0, Math.PI * 2);
+  ctx.arc(bx + 65, boss.y + 18, 4, 0, Math.PI * 2);
   ctx.fill();
 
-  // Arms
+  // Fierce glowing eyes
+  ctx.fillStyle = isFrozen ? '#fff' : (rage ? '#EF4444' : '#F97316');
+  ctx.shadowColor = ctx.fillStyle;
+  ctx.shadowBlur = 25;
+  ctx.beginPath();
+  ctx.arc(bx + 40, boss.y + 22, 9, 0, Math.PI * 2);
+  ctx.arc(bx + 60, boss.y + 22, 9, 0, Math.PI * 2);
+  ctx.fill();
+  // Inner glow
+  ctx.fillStyle = '#FEF3C7';
+  ctx.beginPath();
+  ctx.arc(bx + 40, boss.y + 22, 4, 0, Math.PI * 2);
+  ctx.arc(bx + 60, boss.y + 22, 4, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Massive arms
   ctx.fillStyle = isFrozen ? '#A5F3FC' : '#1C1917';
   ctx.shadowBlur = glow;
-  const armSwing = Math.sin(time * 0.1) * 10;
+  const armSwing = Math.sin(time * 0.1) * 12;
+  // Left arm
   ctx.beginPath();
-  ctx.roundRect(bx - 15, boss.y + 40 + armSwing, 35, 20, 5);
-  ctx.roundRect(bx + 80, boss.y + 40 - armSwing, 35, 20, 5);
+  ctx.roundRect(bx - 20, boss.y + 35 + armSwing, 40, 25, 6);
   ctx.fill();
+  // Fist glow
+  ctx.fillStyle = isFrozen ? '#67E8F9' : `rgba(249, 115, 22, ${pulse * 0.6})`;
+  ctx.beginPath();
+  ctx.arc(bx - 10, boss.y + 47 + armSwing, 8, 0, Math.PI * 2);
+  ctx.fill();
+  // Right arm
+  ctx.fillStyle = isFrozen ? '#A5F3FC' : '#1C1917';
+  ctx.beginPath();
+  ctx.roundRect(bx + 80, boss.y + 35 - armSwing, 40, 25, 6);
+  ctx.fill();
+  ctx.fillStyle = isFrozen ? '#67E8F9' : `rgba(249, 115, 22, ${pulse * 0.6})`;
+  ctx.beginPath();
+  ctx.arc(bx + 110, boss.y + 47 - armSwing, 8, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
 }
 
 function drawFrostWyrm(ctx, boss, bx, time, isFrozen, rage, pulse) {
   const wave = Math.sin(time * 0.08);
+  const iceShimmer = Math.sin(time * 0.12) * 0.3 + 0.7;
   
-  // Body segments
-  ctx.fillStyle = isFrozen ? '#67E8F9' : '#0EA5E9';
+  // Serpentine body with ice scales
   ctx.shadowColor = isFrozen ? '#67E8F9' : '#38BDF8';
-  ctx.shadowBlur = 15;
+  ctx.shadowBlur = 20;
   
   for (let i = 0; i < 4; i++) {
     const segX = bx + 20 + i * 20;
     const segY = boss.y + 50 + Math.sin(time * 0.1 + i * 0.5) * 8;
+    const segSize = 18 - i * 2;
+    
+    // Segment gradient
+    const segGrad = ctx.createRadialGradient(segX, segY - 5, 0, segX, segY, segSize);
+    segGrad.addColorStop(0, isFrozen ? '#E0F2FE' : '#7DD3FC');
+    segGrad.addColorStop(0.5, isFrozen ? '#67E8F9' : '#0EA5E9');
+    segGrad.addColorStop(1, isFrozen ? '#67E8F9' : '#0284C7');
+    ctx.fillStyle = segGrad;
     ctx.beginPath();
-    ctx.ellipse(segX, segY, 18 - i * 2, 15 - i * 2, 0, 0, Math.PI * 2);
+    ctx.ellipse(segX, segY, segSize, segSize - 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Ice scales
+    ctx.fillStyle = `rgba(255, 255, 255, ${iceShimmer * 0.4})`;
+    ctx.beginPath();
+    ctx.arc(segX - 5, segY - 3, 3, 0, Math.PI * 2);
+    ctx.arc(segX + 5, segY + 2, 2.5, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  // Head
-  ctx.fillStyle = isFrozen ? '#A5F3FC' : '#0284C7';
+  // Majestic head with details
+  const headGrad = ctx.createRadialGradient(bx + 45, boss.y + 25, 0, bx + 50, boss.y + 30, 35);
+  headGrad.addColorStop(0, isFrozen ? '#F0F9FF' : '#BAE6FD');
+  headGrad.addColorStop(0.6, isFrozen ? '#A5F3FC' : '#0284C7');
+  headGrad.addColorStop(1, isFrozen ? '#67E8F9' : '#0369A1');
+  ctx.fillStyle = headGrad;
+  ctx.shadowBlur = 18;
   ctx.beginPath();
-  ctx.ellipse(bx + 50, boss.y + 30, 30, 25, 0, 0, Math.PI * 2);
+  ctx.ellipse(bx + 50, boss.y + 30, 32, 26, 0, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Snout ridge
+  ctx.fillStyle = isFrozen ? '#fff' : '#E0F2FE';
+  ctx.beginPath();
+  ctx.ellipse(bx + 60, boss.y + 38, 15, 8, 0.3, 0, Math.PI * 2);
   ctx.fill();
 
-  // Horns
-  ctx.fillStyle = isFrozen ? '#fff' : '#BAE6FD';
+  // Majestic horns with frost
+  ctx.fillStyle = isFrozen ? '#fff' : '#E0F2FE';
+  ctx.shadowBlur = 12;
   ctx.beginPath();
   ctx.moveTo(bx + 30, boss.y + 15);
-  ctx.lineTo(bx + 20, boss.y - 15);
+  ctx.lineTo(bx + 20, boss.y - 18);
   ctx.lineTo(bx + 40, boss.y + 20);
   ctx.closePath();
   ctx.fill();
   ctx.beginPath();
   ctx.moveTo(bx + 70, boss.y + 15);
-  ctx.lineTo(bx + 80, boss.y - 15);
+  ctx.lineTo(bx + 80, boss.y - 18);
   ctx.lineTo(bx + 60, boss.y + 20);
   ctx.closePath();
   ctx.fill();
-
-  // Eyes
-  ctx.fillStyle = rage ? '#EF4444' : '#E0F2FE';
-  ctx.shadowBlur = 20;
+  // Horn highlights
+  ctx.fillStyle = '#FFFFFF';
   ctx.beginPath();
-  ctx.arc(bx + 40, boss.y + 28, 7, 0, Math.PI * 2);
-  ctx.arc(bx + 60, boss.y + 28, 7, 0, Math.PI * 2);
+  ctx.moveTo(bx + 28, boss.y + 8);
+  ctx.lineTo(bx + 22, boss.y - 10);
+  ctx.lineTo(bx + 32, boss.y + 12);
+  ctx.closePath();
   ctx.fill();
 
-  // Icy breath effect
-  if (boss.isAttacking) {
-    ctx.fillStyle = `rgba(186, 230, 253, ${pulse * 0.5})`;
+  // Fierce eyes
+  ctx.fillStyle = rage ? '#EF4444' : '#F0F9FF';
+  ctx.shadowColor = rage ? '#EF4444' : '#38BDF8';
+  ctx.shadowBlur = 25;
+  ctx.beginPath();
+  ctx.arc(bx + 40, boss.y + 28, 8, 0, Math.PI * 2);
+  ctx.arc(bx + 60, boss.y + 28, 8, 0, Math.PI * 2);
+  ctx.fill();
+  // Pupils
+  ctx.fillStyle = rage ? '#000' : '#0284C7';
+  ctx.shadowBlur = 0;
+  ctx.beginPath();
+  ctx.arc(bx + 41, boss.y + 29, 3, 0, Math.PI * 2);
+  ctx.arc(bx + 61, boss.y + 29, 3, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Ice spikes along back
+  ctx.fillStyle = '#BAE6FD';
+  for (let i = 0; i < 3; i++) {
+    const spikeX = bx + 30 + i * 15;
+    const spikeY = boss.y + 40 + Math.sin(time * 0.1 + i * 0.5) * 6;
     ctx.beginPath();
-    ctx.moveTo(bx + 50, boss.y + 45);
-    ctx.lineTo(bx + 30, boss.y + 80);
-    ctx.lineTo(bx + 70, boss.y + 80);
+    ctx.moveTo(spikeX, spikeY);
+    ctx.lineTo(spikeX - 4, spikeY - 12);
+    ctx.lineTo(spikeX + 4, spikeY);
     ctx.closePath();
     ctx.fill();
   }
+
+  // Frost breath charging effect
+  if (boss.isAttacking) {
+    const breathGrad = ctx.createLinearGradient(bx + 50, boss.y + 45, bx + 50, boss.y + 90);
+    breathGrad.addColorStop(0, `rgba(255, 255, 255, ${pulse * 0.4})`);
+    breathGrad.addColorStop(0.5, `rgba(186, 230, 253, ${pulse * 0.6})`);
+    breathGrad.addColorStop(1, 'rgba(165, 243, 252, 0)');
+    ctx.fillStyle = breathGrad;
+    ctx.shadowColor = '#BAE6FD';
+    ctx.shadowBlur = 30;
+    ctx.beginPath();
+    ctx.moveTo(bx + 50, boss.y + 45);
+    ctx.lineTo(bx + 25, boss.y + 85);
+    ctx.lineTo(bx + 75, boss.y + 85);
+    ctx.closePath();
+    ctx.fill();
+    // Ice crystals in breath
+    for (let i = 0; i < 6; i++) {
+      const cx = bx + 35 + i * 6;
+      const cy = boss.y + 65 + Math.random() * 15;
+      ctx.fillStyle = '#FFFFFF';
+      ctx.beginPath();
+      ctx.arc(cx, cy, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  ctx.shadowBlur = 0;
 }
 
 function drawVoidLord(ctx, boss, bx, time, isFrozen, rage, pulse) {
