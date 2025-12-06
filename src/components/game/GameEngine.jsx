@@ -6693,7 +6693,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       
       if (shouldShowPortal) {
         const goalX = Math.round(state.goalX - state.cameraX);
-        if (goalX < 850 && goalX > -100) {
+        if (goalX < 2000 && goalX > -100) {
           const portalCenterX = goalX + 30;
           const portalCenterY = 420;
           const portalWidth = 50;
