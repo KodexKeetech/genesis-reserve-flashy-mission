@@ -15,6 +15,12 @@ import { LEVEL_7_CONFIG, LEVEL_7_ENEMY_BEHAVIORS } from './levels/Level7Config';
 import { LEVEL_8_CONFIG, LEVEL_8_ENEMY_BEHAVIORS } from './levels/Level8Config';
 import { LEVEL_9_CONFIG, LEVEL_9_ENEMY_BEHAVIORS } from './levels/Level9Config';
 import { drawLevel1Background, drawLevel1Decoration } from './levels/Level1Background';
+import { drawLevel2Background } from './levels/Level2Background';
+import { drawLevel4Background } from './levels/Level4Background';
+import { drawLevel5Background } from './levels/Level5Background';
+import { drawLevel6Background } from './levels/Level6Background';
+import { drawLevel8Background } from './levels/Level8Background';
+import { drawLevel9Background } from './levels/Level9Background';
 
 // Helper to get level config
 function getLevelConfig(level) {
