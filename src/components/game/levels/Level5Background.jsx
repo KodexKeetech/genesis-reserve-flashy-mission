@@ -12,12 +12,13 @@ export function drawLevel5Background(ctx, cameraX, canvasWidth, canvasHeight, ti
   
   // Volcanic mountains with erupting craters
   ctx.fillStyle = '#1c1917';
+  ctx.shadowBlur = 0;
   for (let i = 0; i < 3; i++) {
     const vx = Math.round(((i * 400 - cameraX * 0.04) % 1300) - 200);
     ctx.beginPath();
-    ctx.moveTo(vx, 500);
+    ctx.moveTo(vx, canvasHeight);
     ctx.lineTo(vx + 140, 260);
-    ctx.lineTo(vx + 280, 500);
+    ctx.lineTo(vx + 280, canvasHeight);
     ctx.closePath();
     ctx.fill();
     
@@ -33,13 +34,13 @@ export function drawLevel5Background(ctx, cameraX, canvasWidth, canvasHeight, ti
   
   // Intense lava glow at bottom
   const glowPulse = Math.sin(time * 0.06) * 0.2 + 0.7;
-  const lavaGlow = ctx.createLinearGradient(0, 420, 0, 600);
+  const lavaGlow = ctx.createLinearGradient(0, canvasHeight - 180, 0, canvasHeight);
   lavaGlow.addColorStop(0, 'rgba(234, 88, 12, 0)');
   lavaGlow.addColorStop(0.4, `rgba(249, 115, 22, ${glowPulse * 0.4})`);
   lavaGlow.addColorStop(0.7, `rgba(239, 68, 68, ${glowPulse * 0.6})`);
   lavaGlow.addColorStop(1, `rgba(220, 38, 38, ${glowPulse})`);
   ctx.fillStyle = lavaGlow;
-  ctx.fillRect(0, 420, 800, 180);
+  ctx.fillRect(0, canvasHeight - 180, canvasWidth, 180);
   
   // Lava rivers in distance
   ctx.strokeStyle = `rgba(251, 191, 36, ${glowPulse * 0.5})`;
@@ -47,11 +48,11 @@ export function drawLevel5Background(ctx, cameraX, canvasWidth, canvasHeight, ti
   ctx.shadowBlur = 15;
   ctx.lineWidth = 3;
   for (let i = 0; i < 3; i++) {
-    const lx = ((i * 300 - cameraX * 0.1) % 1000) - 100;
+    const lx = ((i * 300 - cameraX * 0.1) % (canvasWidth + 200)) - 100;
     ctx.beginPath();
-    ctx.moveTo(lx, 450);
+    ctx.moveTo(lx, canvasHeight * 0.75);
     for (let seg = 0; seg < 6; seg++) {
-      ctx.lineTo(lx + seg * 40 + Math.sin(time * 0.04 + seg) * 15, 480 + seg * 8);
+      ctx.lineTo(lx + seg * 40 + Math.sin(time * 0.04 + seg) * 15, canvasHeight * 0.8 + seg * 8);
     }
     ctx.stroke();
   }
@@ -59,10 +60,11 @@ export function drawLevel5Background(ctx, cameraX, canvasWidth, canvasHeight, ti
   
   // Floating embers and ash
   for (let i = 0; i < 10; i++) {
-    const emberX = Math.round(((i * 100 - cameraX * 0.18 + time * 0.6) % 900 + 900) % 900 - 50);
+    const emberX = Math.round(((i * 100 - cameraX * 0.18 + time * 0.6) % (canvasWidth + 100) + (canvasWidth + 100)) % (canvasWidth + 100) - 50);
     const emberY = 80 + (i % 4) * 120 + Math.sin(time * 0.04 + i) * 25;
     const emberGlow = Math.sin(time * 0.15 + i * 2) * 0.5 + 0.5;
     
+    ctx.save();
     ctx.fillStyle = i % 3 === 0 ? '#FBBF24' : i % 3 === 1 ? '#F97316' : '#EF4444';
     ctx.shadowColor = '#F97316';
     ctx.shadowBlur = 12 * emberGlow;
@@ -70,13 +72,12 @@ export function drawLevel5Background(ctx, cameraX, canvasWidth, canvasHeight, ti
     ctx.beginPath();
     ctx.arc(emberX, emberY, 3.5, 0, Math.PI * 2);
     ctx.fill();
+    ctx.restore();
   }
-  ctx.globalAlpha = 1;
-  ctx.shadowBlur = 0;
   
   // Smoke/ash clouds
   for (let i = 0; i < 4; i++) {
-    const smokeX = ((i * 250 - cameraX * 0.06) % 1100) - 100;
+    const smokeX = ((i * 250 - cameraX * 0.06) % (canvasWidth + 200)) - 100;
     const smokeY = 200 + i * 80;
     const smokeGrad = ctx.createRadialGradient(smokeX, smokeY, 0, smokeX, smokeY, 80);
     smokeGrad.addColorStop(0, 'rgba(120, 53, 15, 0.3)');
@@ -85,4 +86,8 @@ export function drawLevel5Background(ctx, cameraX, canvasWidth, canvasHeight, ti
     ctx.fillStyle = smokeGrad;
     ctx.fillRect(smokeX - 80, smokeY - 80, 160, 160);
   }
+  
+  ctx.globalAlpha = 1;
+  ctx.shadowBlur = 0;
+  ctx.shadowColor = 'transparent';
 }
