@@ -147,7 +147,7 @@ export default function TouchControls({ onInput }) {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 pointer-events-none z-50 md:hidden" style={{ height: '40vh' }}>
+    <div className="fixed bottom-0 left-0 right-0 pointer-events-none z-30" style={{ height: '180px' }}>
       {/* Left side - Joystick */}
       <div
         ref={joystickRef}
