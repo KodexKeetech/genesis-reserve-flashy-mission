@@ -28,22 +28,22 @@ export default function useGamepad(onInput) {
     const aimX = Math.abs(rawAimX) > aimDeadzone ? rawAimX : 0;
     const aimY = Math.abs(rawAimY) > aimDeadzone ? rawAimY : 0;
 
-    // Xbox 360 button mapping:
+    // Xbox Controller button mapping:
     // 0 = A (jump)
-    // 1 = B 
+    // 1 = B (dash)
     // 2 = X (cast/shoot)
     // 3 = Y (switch spell)
-    // 4 = LB (special ability 1 - AOE)
-    // 5 = RB (special ability 2 - Reflect)
-    // 6 = LT (trigger - dash)
-    // 7 = RT (trigger - cast)
+    // 4 = LB (AOE Blast)
+    // 5 = RB (Reflect Shield)
+    // 6 = LT (Hover)
+    // 7 = RT (Cast - primary)
     // 8 = Back
     // 9 = Start
-    // 10 = Left Stick Press
-    // 11 = Right Stick Press
-    // 12 = D-pad Up
-    // 13 = D-pad Down
-    // 14 = D-pad Left
+    // 10 = L3 - Left Stick Press (Time Slow)
+    // 11 = R3 - Right Stick Press (Teleport)
+    // 12 = D-pad Up (Chain Lightning)
+    // 13 = D-pad Down (Shadow Clone)
+    // 14 = D-pad Left (Magnetic Pull)
     // 15 = D-pad Right
 
     const aPressed = buttons[0]?.pressed;
@@ -85,18 +85,17 @@ export default function useGamepad(onInput) {
       move: { x: moveX, y: moveY },
       aim: { x: aimX, y: aimY },
       jump: aJustPressed,
-      dash: ltJustPressed,
-      cast: rtValue > 0.5 || xPressed,
-      switch: yJustPressed,
-      aoeBlast: lbJustPressed,
-      reflectShield: rbJustPressed,
-      hover: buttons[3]?.pressed && buttons[0]?.pressed, // Y + A for hover
-      // New ability bindings
-      timeSlow: dpadUpJustPressed,           // D-pad Up
-      chainLightning: dpadRightJustPressed,   // D-pad Right
-      shadowClone: dpadDownJustPressed,       // D-pad Down
-      magneticPull: dpadLeftJustPressed,      // D-pad Left
-      teleport: bJustPressed                  // B button
+      dash: bJustPressed,                     // B for dash (more intuitive)
+      cast: rtValue > 0.5 || xPressed,        // RT (primary) or X
+      switch: yJustPressed,                   // Y to switch spell
+      aoeBlast: lbJustPressed,                // LB - AOE Blast
+      reflectShield: rbJustPressed,           // RB - Reflect Shield
+      hover: ltValue > 0.5,                   // LT - Hover (hold)
+      timeSlow: leftStickJustPressed,         // L3 - Time Slow
+      chainLightning: dpadUpJustPressed,      // D-pad Up - Chain Lightning
+      shadowClone: dpadDownJustPressed,       // D-pad Down - Shadow Clone
+      magneticPull: dpadLeftJustPressed,      // D-pad Left - Magnetic Pull
+      teleport: rightStickJustPressed         // R3 - Teleport
     });
 
     // Store previous button states

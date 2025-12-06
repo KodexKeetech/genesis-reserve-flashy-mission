@@ -835,16 +835,24 @@ export default function Game() {
               Cast
             </span>
             <span className="flex items-center gap-2">
-              <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">LT</kbd>
+              <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">B</kbd>
               Dash
+            </span>
+            <span className="flex items-center gap-2">
+              <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">LT</kbd>
+              Hover
             </span>
             <span className="flex items-center gap-2">
               <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">Y</kbd>
               Switch
             </span>
             <span className="flex items-center gap-2">
-              <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">LB/RB</kbd>
+              <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">LB/RB/L3/R3</kbd>
               Abilities
+            </span>
+            <span className="flex items-center gap-2">
+              <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">D-Pad</kbd>
+              More Abilities
             </span>
           </>
         ) : (
