@@ -1298,6 +1298,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
     let animationId;
     let time = 0;
     let lastCameraX = 0;
+    let lastBackgroundDraw = 0;
     
     // Fixed timestep for consistent game speed across devices
     const TARGET_FPS = 60;
@@ -5130,51 +5131,59 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         return;
       }
       
-      // RENDER BACKGROUND - Clear and redraw every frame for smooth scrolling
-      bgCtx.clearRect(0, 0, 800, 600);
+      // RENDER BACKGROUND - Only redraw if camera moved significantly or time updated
+      const cameraMoved = Math.abs(state.cameraX - lastCameraX) > 5;
+      const timePassed = time - lastBackgroundDraw > 0;
       
-      if (state.biome) {
-        // Use custom optimized backgrounds for specific levels
-        if (currentLevel === 0) {
-          drawLevel1Background(bgCtx, state.cameraX, 800, 600, time, true);
-        } else if (currentLevel === 1) {
-          drawLevel1Background(bgCtx, state.cameraX, 800, 600, time, false);
-        } else if (currentLevel === 2) {
-          drawLevel2Background(bgCtx, state.cameraX, 800, 600, time);
-        } else if (currentLevel === 4) {
-          drawLevel4Background(bgCtx, state.cameraX, 800, 600, time);
-        } else if (currentLevel === 5) {
-          drawLevel5Background(bgCtx, state.cameraX, 800, 600, time);
-        } else if (currentLevel === 6) {
-          drawLevel6Background(bgCtx, state.cameraX, 800, 600, time);
-        } else if (currentLevel === 8) {
-          drawLevel8Background(bgCtx, state.cameraX, 800, 600, time);
-        } else if (currentLevel === 9) {
-          drawLevel9Background(bgCtx, state.cameraX, 800, 600, time);
-        } else if (currentLevel === 10) {
-          drawLevel10Background(bgCtx, state.cameraX, 800, 600, time);
-        } else if (currentLevel === 11) {
-          drawLevel11Background(bgCtx, state.cameraX, 800, 600, time);
-        } else if (currentLevel === 12) {
-          drawLevel12Background(bgCtx, state.cameraX, 800, 600, time);
-        } else if (currentLevel === 13) {
-          drawLevel13Background(bgCtx, state.cameraX, 800, 600, time);
-        } else if (currentLevel === 14) {
-          drawLevel14Background(bgCtx, state.cameraX, 800, 600, time);
-        } else if (currentLevel === 15) {
-          drawLevel15Background(bgCtx, state.cameraX, 800, 600, time);
-        } else if (currentLevel === 28) {
-          drawLevel28Background(bgCtx, state.cameraX, 800, 600, time);
-        } else if (currentLevel === 29) {
-          drawLevel29Background(bgCtx, state.cameraX, 800, 600, time);
-        } else if (currentLevel === 30) {
-          drawLevel30Background(bgCtx, state.cameraX, 800, 600, time);
+      if (cameraMoved || timePassed) {
+        lastCameraX = state.cameraX;
+        lastBackgroundDraw = time;
+        
+        bgCtx.clearRect(0, 0, 800, 600);
+        
+        if (state.biome) {
+          // Use custom optimized backgrounds for specific levels
+          if (currentLevel === 0) {
+            drawLevel1Background(bgCtx, state.cameraX, 800, 600, time, true);
+          } else if (currentLevel === 1) {
+            drawLevel1Background(bgCtx, state.cameraX, 800, 600, time, false);
+          } else if (currentLevel === 2) {
+            drawLevel2Background(bgCtx, state.cameraX, 800, 600, time);
+          } else if (currentLevel === 4) {
+            drawLevel4Background(bgCtx, state.cameraX, 800, 600, time);
+          } else if (currentLevel === 5) {
+            drawLevel5Background(bgCtx, state.cameraX, 800, 600, time);
+          } else if (currentLevel === 6) {
+            drawLevel6Background(bgCtx, state.cameraX, 800, 600, time);
+          } else if (currentLevel === 8) {
+            drawLevel8Background(bgCtx, state.cameraX, 800, 600, time);
+          } else if (currentLevel === 9) {
+            drawLevel9Background(bgCtx, state.cameraX, 800, 600, time);
+          } else if (currentLevel === 10) {
+            drawLevel10Background(bgCtx, state.cameraX, 800, 600, time);
+          } else if (currentLevel === 11) {
+            drawLevel11Background(bgCtx, state.cameraX, 800, 600, time);
+          } else if (currentLevel === 12) {
+            drawLevel12Background(bgCtx, state.cameraX, 800, 600, time);
+          } else if (currentLevel === 13) {
+            drawLevel13Background(bgCtx, state.cameraX, 800, 600, time);
+          } else if (currentLevel === 14) {
+            drawLevel14Background(bgCtx, state.cameraX, 800, 600, time);
+          } else if (currentLevel === 15) {
+            drawLevel15Background(bgCtx, state.cameraX, 800, 600, time);
+          } else if (currentLevel === 28) {
+            drawLevel28Background(bgCtx, state.cameraX, 800, 600, time);
+          } else if (currentLevel === 29) {
+            drawLevel29Background(bgCtx, state.cameraX, 800, 600, time);
+          } else if (currentLevel === 30) {
+            drawLevel30Background(bgCtx, state.cameraX, 800, 600, time);
+          } else {
+            drawBackground(bgCtx, state.biome, time, state.cameraX);
+          }
         } else {
-          drawBackground(bgCtx, state.biome, time, state.cameraX);
+          bgCtx.fillStyle = '#0F172A';
+          bgCtx.fillRect(0, 0, 800, 600);
         }
-      } else {
-        bgCtx.fillStyle = '#0F172A';
-        bgCtx.fillRect(0, 0, 800, 600);
       }
       
       // Update and draw ambient particles every frame on background canvas
