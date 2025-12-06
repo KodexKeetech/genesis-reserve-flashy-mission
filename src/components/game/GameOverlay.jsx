@@ -283,10 +283,6 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
               <span className="text-slate-300 text-xs md:text-base">Switch spell</span>
             </div>
           </div>
-
-          <p className="text-slate-400 mb-2 md:mb-4 text-xs md:text-sm">
-            Collect coins 🪙 and reach the portal!
-          </p>
           
           {/* Difficulty Selection */}
           <div className="mb-3 md:mb-5">
@@ -330,6 +326,10 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
               Skip →
             </Button>
           </div>
+
+          <p className="text-slate-400 mt-3 md:mt-4 text-xs md:text-sm">
+            Collect coins 🪙 and reach the portal!
+          </p>
         </motion.div>
       </motion.div>
     );
