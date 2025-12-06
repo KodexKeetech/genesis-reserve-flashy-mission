@@ -372,9 +372,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           // Simple flat ground with a few platforms
           state.platforms.push({ x: 0, y: 500, width: 500, height: 100, type: 'ground' });
           state.platforms.push({ x: 300, y: 400, width: 100, height: 20, type: 'magic' });
-          state.platforms.push({ x: 550, y: 500, width: 400, height: 100, type: 'ground' });
-          state.platforms.push({ x: 600, y: 350, width: 80, height: 20, type: 'normal' });
-          state.platforms.push({ x: 1000, y: 500, width: 2400, height: 100, type: 'ground' });
+          state.platforms.push({ x: 550, y: 500, width: 2850, height: 100, type: 'ground' });
           
           state.goalX = 3000;
 
@@ -404,7 +402,6 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
 
           // A few coins to collect
           state.collectibles.push({ x: 320, y: 350, width: 24, height: 24, collected: false, bobOffset: 0 });
-          state.collectibles.push({ x: 620, y: 300, width: 24, height: 24, collected: false, bobOffset: 1 });
           state.collectibles.push({ x: 950, y: 430, width: 24, height: 24, collected: false, bobOffset: 2 });
 
           // Reset player
