@@ -277,9 +277,9 @@ export const BIOMES = {
       void: { fill: '#4C1D95', unstable: true }
     },
     enemiesByLevel: {
-      28: ['voidSlime', 'shadowBat', 'voidWalker'],
-      29: ['voidSlime', 'shadowBat', 'voidWalker', 'phantomWisp'],
-      30: ['voidSlime', 'shadowBat', 'voidWalker', 'phantomWisp']
+      28: ['starling', 'cosmicDrifter', 'voidOrb'],
+      29: ['starling', 'cosmicDrifter', 'nebulaSerpent', 'voidOrb'],
+      30: []
     },
     hazards: ['voidZone', 'cosmicRift'],
     boss: {

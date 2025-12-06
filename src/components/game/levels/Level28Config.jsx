@@ -15,8 +15,8 @@ export const level28Config = {
         { type: 'normal', x: 690, y: 350, width: 120, height: 20 }
       ],
       enemies: [
-        { type: 'shadowBat', x: 400, y: 350, variant: 'cosmic', behavior: 'patrol' },
-        { type: 'voidSlime', x: 600, y: 300, variant: 'star', behavior: 'aggressive' }
+        { type: 'starling', x: 400, y: 350, behavior: 'orbit' },
+        { type: 'cosmicDrifter', x: 600, y: 400, behavior: 'patrol' }
       ],
       collectibles: [
         { type: 'coin', x: 400, y: 420 },
@@ -39,8 +39,8 @@ export const level28Config = {
         { type: 'normal', x: 1500, y: 400, width: 100, height: 20 }
       ],
       enemies: [
-        { type: 'voidWalker', x: 1000, y: 300, behavior: 'patrol' },
-        { type: 'shadowBat', x: 1250, y: 250, variant: 'cosmic', behavior: 'dive' }
+        { type: 'cosmicDrifter', x: 1000, y: 350, behavior: 'patrol' },
+        { type: 'starling', x: 1250, y: 250, behavior: 'dive' }
       ],
       collectibles: [
         { type: 'coin', x: 950, y: 370 },
@@ -63,8 +63,8 @@ export const level28Config = {
         { type: 'magic', x: 2240, y: 380, width: 120, height: 20 }
       ],
       enemies: [
-        { type: 'voidSlime', x: 1900, y: 330, variant: 'star', behavior: 'aggressive' },
-        { type: 'phantomWisp', x: 2100, y: 260, behavior: 'float' }
+        { type: 'cosmicDrifter', x: 1900, y: 350, behavior: 'aggressive' },
+        { type: 'nebulaSerpent', x: 2100, y: 260, behavior: 'weave' }
       ],
       collectibles: [
         { type: 'coin', x: 1750, y: 420 },
@@ -85,8 +85,8 @@ export const level28Config = {
         { type: 'normal', x: 2960, y: 400, width: 120, height: 20 }
       ],
       enemies: [
-        { type: 'shadowBat', x: 2550, y: 350, variant: 'cosmic', behavior: 'aggressive' },
-        { type: 'voidWalker', x: 2800, y: 300, behavior: 'patrol' }
+        { type: 'starling', x: 2550, y: 300, behavior: 'aggressive' },
+        { type: 'voidOrb', x: 2800, y: 350, behavior: 'pulse' }
       ],
       hazards: [
         { type: 'voidZone', x: 2600, y: 480, width: 60, height: 40 },
@@ -108,9 +108,9 @@ export const level28Config = {
         { type: 'normal', x: 3800, y: 400, width: 150, height: 20 }
       ],
       enemies: [
-        { type: 'phantomWisp', x: 3300, y: 350, behavior: 'float' },
-        { type: 'voidSlime', x: 3500, y: 300, variant: 'star', behavior: 'aggressive' },
-        { type: 'shadowBat', x: 3700, y: 250, variant: 'cosmic', behavior: 'dive' }
+        { type: 'nebulaSerpent', x: 3300, y: 300, behavior: 'weave' },
+        { type: 'cosmicDrifter', x: 3500, y: 350, behavior: 'aggressive' },
+        { type: 'starling', x: 3700, y: 250, behavior: 'dive' }
       ],
       collectibles: [
         { type: 'coin', x: 3250, y: 370 },
@@ -131,7 +131,7 @@ export const level28Config = {
         { type: 'ground', x: 4350, y: 500, width: 150, height: 100 }
       ],
       enemies: [
-        { type: 'voidWalker', x: 4150, y: 400, behavior: 'guard' }
+        { type: 'voidOrb', x: 4150, y: 400, behavior: 'guard' }
       ],
       collectibles: [
         { type: 'powerup', x: 4100, y: 420, powerupType: 'shield' },
@@ -155,16 +155,16 @@ export const level28Config = {
 };
 
 export const level28EnemyBehaviors = {
-  shadowBat: {
-    cosmic: { patrol: 'slow_flight', aggressive: 'fast_attack', dive: 'swoop_down' }
+  starling: {
+    default: { orbit: 'circular_pattern', aggressive: 'chase_player', dive: 'shooting_star' }
   },
-  voidSlime: {
-    star: { patrol: 'bounce', aggressive: 'chase' }
+  cosmicDrifter: {
+    default: { patrol: 'slow_drift', aggressive: 'gravity_pull' }
   },
-  voidWalker: {
-    default: { patrol: 'phase_walk', guard: 'defensive_stance' }
+  nebulaSerpent: {
+    default: { weave: 'sine_wave_pattern' }
   },
-  phantomWisp: {
-    default: { float: 'drift_pattern' }
+  voidOrb: {
+    default: { pulse: 'expand_contract', guard: 'orbital_defense' }
   }
 };

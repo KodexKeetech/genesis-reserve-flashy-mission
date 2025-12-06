@@ -1,3 +1,4 @@
+
 // Level 29: Planetary Gateway - Advanced space level
 
 export const level29Config = {
@@ -15,8 +16,8 @@ export const level29Config = {
         { type: 'magic', x: 690, y: 350, width: 120, height: 20 }
       ],
       enemies: [
-        { type: 'voidWalker', x: 400, y: 400, behavior: 'patrol' },
-        { type: 'phantomWisp', x: 600, y: 300, behavior: 'float' }
+        { type: 'cosmicDrifter', x: 400, y: 380, behavior: 'patrol' },
+        { type: 'nebulaSerpent', x: 600, y: 300, behavior: 'weave' }
       ],
       collectibles: [
         { type: 'coin', x: 400, y: 420 },
@@ -38,9 +39,9 @@ export const level29Config = {
         { type: 'normal', x: 1500, y: 350, width: 140, height: 20 }
       ],
       enemies: [
-        { type: 'shadowBat', x: 1000, y: 300, variant: 'cosmic', behavior: 'aggressive' },
-        { type: 'shadowBat', x: 1300, y: 200, variant: 'cosmic', behavior: 'dive' },
-        { type: 'voidSlime', x: 1450, y: 300, variant: 'star', behavior: 'aggressive' }
+        { type: 'starling', x: 1000, y: 280, behavior: 'aggressive' },
+        { type: 'starling', x: 1300, y: 200, behavior: 'dive' },
+        { type: 'voidOrb', x: 1450, y: 300, behavior: 'pulse' }
       ],
       collectibles: [
         { type: 'coin', x: 950, y: 370 },
@@ -62,9 +63,9 @@ export const level29Config = {
         { type: 'void', x: 2260, y: 300, width: 120, height: 20 }
       ],
       enemies: [
-        { type: 'voidWalker', x: 1850, y: 400, behavior: 'patrol' },
-        { type: 'phantomWisp', x: 2000, y: 350, behavior: 'float' },
-        { type: 'voidWalker', x: 2200, y: 250, behavior: 'aggressive' }
+        { type: 'cosmicDrifter', x: 1850, y: 380, behavior: 'patrol' },
+        { type: 'nebulaSerpent', x: 2000, y: 320, behavior: 'weave' },
+        { type: 'voidOrb', x: 2200, y: 280, behavior: 'pulse' }
       ],
       hazards: [
         { type: 'voidZone', x: 1850, y: 480, width: 60, height: 40 },
@@ -87,9 +88,9 @@ export const level29Config = {
         { type: 'normal', x: 3180, y: 450, width: 120, height: 20 }
       ],
       enemies: [
-        { type: 'shadowBat', x: 2600, y: 350, variant: 'cosmic', behavior: 'aggressive' },
-        { type: 'voidSlime', x: 2900, y: 300, variant: 'star', behavior: 'aggressive' },
-        { type: 'phantomWisp', x: 3100, y: 350, behavior: 'float' }
+        { type: 'starling', x: 2600, y: 320, behavior: 'aggressive' },
+        { type: 'voidOrb', x: 2900, y: 320, behavior: 'pulse' },
+        { type: 'nebulaSerpent', x: 3100, y: 300, behavior: 'weave' }
       ],
       collectibles: [
         { type: 'coin', x: 2550, y: 420 },
@@ -112,10 +113,10 @@ export const level29Config = {
         { type: 'normal', x: 4170, y: 400, width: 150, height: 20 }
       ],
       enemies: [
-        { type: 'voidWalker', x: 3500, y: 350, behavior: 'patrol' },
-        { type: 'shadowBat', x: 3700, y: 250, variant: 'cosmic', behavior: 'dive' },
-        { type: 'voidWalker', x: 3900, y: 300, behavior: 'aggressive' },
-        { type: 'phantomWisp', x: 4100, y: 350, behavior: 'float' }
+        { type: 'cosmicDrifter', x: 3500, y: 360, behavior: 'patrol' },
+        { type: 'starling', x: 3700, y: 240, behavior: 'dive' },
+        { type: 'voidOrb', x: 3900, y: 320, behavior: 'pulse' },
+        { type: 'nebulaSerpent', x: 4100, y: 300, behavior: 'weave' }
       ],
       collectibles: [
         { type: 'coin', x: 3450, y: 370 },
@@ -137,8 +138,8 @@ export const level29Config = {
         { type: 'ground', x: 4700, y: 500, width: 150, height: 100 }
       ],
       enemies: [
-        { type: 'voidWalker', x: 4500, y: 400, behavior: 'guard' },
-        { type: 'shadowBat', x: 4650, y: 350, variant: 'cosmic', behavior: 'aggressive' }
+        { type: 'voidOrb', x: 4500, y: 380, behavior: 'guard' },
+        { type: 'starling', x: 4650, y: 320, behavior: 'aggressive' }
       ],
       collectibles: [
         { type: 'powerup', x: 4450, y: 420, powerupType: 'shield' },
@@ -164,16 +165,16 @@ export const level29Config = {
 };
 
 export const level29EnemyBehaviors = {
-  shadowBat: {
-    cosmic: { patrol: 'slow_flight', aggressive: 'fast_attack', dive: 'swoop_down' }
+  starling: {
+    default: { orbit: 'circular_pattern', aggressive: 'chase_player', dive: 'shooting_star' }
   },
-  voidSlime: {
-    star: { patrol: 'bounce', aggressive: 'chase' }
+  cosmicDrifter: {
+    default: { patrol: 'slow_drift', aggressive: 'gravity_pull' }
   },
-  voidWalker: {
-    default: { patrol: 'phase_walk', aggressive: 'charge', guard: 'defensive_stance' }
+  nebulaSerpent: {
+    default: { weave: 'sine_wave_pattern' }
   },
-  phantomWisp: {
-    default: { float: 'drift_pattern' }
+  voidOrb: {
+    default: { pulse: 'expand_contract', guard: 'orbital_defense' }
   }
 };

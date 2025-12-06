@@ -71,9 +71,21 @@ export function drawEnemy(ctx, enemy, ex, time, isFrozen, biomeKey) {
     case 'illusionist':
       drawIllusionist(ctx, enemy, ex, time, isFrozen);
       break;
+    case 'starling':
+      drawStarling(ctx, enemy, ex, time, isFrozen);
+      break;
+    case 'cosmicDrifter':
+      drawCosmicDrifter(ctx, enemy, ex, time, isFrozen);
+      break;
+    case 'nebulaSerpent':
+      drawNebulaSerpent(ctx, enemy, ex, time, isFrozen);
+      break;
+    case 'voidOrb':
+      drawVoidOrb(ctx, enemy, ex, time, isFrozen);
+      break;
     default:
       drawSlime(ctx, enemy, ex, time, isFrozen);
-  }
+    }
 
   // Frozen ice crystals
   if (isFrozen) {
@@ -719,9 +731,175 @@ function drawIllusionist(ctx, enemy, ex, time, isFrozen) {
   }
   
   ctx.globalAlpha = 1;
-}
+  }
 
-export function drawBoss(ctx, boss, bx, time, isFrozen, biomeKey) {
+  function drawStarling(ctx, enemy, ex, time, isFrozen) {
+  const twinkle = Math.sin(time * 0.2) * 0.3 + 0.7;
+  const wingFlap = isFrozen ? 0 : Math.sin(time * 0.6) * 12;
+
+  // Star-like body core
+  ctx.save();
+  ctx.translate(ex + 20, enemy.y + 20);
+  ctx.rotate(time * 0.05);
+
+  // Outer glow
+  ctx.shadowColor = isFrozen ? '#67E8F9' : '#F0ABFC';
+  ctx.shadowBlur = 20 * twinkle;
+  ctx.fillStyle = isFrozen ? '#67E8F9' : `rgba(240, 171, 252, ${twinkle})`;
+
+  // Star shape
+  ctx.beginPath();
+  for (let i = 0; i < 5; i++) {
+    const angle = (i / 5) * Math.PI * 2 - Math.PI / 2;
+    const r = i % 2 === 0 ? 15 : 7;
+    if (i === 0) ctx.moveTo(Math.cos(angle) * r, Math.sin(angle) * r);
+    else ctx.lineTo(Math.cos(angle) * r, Math.sin(angle) * r);
+  }
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.restore();
+  ctx.shadowBlur = 0;
+
+  // Energy wings
+  ctx.fillStyle = isFrozen ? '#A5F3FC' : `rgba(217, 70, 239, ${0.6 + Math.sin(time * 0.3) * 0.2})`;
+  ctx.beginPath();
+  ctx.moveTo(ex + 8, enemy.y + 18);
+  ctx.quadraticCurveTo(ex - 10, enemy.y + 5 + wingFlap, ex, enemy.y + 28);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.moveTo(ex + 32, enemy.y + 18);
+  ctx.quadraticCurveTo(ex + 50, enemy.y + 5 - wingFlap, ex + 40, enemy.y + 28);
+  ctx.closePath();
+  ctx.fill();
+  }
+
+  function drawCosmicDrifter(ctx, enemy, ex, time, isFrozen) {
+  const float = Math.sin(time * 0.08) * 5;
+  const pulse = Math.sin(time * 0.12) * 0.3 + 0.7;
+
+  // Jellyfish-like cosmic entity
+  // Bell/dome body
+  ctx.fillStyle = isFrozen ? '#67E8F9' : `rgba(139, 92, 246, ${pulse})`;
+  ctx.shadowColor = isFrozen ? '#67E8F9' : '#8B5CF6';
+  ctx.shadowBlur = 18;
+  ctx.beginPath();
+  ctx.arc(ex + 20, enemy.y + 15 + float, 18, Math.PI, 0);
+  ctx.fill();
+
+  // Inner glow
+  ctx.fillStyle = isFrozen ? '#A5F3FC' : '#C4B5FD';
+  ctx.beginPath();
+  ctx.arc(ex + 20, enemy.y + 10 + float, 10, Math.PI, 0);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // Tentacles
+  ctx.strokeStyle = isFrozen ? '#A5F3FC' : `rgba(167, 139, 250, ${pulse})`;
+  ctx.lineWidth = 3;
+  for (let i = 0; i < 4; i++) {
+    const tentacleX = ex + 8 + i * 8;
+    ctx.beginPath();
+    ctx.moveTo(tentacleX, enemy.y + 20 + float);
+    for (let j = 0; j < 4; j++) {
+      const waveX = tentacleX + Math.sin(time * 0.15 + i + j * 0.5) * 4;
+      const waveY = enemy.y + 25 + float + j * 8;
+      ctx.lineTo(waveX, waveY);
+    }
+    ctx.stroke();
+  }
+  }
+
+  function drawNebulaSerpent(ctx, enemy, ex, time, isFrozen) {
+  // Serpentine cosmic entity
+  const segments = 5;
+
+  for (let i = 0; i < segments; i++) {
+    const segX = ex + 8 + i * 7;
+    const segY = enemy.y + 20 + Math.sin(time * 0.12 + i * 0.5) * 10;
+    const segSize = 12 - i * 1.5;
+    const hue = 270 + i * 15;
+
+    ctx.fillStyle = isFrozen ? '#67E8F9' : `hsla(${hue}, 70%, 65%, 0.8)`;
+    ctx.shadowColor = isFrozen ? '#67E8F9' : `hsl(${hue}, 70%, 65%)`;
+    ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.arc(segX, segY, segSize, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Star sparkles on segments
+    if (i % 2 === 0) {
+      ctx.fillStyle = '#FFFFFF';
+      ctx.beginPath();
+      ctx.arc(segX - 3, segY - 3, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  ctx.shadowBlur = 0;
+
+  // Head with eyes
+  ctx.fillStyle = isFrozen ? '#A5F3FC' : '#D946EF';
+  ctx.shadowBlur = 15;
+  ctx.beginPath();
+  ctx.arc(ex + 12, enemy.y + 20, 10, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Eyes
+  ctx.fillStyle = '#FFFFFF';
+  ctx.shadowBlur = 0;
+  ctx.beginPath();
+  ctx.arc(ex + 9, enemy.y + 18, 3, 0, Math.PI * 2);
+  ctx.arc(ex + 15, enemy.y + 18, 3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#000';
+  ctx.beginPath();
+  ctx.arc(ex + 9, enemy.y + 18, 1.5, 0, Math.PI * 2);
+  ctx.arc(ex + 15, enemy.y + 18, 1.5, 0, Math.PI * 2);
+  ctx.fill();
+  }
+
+  function drawVoidOrb(ctx, enemy, ex, time, isFrozen) {
+  const pulse = Math.sin(time * 0.15) * 0.4 + 0.6;
+  const size = 15 + pulse * 5;
+
+  // Void core with rotating rings
+  ctx.shadowColor = isFrozen ? '#67E8F9' : '#7C3AED';
+  ctx.shadowBlur = 25 * pulse;
+
+  // Outer ring
+  ctx.save();
+  ctx.translate(ex + 20, enemy.y + 20);
+  ctx.rotate(time * 0.08);
+  ctx.strokeStyle = isFrozen ? '#67E8F9' : `rgba(124, 58, 237, ${pulse * 0.6})`;
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(0, 0, size + 8, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+
+  // Core orb
+  ctx.fillStyle = isFrozen ? '#67E8F9' : `rgba(168, 85, 247, ${pulse})`;
+  ctx.beginPath();
+  ctx.arc(ex + 20, enemy.y + 20, size, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Inner void
+  ctx.fillStyle = '#0F0A1A';
+  ctx.beginPath();
+  ctx.arc(ex + 20, enemy.y + 20, size * 0.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Bright center
+  ctx.fillStyle = isFrozen ? '#FFFFFF' : '#C084FC';
+  ctx.beginPath();
+  ctx.arc(ex + 20, enemy.y + 20, size * 0.2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  }
+
+  export function drawBoss(ctx, boss, bx, time, isFrozen, biomeKey) {
   ctx.save();
   
   const healthPercent = boss.health / boss.maxHealth;
@@ -772,11 +950,14 @@ export function drawBoss(ctx, boss, bx, time, isFrozen, biomeKey) {
     case 'arcanist':
       drawArcanist(ctx, boss, bx, time, isFrozen, rage, pulse);
       break;
+    case 'cosmicOverlord':
+      drawCosmicOverlord(ctx, boss, bx, time, isFrozen, rage, pulse);
+      break;
     default:
       // Fallback - draw a generic boss shape
       drawGenericBoss(ctx, boss, bx, time, isFrozen, rage, pulse);
       break;
-  }
+    }
 
   // Enhanced health bar
   const barWidth = 120;
@@ -1626,23 +1807,158 @@ function drawArcanist(ctx, boss, bx, time, isFrozen, rage, pulse) {
   }
 }
 
+function drawCosmicOverlord(ctx, boss, bx, time, isFrozen, rage, pulse) {
+  const float = Math.sin(time * 0.05) * 8;
+  const energyPulse = Math.sin(time * 0.1) * 0.3 + 0.7;
+
+  // Massive cosmic aura - rainbow void energy
+  for (let ring = 3; ring >= 0; ring--) {
+    const ringSize = 70 + ring * 18;
+    const rotation = time * (0.02 + ring * 0.01) * (ring % 2 === 0 ? 1 : -1);
+    const alpha = 0.15 + ring * 0.05;
+    const hue = (time * 2 + ring * 60) % 360;
+
+    ctx.strokeStyle = isFrozen ? `rgba(103, 232, 249, ${alpha})` : `hsla(${hue}, 70%, 60%, ${alpha})`;
+    ctx.lineWidth = 4;
+    ctx.save();
+    ctx.translate(bx + boss.width / 2, boss.y + boss.height / 2 + float);
+    ctx.rotate(rotation);
+    ctx.beginPath();
+    ctx.arc(0, 0, ringSize, 0, Math.PI * 1.8);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Main cosmic body - shifting void energy
+  const bodyHue = (time * 3) % 360;
+  const bodyGrad = ctx.createRadialGradient(
+    bx + 50, boss.y + 40 + float, 0,
+    bx + 50, boss.y + 50 + float, 60
+  );
+  bodyGrad.addColorStop(0, isFrozen ? '#F0F9FF' : '#FFFFFF');
+  bodyGrad.addColorStop(0.2, isFrozen ? '#A5F3FC' : `hsl(${bodyHue}, 80%, 70%)`);
+  bodyGrad.addColorStop(0.5, isFrozen ? '#67E8F9' : `hsl(${(bodyHue + 60) % 360}, 70%, 50%)`);
+  bodyGrad.addColorStop(1, isFrozen ? '#67E8F9' : `hsl(${(bodyHue + 120) % 360}, 80%, 40%)`);
+  ctx.fillStyle = bodyGrad;
+  ctx.shadowColor = isFrozen ? '#67E8F9' : '#A855F7';
+  ctx.shadowBlur = 35 * energyPulse;
+  ctx.beginPath();
+  ctx.ellipse(bx + 50, boss.y + 50 + float, 55, 45, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Void core - dark center with all-seeing eye
+  ctx.fillStyle = '#0A0520';
+  ctx.beginPath();
+  ctx.ellipse(bx + 50, boss.y + 50 + float, 30, 25, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Cosmic eye - multi-colored iris
+  const eyeHue = (time * 5) % 360;
+  const eyeGrad = ctx.createRadialGradient(bx + 50, boss.y + 50 + float, 0, bx + 50, boss.y + 50 + float, 15);
+  eyeGrad.addColorStop(0, '#FFFFFF');
+  eyeGrad.addColorStop(0.3, isFrozen ? '#A5F3FC' : `hsl(${eyeHue}, 90%, 75%)`);
+  eyeGrad.addColorStop(0.6, isFrozen ? '#67E8F9' : `hsl(${(eyeHue + 120) % 360}, 80%, 60%)`);
+  eyeGrad.addColorStop(1, isFrozen ? '#67E8F9' : `hsl(${(eyeHue + 240) % 360}, 70%, 50%)`);
+  ctx.fillStyle = eyeGrad;
+  ctx.shadowBlur = 25;
+  ctx.beginPath();
+  ctx.ellipse(bx + 50, boss.y + 50 + float, 18, 15, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Pupil
+  ctx.fillStyle = '#000000';
+  ctx.shadowBlur = 0;
+  ctx.beginPath();
+  ctx.ellipse(bx + 50, boss.y + 50 + float, 8, 7, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Pupil glow
+  ctx.fillStyle = rage ? '#EF4444' : '#FFFFFF';
+  ctx.shadowColor = rage ? '#EF4444' : '#FFFFFF';
+  ctx.shadowBlur = 10;
+  ctx.beginPath();
+  ctx.arc(bx + 50, boss.y + 50 + float, 4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // Cosmic crown - rotating energy spikes
+  ctx.save();
+  ctx.translate(bx + 50, boss.y + 10 + float);
+  ctx.rotate(time * 0.04);
+  for (let i = 0; i < 8; i++) {
+    const angle = (i / 8) * Math.PI * 2;
+    const spikeHue = (time * 3 + i * 45) % 360;
+    ctx.fillStyle = isFrozen ? '#A5F3FC' : `hsl(${spikeHue}, 80%, 65%)`;
+    ctx.shadowColor = isFrozen ? '#67E8F9' : `hsl(${spikeHue}, 80%, 65%)`;
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(angle) * 25, Math.sin(angle) * 25);
+    ctx.lineTo(Math.cos(angle) * 45, Math.sin(angle) * 45);
+    ctx.lineTo(Math.cos(angle + 0.3) * 28, Math.sin(angle + 0.3) * 28);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.restore();
+  ctx.shadowBlur = 0;
+
+  // Energy tendrils from sides
+  for (let i = 0; i < 2; i++) {
+    const side = i === 0 ? -1 : 1;
+    const tendrilX = bx + 50 + side * 45;
+    const tendrilY = boss.y + 50 + float;
+
+    ctx.strokeStyle = isFrozen ? '#67E8F9' : `rgba(192, 132, 252, ${0.7 * energyPulse})`;
+    ctx.lineWidth = 4;
+    ctx.shadowColor = isFrozen ? '#67E8F9' : '#C084FC';
+    ctx.shadowBlur = 15;
+    ctx.beginPath();
+    ctx.moveTo(bx + 50, boss.y + 50 + float);
+    ctx.quadraticCurveTo(
+      tendrilX + Math.sin(time * 0.1 + i) * 15,
+      tendrilY + Math.cos(time * 0.08 + i) * 20,
+      tendrilX + side * 20,
+      tendrilY + 30
+    );
+    ctx.stroke();
+  }
+  ctx.shadowBlur = 0;
+
+  // Orbiting cosmic orbs (representing absorbed boss powers)
+  for (let i = 0; i < 6; i++) {
+    const orbitAngle = time * 0.06 + (i / 6) * Math.PI * 2;
+    const orbitDist = 65 + Math.sin(time * 0.08 + i) * 8;
+    const orbX = bx + 50 + Math.cos(orbitAngle) * orbitDist;
+    const orbY = boss.y + 50 + float + Math.sin(orbitAngle) * (orbitDist * 0.6);
+
+    // Different color for each orb (representing different boss powers)
+    const orbColors = ['#22C55E', '#F97316', '#22D3EE', '#7C3AED', '#0284C7', '#CA8A04'];
+    ctx.fillStyle = isFrozen ? '#67E8F9' : orbColors[i];
+    ctx.shadowColor = isFrozen ? '#67E8F9' : orbColors[i];
+    ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.arc(orbX, orbY, 6 + pulse * 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.shadowBlur = 0;
+}
+
 function drawGenericBoss(ctx, boss, bx, time, isFrozen, rage, pulse) {
   // Fallback generic boss rendering
   ctx.fillStyle = isFrozen ? '#67E8F9' : '#7C3AED';
   ctx.shadowColor = isFrozen ? '#67E8F9' : '#A855F7';
   ctx.shadowBlur = 20;
-  
+
   ctx.beginPath();
   ctx.roundRect(bx + 10, boss.y + 20, 80, 80, 10);
   ctx.fill();
-  
+
   // Eyes
   ctx.fillStyle = rage ? '#EF4444' : '#fff';
   ctx.beginPath();
   ctx.arc(bx + 35, boss.y + 50, 10, 0, Math.PI * 2);
   ctx.arc(bx + 65, boss.y + 50, 10, 0, Math.PI * 2);
   ctx.fill();
-  
+
   ctx.fillStyle = '#000';
   ctx.beginPath();
   ctx.arc(bx + 35, boss.y + 50, 5, 0, Math.PI * 2);
