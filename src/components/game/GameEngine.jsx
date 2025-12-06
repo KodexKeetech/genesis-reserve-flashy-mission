@@ -5719,7 +5719,11 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           ctx.fillRect(px - proj.width / 2, py - proj.height / 2, proj.width, proj.height);
           // Inner core
           ctx.fillStyle = '#6EE7B7';
-          ctx.fillRect(px - proj.width / 2 + 5, py - proj.height / 4, proj.width - 10, proj.height / 2);
+          const coreX = ensureFinite(px - proj.width / 2 + 5, 0);
+          const coreY = ensureFinite(py - proj.height / 4, 0);
+          const coreW = ensureFinite(proj.width - 10, 70);
+          const coreH = ensureFinite(proj.height / 2, 10);
+          ctx.fillRect(coreX, coreY, coreW, coreH);
           ctx.shadowBlur = 0;
           continue;
         } else if (proj.type === 'homingMissile') {
