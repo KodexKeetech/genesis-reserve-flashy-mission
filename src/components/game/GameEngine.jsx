@@ -367,16 +367,16 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         if (level === 0) {
           const biome = getBiomeForLevel(1); // Use forest biome for tutorial
           state.biome = biome;
-          state.levelWidth = 3500;
+          state.levelWidth = 2900;
 
           // Simple flat ground with a few platforms
           state.platforms.push({ x: 0, y: 500, width: 500, height: 100, type: 'ground' });
           state.platforms.push({ x: 300, y: 400, width: 100, height: 20, type: 'magic' });
           state.platforms.push({ x: 550, y: 500, width: 400, height: 100, type: 'ground' });
           state.platforms.push({ x: 600, y: 350, width: 80, height: 20, type: 'normal' });
-          state.platforms.push({ x: 1000, y: 500, width: 2400, height: 100, type: 'ground' });
+          state.platforms.push({ x: 1000, y: 500, width: 1800, height: 100, type: 'ground' });
           
-          state.goalX = 3000;
+          state.goalX = 2400;
 
           // Just 3 easy enemies
           state.enemies.push({
@@ -6701,7 +6701,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       
       if (shouldShowPortal) {
         const goalX = Math.round(state.goalX - state.cameraX);
-        if (goalX < 3500 && goalX > -500) {
+        if (goalX < 3000 && goalX > -500) {
           const portalCenterX = goalX + 30;
           const portalCenterY = 420;
           const portalWidth = 50;
