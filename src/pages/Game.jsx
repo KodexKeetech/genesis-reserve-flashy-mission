@@ -177,10 +177,29 @@ export default function Game() {
         if (!isAuth) {
           // Not logged in - load from localStorage
           const localData = localStorage.getItem('jeff_player_data');
+          const localUpgrades = localStorage.getItem('jeff_upgrades');
+          const localAbilities = localStorage.getItem('jeff_unlocked_abilities');
+          const localAbilityUpgrades = localStorage.getItem('jeff_ability_upgrades');
+
           if (localData) {
             const data = JSON.parse(localData);
             setMagicScraps(data.magicScraps || 0);
             setArcaneCrystals(data.arcaneCrystals || 0);
+          }
+          if (localUpgrades) {
+            setPlayerUpgrades(JSON.parse(localUpgrades));
+          }
+          if (localAbilities) {
+            const abilities = JSON.parse(localAbilities);
+            setUnlockedAbilities({
+              aoeBlast: false, reflectShield: false, hover: false,
+              timeSlow: false, chainLightning: false, shadowClone: false,
+              magneticPull: false, teleport: false,
+              ...abilities
+            });
+          }
+          if (localAbilityUpgrades) {
+            setAbilityUpgrades(JSON.parse(localAbilityUpgrades));
           }
           return;
         }
@@ -224,11 +243,30 @@ export default function Game() {
       } catch (e) {
         // Error - load from localStorage
         const localData = localStorage.getItem('jeff_player_data');
+        const localUpgrades = localStorage.getItem('jeff_upgrades');
+        const localAbilities = localStorage.getItem('jeff_unlocked_abilities');
+        const localAbilityUpgrades = localStorage.getItem('jeff_ability_upgrades');
+
         if (localData) {
           const data = JSON.parse(localData);
           setMagicScraps(data.magicScraps || 0);
           setArcaneCrystals(data.arcaneCrystals || 0);
           setLives(data.lives !== undefined ? data.lives : 10);
+        }
+        if (localUpgrades) {
+          setPlayerUpgrades(JSON.parse(localUpgrades));
+        }
+        if (localAbilities) {
+          const abilities = JSON.parse(localAbilities);
+          setUnlockedAbilities({
+            aoeBlast: false, reflectShield: false, hover: false,
+            timeSlow: false, chainLightning: false, shadowClone: false,
+            magneticPull: false, teleport: false,
+            ...abilities
+          });
+        }
+        if (localAbilityUpgrades) {
+          setAbilityUpgrades(JSON.parse(localAbilityUpgrades));
         }
         }
         };
