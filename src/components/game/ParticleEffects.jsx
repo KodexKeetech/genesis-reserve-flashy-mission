@@ -491,33 +491,47 @@ export function createAmbientParticle(particles, biomeKey, cameraX) {
   const spawnY = Math.random() * 600;
   
   if (biomeKey === 'forest') {
-    // Falling leaves
-    if (Math.random() < 0.3) {
+    // Falling leaves (more variety)
+    if (Math.random() < 0.4) {
       particles.push({
         x: spawnX,
         y: -10,
-        velocityX: (Math.random() - 0.5) * 0.5,
-        velocityY: 1 + Math.random() * 0.5,
-        life: 400,
-        color: Math.random() > 0.5 ? '#22C55E' : '#84CC16',
-        size: 3 + Math.random() * 3,
+        velocityX: (Math.random() - 0.5) * 0.8,
+        velocityY: 0.8 + Math.random() * 0.7,
+        life: 450,
+        color: ['#22C55E', '#84CC16', '#10B981', '#15803D'][Math.floor(Math.random() * 4)],
+        size: 3 + Math.random() * 4,
         type: 'leaf',
         rotation: Math.random() * Math.PI * 2,
-        rotationSpeed: (Math.random() - 0.5) * 0.05
+        rotationSpeed: (Math.random() - 0.5) * 0.08
       });
     }
-    // Fireflies
-    if (Math.random() < 0.05) {
+    // Fireflies (more frequent)
+    if (Math.random() < 0.08) {
       particles.push({
         x: spawnX,
         y: spawnY,
-        velocityX: (Math.random() - 0.5) * 0.2,
-        velocityY: (Math.random() - 0.5) * 0.2,
-        life: 300,
-        color: '#FBBF24',
-        size: 2,
+        velocityX: (Math.random() - 0.5) * 0.3,
+        velocityY: (Math.random() - 0.5) * 0.3,
+        life: 350,
+        color: Math.random() > 0.7 ? '#FCD34D' : '#FBBF24',
+        size: 2.5,
         type: 'firefly',
-        flickerRate: 0.1
+        flickerRate: 0.1 + Math.random() * 0.05
+      });
+    }
+    // Magic pollen
+    if (Math.random() < 0.15) {
+      particles.push({
+        x: spawnX,
+        y: spawnY,
+        velocityX: (Math.random() - 0.5) * 0.4,
+        velocityY: -0.3 - Math.random() * 0.3,
+        life: 280,
+        color: '#A855F7',
+        size: 1.5 + Math.random() * 1,
+        type: 'pollen',
+        rotation: Math.random() * Math.PI * 2
       });
     }
     } else if (biomeKey === 'volcano') {
@@ -658,28 +672,74 @@ export function drawAmbientParticle(ctx, particle, time) {
         particle.rotation = (particle.rotation || 0) + particle.rotationSpeed;
       }
     } else if (particle.type === 'ember') {
-    ctx.fillStyle = particle.color;
-    ctx.shadowColor = particle.color;
-    ctx.shadowBlur = 8;
-    ctx.beginPath();
-    ctx.arc(particle.x, particle.y, particle.size * alpha, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.shadowBlur = 0;
+      ctx.fillStyle = particle.color;
+      ctx.shadowColor = particle.color;
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.arc(particle.x, particle.y, particle.size * alpha, 0, Math.PI * 2);
+      ctx.fill();
+      // Bright core
+      ctx.fillStyle = '#FEF3C7';
+      ctx.beginPath();
+      ctx.arc(particle.x, particle.y, particle.size * alpha * 0.3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    } else if (particle.type === 'smoke') {
+      ctx.fillStyle = particle.color;
+      ctx.globalAlpha = alpha * 0.3;
+      ctx.beginPath();
+      ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+      ctx.fill();
   } else if (particle.type === 'snow') {
+    ctx.save();
+    ctx.translate(particle.x, particle.y);
+    ctx.rotate(particle.rotation || 0);
     ctx.fillStyle = particle.color;
     ctx.shadowColor = '#FFFFFF';
     ctx.shadowBlur = 5;
+    // Snowflake shape
     ctx.beginPath();
-    ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-    ctx.fill();
+    for (let i = 0; i < 6; i++) {
+      const angle = (i / 6) * Math.PI * 2;
+      ctx.moveTo(0, 0);
+      ctx.lineTo(Math.cos(angle) * particle.size, Math.sin(angle) * particle.size);
+    }
+    ctx.stroke();
+    ctx.restore();
     ctx.shadowBlur = 0;
+    if (particle.rotationSpeed) {
+      particle.rotation = (particle.rotation || 0) + particle.rotationSpeed;
+    }
   } else if (particle.type === 'voidParticle') {
     ctx.fillStyle = particle.color;
     ctx.shadowColor = particle.color;
-    ctx.shadowBlur = 12;
+    ctx.shadowBlur = 15;
     ctx.beginPath();
     ctx.arc(particle.x, particle.y, particle.size * alpha, 0, Math.PI * 2);
     ctx.fill();
+    // Inner glow
+    ctx.fillStyle = '#E9D5FF';
+    ctx.beginPath();
+    ctx.arc(particle.x, particle.y, particle.size * alpha * 0.4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  } else if (particle.type === 'voidWisp') {
+    ctx.save();
+    ctx.translate(particle.x, particle.y);
+    ctx.rotate(particle.rotation || 0);
+    ctx.fillStyle = particle.color;
+    ctx.shadowColor = '#A855F7';
+    ctx.shadowBlur = 12;
+    ctx.globalAlpha = alpha * 0.7;
+    // Wisp trail
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(-5, -8, -3, -15);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = particle.color;
+    ctx.stroke();
+    ctx.fillRect(-2, -2, 4, 4);
+    ctx.restore();
     ctx.shadowBlur = 0;
   } else if (particle.type === 'sandParticle') {
     ctx.fillStyle = particle.color;
@@ -726,9 +786,45 @@ export function drawAmbientParticle(ctx, particle, time) {
   } else if (particle.type === 'cosmicDust') {
     ctx.fillStyle = particle.color || '#C4B5FD';
     ctx.globalAlpha = alpha;
+    ctx.shadowColor = particle.color || '#C4B5FD';
+    ctx.shadowBlur = 3;
     ctx.beginPath();
     ctx.arc(particle.x, particle.y, particle.size || 1.5, 0, Math.PI * 2);
     ctx.fill();
+    ctx.shadowBlur = 0;
+  } else if (particle.type === 'pollen') {
+    ctx.save();
+    ctx.translate(particle.x, particle.y);
+    ctx.rotate(particle.rotation || 0);
+    ctx.fillStyle = particle.color;
+    ctx.shadowColor = particle.color;
+    ctx.shadowBlur = 8;
+    ctx.globalAlpha = alpha * 0.6;
+    ctx.fillRect(-1.5, -1.5, 3, 3);
+    ctx.restore();
+    ctx.shadowBlur = 0;
+  } else if (particle.type === 'iceCrystal') {
+    ctx.save();
+    ctx.translate(particle.x, particle.y);
+    ctx.rotate(particle.rotation || 0);
+    ctx.strokeStyle = particle.color;
+    ctx.shadowColor = particle.color;
+    ctx.shadowBlur = 6;
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = alpha;
+    // Star shape
+    ctx.beginPath();
+    for (let i = 0; i < 4; i++) {
+      const angle = (i / 4) * Math.PI * 2;
+      ctx.moveTo(0, 0);
+      ctx.lineTo(Math.cos(angle) * 4, Math.sin(angle) * 4);
+    }
+    ctx.stroke();
+    ctx.restore();
+    ctx.shadowBlur = 0;
+    if (particle.rotationSpeed) {
+      particle.rotation = (particle.rotation || 0) + particle.rotationSpeed;
+    }
   }
   } catch (e) {
   // Silently handle any particle rendering errors

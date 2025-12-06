@@ -5562,14 +5562,31 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       // Draw shield effect around Jeff if active
       if (player.powerUps.SHIELD > 0) {
         const shieldPulse = Math.sin(time * 0.1) * 0.2 + 0.6;
-        ctx.strokeStyle = `rgba(59, 130, 246, ${shieldPulse})`;
+        const px = Math.round(player.x - state.cameraX);
+        const py = Math.round(player.y);
+        
+        // Outer glow
         ctx.shadowColor = '#3B82F6';
-        ctx.shadowBlur = 15;
+        ctx.shadowBlur = 25;
+        ctx.strokeStyle = `rgba(59, 130, 246, ${shieldPulse * 0.4})`;
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.ellipse(
+          px + player.width / 2, 
+          py + player.height / 2, 
+          player.width / 2 + 18, 
+          player.height / 2 + 12, 
+          0, 0, Math.PI * 2
+        );
+        ctx.stroke();
+        
+        // Inner shield
+        ctx.strokeStyle = `rgba(147, 197, 253, ${shieldPulse})`;
         ctx.lineWidth = 3;
         ctx.beginPath();
         ctx.ellipse(
-          player.x - state.cameraX + player.width / 2, 
-          player.y + player.height / 2, 
+          px + player.width / 2, 
+          py + player.height / 2, 
           player.width / 2 + 12, 
           player.height / 2 + 8, 
           0, 0, Math.PI * 2
@@ -5577,71 +5594,123 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
         ctx.stroke();
         ctx.shadowBlur = 0;
         
+        // Hexagonal energy pattern
+        ctx.save();
+        ctx.translate(px + player.width / 2, py + player.height / 2);
+        ctx.rotate(time * 0.02);
+        ctx.strokeStyle = `rgba(96, 165, 250, ${shieldPulse * 0.6})`;
+        ctx.lineWidth = 1;
+        for (let i = 0; i < 6; i++) {
+          const angle = (i / 6) * Math.PI * 2;
+          const r = player.width / 2 + 14;
+          if (i === 0) ctx.moveTo(Math.cos(angle) * r, Math.sin(angle) * r);
+          else ctx.lineTo(Math.cos(angle) * r, Math.sin(angle) * r);
+        }
+        ctx.closePath();
+        ctx.stroke();
+        ctx.restore();
+        
         // Shield health indicators
         for (let i = 0; i < player.powerUps.shieldHealth; i++) {
           ctx.fillStyle = '#3B82F6';
+          ctx.shadowColor = '#3B82F6';
+          ctx.shadowBlur = 8;
           ctx.beginPath();
           ctx.arc(
-            player.x - state.cameraX + player.width / 2 - 10 + i * 10,
-            player.y - 15,
+            px + player.width / 2 - 10 + i * 10,
+            py - 15,
             4, 0, Math.PI * 2
           );
           ctx.fill();
         }
+        ctx.shadowBlur = 0;
       }
       
       // Draw speed boost trail if active
       if (player.powerUps.SPEED > 0 && Math.abs(player.velocityX) > 1) {
-        for (let i = 0; i < 3; i++) {
-          ctx.globalAlpha = 0.3 - i * 0.1;
-          ctx.fillStyle = '#22D3EE';
+        const px = Math.round(player.x - state.cameraX);
+        const py = Math.round(player.y);
+        
+        for (let i = 0; i < 5; i++) {
+          ctx.globalAlpha = 0.4 - i * 0.08;
+          ctx.fillStyle = i % 2 === 0 ? '#22D3EE' : '#67E8F9';
+          ctx.shadowColor = '#22D3EE';
+          ctx.shadowBlur = 15;
           ctx.beginPath();
           ctx.ellipse(
-            player.x - state.cameraX + player.width / 2 - player.velocityX * (i + 1) * 2,
-            player.y + player.height / 2,
-            8 - i * 2,
-            12 - i * 3,
+            px + player.width / 2 - player.velocityX * (i + 1) * 2.5,
+            py + player.height / 2,
+            10 - i * 1.5,
+            14 - i * 2,
             0, 0, Math.PI * 2
           );
           ctx.fill();
         }
         ctx.globalAlpha = 1;
+        ctx.shadowBlur = 0;
       }
       
       // Draw invincibility glow if active
       if (player.powerUps.INVINCIBILITY > 0) {
+        const px = Math.round(player.x - state.cameraX);
+        const py = Math.round(player.y);
         const glowIntensity = Math.sin(time * 0.2) * 0.3 + 0.7;
-        ctx.shadowColor = '#FBBF24';
-        ctx.shadowBlur = 30 * glowIntensity;
-        ctx.fillStyle = `rgba(251, 191, 36, ${glowIntensity * 0.3})`;
-        ctx.beginPath();
-        ctx.ellipse(
-          player.x - state.cameraX + player.width / 2,
-          player.y + player.height / 2,
-          player.width / 2 + 15,
-          player.height / 2 + 10,
-          0, 0, Math.PI * 2
-        );
-        ctx.fill();
+        
+        // Multiple glow layers for star effect
+        for (let layer = 0; layer < 3; layer++) {
+          ctx.shadowColor = '#FBBF24';
+          ctx.shadowBlur = (40 - layer * 10) * glowIntensity;
+          ctx.fillStyle = `rgba(251, 191, 36, ${(0.4 - layer * 0.1) * glowIntensity})`;
+          ctx.beginPath();
+          ctx.ellipse(
+            px + player.width / 2,
+            py + player.height / 2,
+            player.width / 2 + 18 + layer * 5,
+            player.height / 2 + 12 + layer * 3,
+            0, 0, Math.PI * 2
+          );
+          ctx.fill();
+        }
+        
+        // Rotating star particles
+        ctx.save();
+        ctx.translate(px + player.width / 2, py + player.height / 2);
+        ctx.rotate(time * 0.05);
+        ctx.fillStyle = '#FEF3C7';
+        for (let i = 0; i < 8; i++) {
+          const angle = (i / 8) * Math.PI * 2;
+          const r = 35;
+          ctx.beginPath();
+          ctx.arc(Math.cos(angle) * r, Math.sin(angle) * r, 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
         ctx.shadowBlur = 0;
       }
       
       // Draw dash effect
       if (player.isDashing) {
-        for (let i = 0; i < 5; i++) {
-          ctx.globalAlpha = 0.5 - i * 0.1;
-          ctx.fillStyle = '#67E8F9';
+        const px = Math.round(player.x - state.cameraX);
+        const py = Math.round(player.y);
+        
+        // Motion blur streaks
+        for (let i = 0; i < 8; i++) {
+          ctx.globalAlpha = 0.6 - i * 0.07;
+          ctx.fillStyle = i % 2 === 0 ? '#67E8F9' : '#22D3EE';
+          ctx.shadowColor = '#22D3EE';
+          ctx.shadowBlur = 10;
           ctx.beginPath();
           ctx.ellipse(
-            player.x - state.cameraX + player.width / 2 - player.dashDirection * (i + 1) * 12,
-            player.y + player.height / 2,
-            6,
-            player.height / 3,
+            px + player.width / 2 - player.dashDirection * (i + 1) * 10,
+            py + player.height / 2,
+            8 - i * 0.8,
+            player.height / 2.5,
             0, 0, Math.PI * 2
           );
           ctx.fill();
         }
         ctx.globalAlpha = 1;
+        ctx.shadowBlur = 0;
       }
       
       // Draw reflect shield effect

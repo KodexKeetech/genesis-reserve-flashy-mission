@@ -81,6 +81,14 @@ function drawStars(ctx, time, cameraX, isVoid) {
 }
 
 function drawForestBackground(ctx, time, cameraX) {
+  // Mystical fog layers
+  const fog1 = ctx.createLinearGradient(0, 300, 0, 500);
+  fog1.addColorStop(0, 'rgba(20, 60, 40, 0)');
+  fog1.addColorStop(0.5, 'rgba(20, 60, 40, 0.15)');
+  fog1.addColorStop(1, 'rgba(20, 60, 40, 0.3)');
+  ctx.fillStyle = fog1;
+  ctx.fillRect(0, 300, 800, 200);
+  
   // Far mountains (slowest parallax)
   ctx.fillStyle = '#0a1f14';
   for (let i = 0; i < 4; i++) {
@@ -129,14 +137,28 @@ function drawMountainShape(ctx, x, y, width, height) {
 }
 
 function drawVolcanoBackground(ctx, time, cameraX) {
-  // Pulsing lava glow at bottom
-  const glowPulse = Math.sin(time * 0.05) * 0.15 + 0.5;
-  const lavaGlow = ctx.createLinearGradient(0, 450, 0, 600);
+  // Pulsing lava glow at bottom (enhanced)
+  const glowPulse = Math.sin(time * 0.05) * 0.15 + 0.6;
+  const lavaGlow = ctx.createLinearGradient(0, 400, 0, 600);
   lavaGlow.addColorStop(0, 'rgba(234, 88, 12, 0)');
-  lavaGlow.addColorStop(0.5, `rgba(234, 88, 12, ${glowPulse * 0.4})`);
-  lavaGlow.addColorStop(1, `rgba(234, 88, 12, ${glowPulse})`);
+  lavaGlow.addColorStop(0.3, `rgba(249, 115, 22, ${glowPulse * 0.25})`);
+  lavaGlow.addColorStop(0.6, `rgba(234, 88, 12, ${glowPulse * 0.5})`);
+  lavaGlow.addColorStop(1, `rgba(220, 38, 38, ${glowPulse * 0.8})`);
   ctx.fillStyle = lavaGlow;
-  ctx.fillRect(0, 450, 800, 150);
+  ctx.fillRect(0, 400, 800, 200);
+  
+  // Heat shimmer lines
+  ctx.strokeStyle = 'rgba(251, 191, 36, 0.1)';
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 6; i++) {
+    const shimmerY = 420 + i * 30;
+    const offset = Math.sin(time * 0.08 + i) * 10;
+    ctx.beginPath();
+    ctx.moveTo(0, shimmerY);
+    ctx.quadraticCurveTo(200 + offset, shimmerY + 5, 400, shimmerY);
+    ctx.quadraticCurveTo(600 - offset, shimmerY - 5, 800, shimmerY);
+    ctx.stroke();
+  }
 
   // Far volcanic mountains
   ctx.fillStyle = '#1c1917';
@@ -168,6 +190,27 @@ function drawVolcanoBackground(ctx, time, cameraX) {
 }
 
 function drawIceBackground(ctx, time, cameraX) {
+  // Aurora borealis effect
+  for (let i = 0; i < 3; i++) {
+    const auroraY = 80 + i * 50;
+    const wave = Math.sin(time * 0.03 + i * 2) * 20;
+    const auroraGrad = ctx.createLinearGradient(0, auroraY - 30, 0, auroraY + 50);
+    const colors = ['rgba(34, 211, 238, 0.2)', 'rgba(167, 139, 250, 0.15)', 'rgba(110, 231, 183, 0.18)'];
+    auroraGrad.addColorStop(0, 'transparent');
+    auroraGrad.addColorStop(0.5, colors[i % 3]);
+    auroraGrad.addColorStop(1, 'transparent');
+    
+    ctx.fillStyle = auroraGrad;
+    ctx.beginPath();
+    ctx.moveTo(0, auroraY + wave);
+    for (let x = 0; x <= 800; x += 20) {
+      ctx.lineTo(x, auroraY + Math.sin(x * 0.015 + time * 0.04 + i) * 25 + wave);
+    }
+    ctx.lineTo(800, auroraY + 80);
+    ctx.lineTo(0, auroraY + 80);
+    ctx.fill();
+  }
+  
   // Far ice mountains with snow caps
   ctx.fillStyle = '#bae6fd';
   for (let i = 0; i < 3; i++) {
@@ -229,11 +272,21 @@ function drawIceCrystalShape(ctx, x, y, size) {
 }
 
 function drawSkyBackground(ctx, time, cameraX) {
+  // Sun glow
+  const sunX = 700;
+  const sunY = 100;
+  const sunGlow = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, 150);
+  sunGlow.addColorStop(0, 'rgba(251, 191, 36, 0.2)');
+  sunGlow.addColorStop(0.4, 'rgba(251, 191, 36, 0.08)');
+  sunGlow.addColorStop(1, 'rgba(251, 191, 36, 0)');
+  ctx.fillStyle = sunGlow;
+  ctx.fillRect(550, 0, 250, 250);
+  
   // Fluffy clouds at multiple layers
   for (let layer = 0; layer < 3; layer++) {
     const parallax = 0.03 + layer * 0.04;
     const cloudY = 80 + layer * 100;
-    const cloudAlpha = 0.9 - layer * 0.2;
+    const cloudAlpha = 0.95 - layer * 0.2;
     
     for (let i = 0; i < 6; i++) {
       const cx = Math.round(((i * 180 + layer * 50 - cameraX * parallax) % 1100) - 150);
@@ -361,12 +414,20 @@ function drawRuinsBackground(ctx, time, cameraX) {
 }
 
 function drawCrystalBackground(ctx, time, cameraX) {
+  // Ethereal glow
+  const glowGrad = ctx.createRadialGradient(400, 250, 0, 400, 250, 400);
+  glowGrad.addColorStop(0, 'rgba(232, 121, 249, 0.08)');
+  glowGrad.addColorStop(0.5, 'rgba(192, 132, 252, 0.04)');
+  glowGrad.addColorStop(1, 'rgba(168, 85, 247, 0)');
+  ctx.fillStyle = glowGrad;
+  ctx.fillRect(0, 0, 800, 600);
+  
   // Crystal formations
   for (let i = 0; i < 8; i++) {
     const cx = Math.round(((i * 150 - cameraX * 0.1) % 1300) - 100);
     const ch = 100 + (i % 3) * 60;
     const hue = 270 + (i % 4) * 20;
-    const pulse = Math.sin(time * 0.05 + i) * 0.2 + 0.8;
+    const pulse = Math.sin(time * 0.05 + i) * 0.3 + 0.8;
     
     ctx.fillStyle = `hsla(${hue}, 80%, 60%, ${pulse * 0.6})`;
     ctx.shadowColor = `hsl(${hue}, 80%, 70%)`;
