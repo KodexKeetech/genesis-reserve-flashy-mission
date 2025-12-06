@@ -115,25 +115,6 @@ function drawForestBackground(ctx, time, cameraX) {
     ctx.closePath();
     ctx.fill();
   }
-
-  // Fireflies with glow
-  for (let i = 0; i < 20; i++) {
-    const ffX = ((i * 89 - cameraX * 0.1) % 900 + 900) % 900 - 50 + Math.sin(time * 0.02 + i) * 40;
-    const ffY = 200 + Math.sin(time * 0.03 + i * 2) * 120;
-    const glow = 0.4 + Math.sin(time * 0.12 + i * 1.5) * 0.4;
-    
-    // Glow
-    ctx.fillStyle = `rgba(251, 191, 36, ${glow * 0.3})`;
-    ctx.beginPath();
-    ctx.arc(ffX, ffY, 8, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Core
-    ctx.fillStyle = `rgba(254, 240, 138, ${glow})`;
-    ctx.beginPath();
-    ctx.arc(ffX, ffY, 2, 0, Math.PI * 2);
-    ctx.fill();
-  }
 }
 
 function drawMountainShape(ctx, x, y, width, height) {
@@ -182,28 +163,6 @@ function drawVolcanoBackground(ctx, time, cameraX) {
     ctx.lineTo(rx + 110, 390);
     ctx.lineTo(rx + 150, 500);
     ctx.closePath();
-    ctx.fill();
-  }
-
-  // Embers rising with trails
-  for (let i = 0; i < 30; i++) {
-    const emberX = ((i * 67 - cameraX * 0.1) % 900 + 900) % 900 - 50;
-    const emberY = 580 - (time * 0.8 + i * 25) % 500;
-    const emberSize = 1 + (i % 3);
-    const glow = 0.5 + Math.sin(time * 0.15 + i) * 0.3;
-    
-    // Trail
-    ctx.fillStyle = `rgba(249, 115, 22, ${glow * 0.3})`;
-    for (let t = 1; t <= 3; t++) {
-      ctx.beginPath();
-      ctx.arc(emberX, emberY + t * 8, emberSize * (1 - t * 0.2), 0, Math.PI * 2);
-      ctx.fill();
-    }
-    
-    // Core
-    ctx.fillStyle = `rgba(254, 215, 170, ${glow})`;
-    ctx.beginPath();
-    ctx.arc(emberX, emberY, emberSize, 0, Math.PI * 2);
     ctx.fill();
   }
 }
@@ -256,23 +215,6 @@ function drawIceBackground(ctx, time, cameraX) {
     drawIceCrystalShape(ctx, cx, 450, 25 + (i % 3) * 10);
     ctx.globalAlpha = 1;
   }
-
-  // Snow particles - multiple layers
-  for (let layer = 0; layer < 2; layer++) {
-    const parallax = 0.1 + layer * 0.15;
-    const speed = 0.4 + layer * 0.3;
-    for (let i = 0; i < 25; i++) {
-      const snowX = ((i * 53 + layer * 100 - cameraX * parallax) % 900 + 900) % 900 - 50 + Math.sin(time * 0.015 + i) * 30;
-      const snowY = (i * 47 + time * speed) % 650 - 50;
-      const snowSize = 1 + (i % 3) - layer * 0.5;
-      ctx.globalAlpha = (0.6 + (i % 3) * 0.1) - layer * 0.2;
-      ctx.fillStyle = '#fff';
-      ctx.beginPath();
-      ctx.arc(snowX, snowY, Math.max(0.5, snowSize), 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }
-  ctx.globalAlpha = 1;
 }
 
 function drawIceCrystalShape(ctx, x, y, size) {
@@ -408,16 +350,6 @@ function drawRuinsBackground(ctx, time, cameraX) {
     ctx.globalAlpha = 1;
   }
   
-  // Sand particles
-  for (let i = 0; i < 25; i++) {
-    const sx = ((i * 50 - cameraX * 0.1 + time * 0.8) % 900) - 50;
-    const sy = 400 + (i % 5) * 30 + Math.sin(time * 0.05 + i) * 10;
-    ctx.fillStyle = `rgba(214, 211, 209, ${0.4 + (i % 3) * 0.2})`;
-    ctx.beginPath();
-    ctx.arc(sx, sy, 1.5, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  
   // Hieroglyphics on pillars
   ctx.fillStyle = '#78350F';
   for (let i = 0; i < 4; i++) {
@@ -457,6 +389,7 @@ function drawCrystalBackground(ctx, time, cameraX) {
     ctx.lineTo(cx + 75, 500 - ch * 0.5);
     ctx.lineTo(cx + 70, 500);
     ctx.fill();
+    
     ctx.shadowBlur = 0;
   }
   
@@ -484,27 +417,6 @@ function drawCrystalBackground(ctx, time, cameraX) {
       ctx.stroke();
       ctx.globalAlpha = 1;
     }
-  }
-  
-  // Floating crystal shards
-  for (let i = 0; i < 20; i++) {
-    const sx = ((i * 60 - cameraX * 0.2) % 950 + 950) % 950 - 75;
-    const sy = 80 + Math.sin(time * 0.03 + i) * 30 + (i % 5) * 80;
-    const rot = time * 0.02 + i;
-    const hue = 280 + (i % 5) * 15;
-    
-    ctx.save();
-    ctx.translate(sx, sy);
-    ctx.rotate(rot);
-    ctx.fillStyle = `hsla(${hue}, 70%, 65%, 0.6)`;
-    ctx.beginPath();
-    ctx.moveTo(0, -12);
-    ctx.lineTo(6, 0);
-    ctx.lineTo(0, 12);
-    ctx.lineTo(-6, 0);
-    ctx.closePath();
-    ctx.fill();
-    ctx.restore();
   }
   
   // Ambient glow
@@ -567,18 +479,6 @@ function drawTechnoBackground(ctx, time, cameraX) {
     }
   }
   
-  // Floating data particles
-  for (let i = 0; i < 30; i++) {
-    const dx = ((i * 40 - cameraX * 0.15 + time * 0.5) % 900) - 50;
-    const dy = (i * 30 + time * 0.3) % 600;
-    const size = i % 2 === 0 ? 3 : 2;
-    
-    ctx.fillStyle = i % 3 === 0 ? '#22D3EE' : '#10B981';
-    ctx.globalAlpha = 0.6;
-    ctx.fillRect(dx, dy, size, size);
-    ctx.globalAlpha = 1;
-  }
-  
   // Holographic displays
   for (let i = 0; i < 3; i++) {
     const hx = ((i * 300 + 100 - cameraX * 0.1) % 1000) - 100;
@@ -604,20 +504,6 @@ function drawArcaneBackground(ctx, time, cameraX) {
   gradient.addColorStop(1, '#4338CA');
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, 800, 600);
-  
-  // Magical stars with varying sizes
-  ctx.fillStyle = '#C4B5FD';
-  for (let i = 0; i < 80; i++) {
-    const x = (i * 137 + time * 0.02 - cameraX * 0.05) % 850 - 25;
-    const y = (i * 89) % 400;
-    const twinkle = Math.sin(time * 0.05 + i) * 0.5 + 0.5;
-    const size = (i % 3) + 1;
-    ctx.globalAlpha = twinkle * 0.8;
-    ctx.beginPath();
-    ctx.arc(x, y, size, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.globalAlpha = 1;
   
   // Floating arcane runes in background
   for (let i = 0; i < 8; i++) {
@@ -954,20 +840,6 @@ function drawHeartOfDarknessBackground(ctx, time, cameraX) {
     ctx.stroke();
   }
   
-  // Shadow particles being pulled in
-  for (let i = 0; i < 30; i++) {
-    const angle = (i / 30) * Math.PI * 2 + time * 0.02;
-    const dist = 100 + Math.sin(time * 0.1 + i) * 50 + (i % 5) * 30;
-    const px = vortexX - cameraX * 0.05 + Math.cos(angle) * dist;
-    const py = vortexY + Math.sin(angle) * dist * 0.6;
-    const size = 2 + (i % 3);
-    
-    ctx.fillStyle = `rgba(192, 132, 252, ${0.3 + Math.sin(time * 0.15 + i) * 0.2})`;
-    ctx.beginPath();
-    ctx.arc(px, py, size, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  
   // Void rifts
   for (let i = 0; i < 4; i++) {
     const rx = ((i * 250 - cameraX * 0.15) % 1000) - 100;
@@ -1114,25 +986,6 @@ function drawForbiddenLibraryBackground(ctx, time, cameraX) {
     ctx.shadowBlur = 0;
   }
   
-  // Floating pages
-  for (let i = 0; i < 15; i++) {
-    const px = ((i * 80 - cameraX * 0.2 + time * 0.5) % 900 + 900) % 900 - 50;
-    const py = 100 + Math.sin(time * 0.04 + i * 0.7) * 80 + (i % 3) * 100;
-    const rot = Math.sin(time * 0.03 + i) * 0.5;
-    
-    ctx.save();
-    ctx.translate(px, py);
-    ctx.rotate(rot);
-    ctx.fillStyle = `rgba(254, 252, 232, ${0.5 + Math.sin(time * 0.1 + i) * 0.2})`;
-    ctx.fillRect(-10, -15, 20, 30);
-    // Text lines
-    ctx.fillStyle = 'rgba(88, 28, 135, 0.3)';
-    for (let line = 0; line < 4; line++) {
-      ctx.fillRect(-7, -12 + line * 7, 14, 2);
-    }
-    ctx.restore();
-  }
-  
   // Mystical fog
   const fogGrad = ctx.createLinearGradient(0, 450, 0, 600);
   fogGrad.addColorStop(0, 'rgba(99, 102, 241, 0)');
@@ -1262,18 +1115,6 @@ function drawSpaceBackground(ctx, time, cameraX) {
     ctx.stroke();
     ctx.globalAlpha = 1;
   }
-  
-  // Floating cosmic dust
-  for (let i = 0; i < 20; i++) {
-    const dustX = ((i * 67 - cameraX * 0.08 + time * 0.1) % 900 + 900) % 900 - 50;
-    const dustY = (i * 43 + Math.sin(time * 0.02 + i) * 30) % 600;
-    const dustAlpha = 0.2 + Math.sin(time * 0.05 + i * 2) * 0.1;
-    
-    ctx.fillStyle = `rgba(196, 181, 253, ${dustAlpha})`;
-    ctx.beginPath();
-    ctx.arc(dustX, dustY, 1.5, 0, Math.PI * 2);
-    ctx.fill();
-  }
 }
 
 function drawVoidBackground(ctx, time, cameraX) {
@@ -1325,27 +1166,6 @@ function drawVoidBackground(ctx, time, cameraX) {
     ctx.strokeStyle = `rgba(192, 132, 252, ${pulse})`;
     ctx.lineWidth = 2;
     ctx.stroke();
-  }
-
-  // Floating void particles with trails
-  for (let i = 0; i < 35; i++) {
-    const baseX = ((i * 73 - cameraX * 0.15) % 950 + 950) % 950 - 75;
-    const voidX = baseX + Math.sin(time * 0.025 + i * 0.5) * 60;
-    const voidY = (i * 61 + Math.cos(time * 0.02 + i * 0.3) * 50) % 550;
-    const voidSize = 2 + Math.sin(time * 0.12 + i) * 1.5;
-    const glow = 0.4 + Math.sin(time * 0.1 + i * 2) * 0.3;
-    
-    // Trail
-    ctx.fillStyle = `rgba(192, 132, 252, ${glow * 0.2})`;
-    ctx.beginPath();
-    ctx.arc(voidX - 6, voidY, voidSize * 0.6, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Core
-    ctx.fillStyle = `rgba(192, 132, 252, ${glow})`;
-    ctx.beginPath();
-    ctx.arc(voidX, voidY, voidSize, 0, Math.PI * 2);
-    ctx.fill();
   }
 }
 

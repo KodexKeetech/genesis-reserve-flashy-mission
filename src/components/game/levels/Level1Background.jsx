@@ -1,3 +1,4 @@
+
 // Level 1: Enchanted Forest Background Renderer
 // Creates a layered, atmospheric forest scene
 
@@ -31,9 +32,6 @@ export function drawLevel1Background(ctx, cameraX, canvasWidth, canvasHeight, ti
   
   // Ground fog
   drawGroundFog(ctx, cameraX * 0.8, canvasWidth, canvasHeight, time);
-  
-  // Floating particles (spores/fireflies)
-  drawFloatingParticles(ctx, cameraX, canvasWidth, canvasHeight, time);
 }
 
 function drawForestStars(ctx, cameraX, time) {
@@ -263,49 +261,6 @@ function drawGroundFog(ctx, offsetX, canvasWidth, canvasHeight, time) {
     
     ctx.fillStyle = fogGradient;
     ctx.fillRect(fogX, fogY, fogWidth, fogHeight);
-  }
-}
-
-function drawFloatingParticles(ctx, cameraX, canvasWidth, canvasHeight, time) {
-  // Fireflies
-  for (let i = 0; i < 25; i++) {
-    const seed = i * 127.1;
-    const baseX = (seed % 800);
-    const baseY = 200 + (seed * 0.7 % 250);
-    
-    const floatX = baseX + Math.sin(time * 0.02 + seed) * 30 - (cameraX * 0.6) % canvasWidth;
-    const floatY = baseY + Math.cos(time * 0.015 + seed * 0.5) * 20;
-    const x = ((floatX % canvasWidth) + canvasWidth) % canvasWidth;
-    
-    // Glow pulse
-    const pulse = Math.sin(time * 0.08 + seed) * 0.5 + 0.5;
-    const size = 2 + pulse * 2;
-    
-    // Outer glow
-    const glowGradient = ctx.createRadialGradient(x, floatY, 0, x, floatY, size * 4);
-    glowGradient.addColorStop(0, `rgba(180, 255, 150, ${0.4 * pulse})`);
-    glowGradient.addColorStop(0.5, `rgba(150, 230, 120, ${0.2 * pulse})`);
-    glowGradient.addColorStop(1, 'rgba(100, 200, 80, 0)');
-    ctx.fillStyle = glowGradient;
-    ctx.fillRect(x - size * 4, floatY - size * 4, size * 8, size * 8);
-    
-    // Core
-    ctx.fillStyle = `rgba(220, 255, 180, ${0.8 + pulse * 0.2})`;
-    ctx.beginPath();
-    ctx.arc(x, floatY, size * 0.5, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  
-  // Floating spores
-  ctx.fillStyle = 'rgba(200, 220, 180, 0.3)';
-  for (let i = 0; i < 15; i++) {
-    const seed = i * 89.3;
-    const x = ((seed % 800) + Math.sin(time * 0.01 + seed) * 20 - cameraX * 0.4) % canvasWidth;
-    const y = 150 + (seed * 1.3 % 300) + Math.sin(time * 0.008 + seed * 0.7) * 30;
-    
-    ctx.beginPath();
-    ctx.arc(((x % canvasWidth) + canvasWidth) % canvasWidth, y, 1.5, 0, Math.PI * 2);
-    ctx.fill();
   }
 }
 

@@ -495,20 +495,6 @@ export function createAmbientParticle(particles, biomeKey, cameraX) {
   const y = spawnY;
   
   if (biomeKey === 'forest') {
-    // Fireflies
-    if (Math.random() < 0.3) {
-      particles.push({
-        x,
-        y,
-        velocityX: (Math.random() - 0.5) * 0.3,
-        velocityY: (Math.random() - 0.5) * 0.3,
-        life: 200 + Math.random() * 200,
-        color: '#FBBF24',
-        size: 2 + Math.random() * 2,
-        type: 'firefly',
-        flickerRate: 0.1 + Math.random() * 0.1
-      });
-    }
     // Falling leaves
     particles.push({
       x,
@@ -522,8 +508,21 @@ export function createAmbientParticle(particles, biomeKey, cameraX) {
       rotation: Math.random() * Math.PI * 2,
       rotationSpeed: (Math.random() - 0.5) * 0.08
     });
+    // Fireflies (less frequent, separate effect)
+    if (Math.random() < 0.1) { // Reduced spawn rate
+      particles.push({
+        x: x + (Math.random() - 0.5) * 50,
+        y: y + (Math.random() - 0.5) * 50,
+        velocityX: (Math.random() - 0.5) * 0.3,
+        velocityY: (Math.random() - 0.5) * 0.3,
+        life: 200 + Math.random() * 200,
+        color: '#FBBF24',
+        size: 2 + Math.random() * 2,
+        type: 'firefly',
+        flickerRate: 0.1 + Math.random() * 0.1
+      });
+    }
   } else if (biomeKey === 'volcano') {
-    // Embers floating up
     particles.push({
       x,
       y: 550 + Math.random() * 50,
@@ -535,7 +534,6 @@ export function createAmbientParticle(particles, biomeKey, cameraX) {
       type: 'ember'
     });
   } else if (biomeKey === 'ice') {
-    // Snow particles
     particles.push({
       x,
       y: -10,
@@ -547,7 +545,6 @@ export function createAmbientParticle(particles, biomeKey, cameraX) {
       type: 'snow'
     });
   } else if (biomeKey === 'void') {
-    // Void particles
     particles.push({
       x,
       y,
@@ -557,6 +554,78 @@ export function createAmbientParticle(particles, biomeKey, cameraX) {
       color: Math.random() > 0.5 ? '#A855F7' : '#7C3AED',
       size: 2 + Math.random() * 3,
       type: 'voidParticle'
+    });
+  } else if (biomeKey === 'ruins') {
+    particles.push({
+      x,
+      y: 400 + Math.random() * 100,
+      velocityX: (Math.random() - 0.5) * 0.5,
+      velocityY: 0,
+      life: 200 + Math.random() * 100,
+      color: `rgba(214, 211, 209, ${0.4 + Math.random() * 0.3})`,
+      size: 1 + Math.random() * 1.5,
+      type: 'sandParticle'
+    });
+  } else if (biomeKey === 'crystal') {
+    const hue = 270 + Math.random() * 60;
+    particles.push({
+      x,
+      y,
+      velocityX: (Math.random() - 0.5) * 0.3,
+      velocityY: -0.2 - Math.random() * 0.5,
+      life: 250 + Math.random() * 100,
+      color: `hsla(${hue}, 70%, 75%, 0.7)`,
+      size: 2 + Math.random() * 2,
+      type: 'crystalParticle',
+      rotation: Math.random() * Math.PI * 2,
+      rotationSpeed: (Math.random() - 0.5) * 0.03
+    });
+  } else if (biomeKey === 'techno') {
+    particles.push({
+      x,
+      y: Math.random() * 600,
+      velocityX: (Math.random() - 0.5) * 0.5,
+      velocityY: (Math.random() - 0.5) * 0.5,
+      life: 150 + Math.random() * 50,
+      color: Math.random() > 0.5 ? '#22D3EE' : '#10B981',
+      size: 2,
+      type: 'dataParticle'
+    });
+  } else if (biomeKey === 'arcane') {
+    const hue = 240 + Math.random() * 60;
+    particles.push({
+      x,
+      y,
+      velocityX: (Math.random() - 0.5) * 0.3,
+      velocityY: -0.2 - Math.random() * 0.5,
+      life: 200 + Math.random() * 100,
+      color: `hsla(${hue}, 80%, 70%, 0.8)`,
+      size: 2 + Math.random() * 2,
+      type: 'arcaneParticle',
+      rotation: Math.random() * Math.PI * 2,
+      rotationSpeed: (Math.random() - 0.5) * 0.04
+    });
+  } else if (biomeKey === 'sky') {
+    particles.push({
+      x,
+      y,
+      velocityX: -0.5 - Math.random() * 0.5,
+      velocityY: 0,
+      life: 300 + Math.random() * 100,
+      color: `rgba(255, 255, 255, ${0.4 + Math.random() * 0.4})`,
+      size: 5 + Math.random() * 5,
+      type: 'cloudParticle'
+    });
+  } else if (biomeKey === 'space') {
+    particles.push({
+      x,
+      y: Math.random() * 600,
+      velocityX: -0.05 - Math.random() * 0.1,
+      velocityY: (Math.random() - 0.5) * 0.05,
+      life: 400 + Math.random() * 200,
+      color: `rgba(196, 181, 253, ${0.2 + Math.random() * 0.2})`,
+      size: 1.5 + Math.random() * 1,
+      type: 'cosmicDust'
     });
   }
 }
@@ -609,6 +678,54 @@ export function drawAmbientParticle(ctx, particle, time) {
     ctx.arc(particle.x, particle.y, particle.size * alpha, 0, Math.PI * 2);
     ctx.fill();
     ctx.shadowBlur = 0;
+  } else if (particle.type === 'sandParticle') {
+    ctx.fillStyle = particle.color;
+    ctx.beginPath();
+    ctx.fillRect(particle.x, particle.y, particle.size, particle.size);
+  } else if (particle.type === 'crystalParticle') {
+    ctx.save();
+    ctx.translate(particle.x, particle.y);
+    ctx.rotate(particle.rotation);
+    ctx.fillStyle = particle.color;
+    ctx.shadowColor = particle.color;
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.moveTo(0, -particle.size);
+    ctx.lineTo(particle.size * 0.6, 0);
+    ctx.lineTo(0, particle.size);
+    ctx.lineTo(-particle.size * 0.6, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+    ctx.shadowBlur = 0;
+  } else if (particle.type === 'dataParticle') {
+    ctx.fillStyle = particle.color;
+    ctx.globalAlpha = alpha * 0.8;
+    ctx.fillRect(particle.x, particle.y, particle.size, particle.size);
+  } else if (particle.type === 'arcaneParticle') {
+    ctx.save();
+    ctx.translate(particle.x, particle.y);
+    ctx.rotate(particle.rotation);
+    ctx.fillStyle = particle.color;
+    ctx.shadowColor = particle.color;
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.arc(0, 0, particle.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    ctx.shadowBlur = 0;
+  } else if (particle.type === 'cloudParticle') {
+    ctx.fillStyle = particle.color;
+    ctx.globalAlpha = alpha * 0.5;
+    ctx.beginPath();
+    ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (particle.type === 'cosmicDust') {
+    ctx.fillStyle = particle.color;
+    ctx.globalAlpha = alpha;
+    ctx.beginPath();
+    ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+    ctx.fill();
   }
   
   ctx.globalAlpha = 1;
