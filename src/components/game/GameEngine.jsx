@@ -378,13 +378,21 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           
           state.goalX = 2000;
 
-          // Just 2 easy enemies
+          // Just 3 easy enemies
           state.enemies.push({
             x: 650, y: 460, width: 40, height: 40,
             velocityX: 0.8, velocityY: 0, type: 'slime',
             health: 1, maxHealth: 1,
             patrolStart: 600, patrolEnd: 730,
             frozen: 0, facingRight: true
+          });
+          state.enemies.push({
+            x: 1300, y: 200, width: 40, height: 40,
+            velocityX: 1.2, velocityY: 0, type: 'bat',
+            health: 1, maxHealth: 1,
+            patrolStart: 1200, patrolEnd: 1600,
+            frozen: 0, facingRight: true,
+            originalY: 200
           });
           state.enemies.push({
             x: 900, y: 460, width: 40, height: 40,
