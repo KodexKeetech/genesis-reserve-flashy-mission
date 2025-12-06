@@ -2070,10 +2070,13 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
 
       // Back arm (dark glove)
       ctx.save();
-      ctx.translate(centerX - 13, y + 22 - bodyBob + breathe);
-      ctx.rotate((-armSwing * Math.PI) / 180);
+      ctx.translate(ensureFinite(centerX - 13), ensureFinite(y + 22 - bodyBob + breathe));
+      ctx.rotate(ensureFinite((-armSwing * Math.PI) / 180, 0));
       // Coat sleeve with gradient
-      const sleeveGrad = ctx.createLinearGradient(-5, 0, 5, 0);
+      const sleeveGrad = ctx.createLinearGradient(
+        ensureFinite(-5), ensureFinite(0), 
+        ensureFinite(5), ensureFinite(0)
+      );
       sleeveGrad.addColorStop(0, '#152A45');
       sleeveGrad.addColorStop(0.5, '#1E3A5F');
       sleeveGrad.addColorStop(1, '#162D47');
@@ -2256,7 +2259,10 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       ctx.ellipse(centerX, y - 3 - bodyBob + breathe, 24, 6, 0, 0, Math.PI * 2);
       ctx.fill();
       // Hat brim main
-      const brimGrad = ctx.createLinearGradient(centerX - 22, y - 5, centerX + 22, y - 5);
+      const brimGrad = ctx.createLinearGradient(
+        ensureFinite(centerX - 22), ensureFinite(y - 5), 
+        ensureFinite(centerX + 22), ensureFinite(y - 5)
+      );
       brimGrad.addColorStop(0, '#3D4852');
       brimGrad.addColorStop(0.5, '#5A6570');
       brimGrad.addColorStop(1, '#3D4852');
