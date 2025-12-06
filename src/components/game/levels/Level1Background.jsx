@@ -1,8 +1,7 @@
-
 // Level 1: Enchanted Forest Background Renderer
 // Creates a layered, atmospheric forest scene
 
-export function drawNightForestBackground(ctx, cameraX, canvasWidth, canvasHeight, time) {
+export function drawLevel1Background(ctx, cameraX, canvasWidth, canvasHeight, time) {
   // Sky gradient - deep forest night with hints of magic
   const skyGradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
   skyGradient.addColorStop(0, '#0A1628');
