@@ -2850,6 +2850,120 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
           }
           enemy.facingRight = dx > 0;
         }
+        // COSMIC BEYOND ENEMIES - Space-themed unique behaviors
+        else if (enemy.type === 'starling') {
+          // Starling - Orbits in circular pattern, shoots star projectiles
+          if (!enemy.orbitAngle) enemy.orbitAngle = Math.random() * Math.PI * 2;
+          if (!enemy.orbitRadius) enemy.orbitRadius = 100;
+          if (!enemy.shootCooldown) enemy.shootCooldown = 0;
+          
+          enemy.orbitAngle += 0.04 + (enemy.isEnraged ? 0.02 : 0);
+          enemy.shootCooldown--;
+          
+          // Orbit around original position
+          enemy.x = enemy.patrolStart + 80 + Math.cos(enemy.orbitAngle) * enemy.orbitRadius;
+          enemy.y = enemy.originalY + Math.sin(enemy.orbitAngle) * (enemy.orbitRadius * 0.7);
+          
+          // Shoot star projectiles at player
+          const distToPlayer = Math.sqrt(Math.pow(player.x - enemy.x, 2) + Math.pow(player.y - enemy.y, 2));
+          if (distToPlayer < 300 && enemy.shootCooldown <= 0) {
+            const dx = player.x - enemy.x;
+            const dy = player.y - enemy.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            state.enemyProjectiles.push({
+              x: enemy.x + 20,
+              y: enemy.y + 20,
+              velocityX: (dx / dist) * 4,
+              velocityY: (dy / dist) * 4,
+              width: 12,
+              height: 12,
+              life: 100,
+              type: 'starBolt'
+            });
+            enemy.shootCooldown = enemy.isEnraged ? 60 : 90;
+          }
+          enemy.facingRight = player.x > enemy.x;
+        }
+        else if (enemy.type === 'cosmicDrifter') {
+          // Cosmic Drifter - Slow floating, pulses gravity waves
+          if (!enemy.pulseTimer) enemy.pulseTimer = 0;
+          enemy.pulseTimer++;
+          
+          // Gentle floating
+          enemy.y = enemy.originalY + Math.sin(time * 0.06) * 20;
+          
+          // Slow drift toward player
+          const dir = player.x > enemy.x ? 1 : -1;
+          enemy.x += dir * 0.6;
+          
+          // Pulse gravity wave that slows player projectiles nearby
+          if (enemy.pulseTimer % 120 === 0) {
+            for (const proj of projectiles) {
+              const dx = proj.x - enemy.x;
+              const dy = proj.y - enemy.y;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              if (dist < 100) {
+                proj.velocityX *= 0.5;
+                proj.velocityY *= 0.5;
+              }
+            }
+            // Pulse particles
+            for (let i = 0; i < 12; i++) {
+              const angle = (i / 12) * Math.PI * 2;
+              particles.push({
+                x: enemy.x + 20,
+                y: enemy.y + 20,
+                velocityX: Math.cos(angle) * 3,
+                velocityY: Math.sin(angle) * 3,
+                life: 25,
+                color: '#8B5CF6'
+              });
+            }
+          }
+          enemy.facingRight = dir > 0;
+        }
+        else if (enemy.type === 'nebulaSerpent') {
+          // Nebula Serpent - Weaving sine wave movement
+          if (!enemy.wavePhase) enemy.wavePhase = Math.random() * Math.PI * 2;
+          enemy.wavePhase += 0.08;
+          
+          // Move horizontally
+          enemy.x += enemy.velocityX * 0.8;
+          
+          // Sine wave vertical movement
+          enemy.y = enemy.originalY + Math.sin(enemy.wavePhase) * 50;
+          
+          // Reverse at edges
+          if (enemy.x < enemy.patrolStart || enemy.x > enemy.patrolEnd) {
+            enemy.velocityX *= -1;
+          }
+          
+          enemy.facingRight = enemy.velocityX > 0;
+        }
+        else if (enemy.type === 'voidOrb') {
+          // Void Orb - Pulses, creates mini void zones
+          if (!enemy.voidPulse) enemy.voidPulse = 0;
+          if (!enemy.zoneCooldown) enemy.zoneCooldown = 0;
+          enemy.voidPulse += 0.1;
+          enemy.zoneCooldown--;
+          
+          // Hover in place with pulsing movement
+          enemy.y = enemy.originalY + Math.sin(enemy.voidPulse) * 8;
+          
+          // Occasionally create mini void zone near player
+          if (enemy.zoneCooldown <= 0 && Math.abs(player.x - enemy.x) < 200) {
+            state.hazards.push({
+              x: player.x - 20,
+              y: player.y,
+              width: 40,
+              height: 40,
+              life: 90,
+              damage: 15,
+              type: 'miniVoid'
+            });
+            enemy.zoneCooldown = enemy.isEnraged ? 100 : 150;
+          }
+        }
         // ARCANE SANCTUM ENEMIES - Unique movement patterns
         else if (enemy.type === 'runeConstruct') {
           // Rune Construct - Stomps toward player, stops to charge energy, then lunges
@@ -4285,6 +4399,315 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
                 }
               }
               soundManager.createOscillator('sine', 600, 0.15, 0.3);
+              
+            } else if (boss.type === 'cosmicOverlord') {
+              // COSMIC OVERLORD - Final Boss with ALL previous boss attacks
+              const enraged = boss.health < boss.maxHealth / 2;
+              const superEnraged = boss.health < boss.maxHealth / 3;
+              
+              // Initialize attack cycle
+              if (boss.masterAttackCycle === undefined) boss.masterAttackCycle = 0;
+              if (boss.subAttackIndex === undefined) boss.subAttackIndex = 0;
+              
+              // Cosmic Overlord cycles through all previous boss attacks
+              // Attack pattern rotates through: Treant -> Magma -> Frost -> Void -> Storm -> Pharaoh -> Crystal -> Omega -> Arcanist
+              const attackCycles = [
+                'treant', 'magmaGolem', 'frostWyrm', 'voidLord', 
+                'stormTitan', 'pharaohKing', 'crystalQueen', 'omegaPrime', 'arcanist'
+              ];
+              
+              const currentBossType = attackCycles[boss.masterAttackCycle % attackCycles.length];
+              boss.subAttackIndex = boss.attackPattern;
+              
+              // Execute attack based on current boss type emulation
+              if (currentBossType === 'treant') {
+                // TREANT ATTACKS
+                if (boss.subAttackIndex === 0) {
+                  // Root hazards
+                  for (let i = 0; i < (enraged ? 4 : 3); i++) {
+                    state.hazards.push({
+                      x: player.x - 80 + i * 60,
+                      y: 480,
+                      width: 40,
+                      height: 30,
+                      life: 120,
+                      damage: 20,
+                      type: 'root'
+                    });
+                  }
+                } else {
+                  // Leaf projectiles
+                  for (let i = 0; i < (enraged ? 6 : 4); i++) {
+                    const spread = (i - 2) * 0.3;
+                    state.enemyProjectiles.push({
+                      x: boss.x + 50,
+                      y: boss.y + 30 + float,
+                      velocityX: aimX * 6 + spread,
+                      velocityY: aimY * 6 + spread,
+                      width: 20,
+                      height: 12,
+                      life: 150,
+                      type: 'leaf'
+                    });
+                  }
+                }
+                soundManager.createOscillator('sine', 300, 0.2, 0.3);
+                
+              } else if (currentBossType === 'magmaGolem') {
+                // MAGMA GOLEM ATTACKS - Fireball spread
+                for (let i = 0; i < (enraged ? 6 : 4); i++) {
+                  const spreadAngle = (i - 2) * 0.4;
+                  state.enemyProjectiles.push({
+                    x: boss.x + 50,
+                    y: boss.y + 40 + float,
+                    velocityX: aimX * 5 + spreadAngle,
+                    velocityY: aimY * 5 + spreadAngle,
+                    width: 16,
+                    height: 16,
+                    life: 100,
+                    type: 'fireball'
+                  });
+                }
+                soundManager.createOscillator('triangle', 200, 0.2, 0.3);
+                
+              } else if (currentBossType === 'frostWyrm') {
+                // FROST WYRM ATTACKS
+                if (boss.subAttackIndex === 0) {
+                  // Ice breath
+                  state.enemyProjectiles.push({
+                    x: boss.x + 50,
+                    y: boss.y + 50 + float,
+                    velocityX: aimX * 6,
+                    velocityY: aimY * 3,
+                    width: 60,
+                    height: 30,
+                    life: 60,
+                    type: 'iceBreath'
+                  });
+                } else {
+                  // Icicle rain
+                  for (let i = 0; i < (enraged ? 7 : 5); i++) {
+                    state.enemyProjectiles.push({
+                      x: player.x - 120 + i * 40 + Math.random() * 20,
+                      y: 50,
+                      velocityX: 0,
+                      velocityY: 4 + Math.random() * 2,
+                      width: 15,
+                      height: 30,
+                      life: 180,
+                      type: 'icicle'
+                    });
+                  }
+                }
+                soundManager.createOscillator('sine', 400, 0.15, 0.3);
+                
+              } else if (currentBossType === 'voidLord') {
+                // VOID LORD ATTACK - Void zones + teleport
+                boss.x = player.x + (Math.random() > 0.5 ? 120 : -120);
+                boss.x = Math.max(350, Math.min(boss.x, 750));
+                state.environmentalHazards.push({
+                  x: player.x - 30,
+                  y: player.y,
+                  width: 60,
+                  height: 60,
+                  type: 'voidZone',
+                  damage: 25,
+                  life: 180
+                });
+                soundManager.createOscillator('sawtooth', 150, 0.2, 0.3);
+                
+              } else if (currentBossType === 'stormTitan') {
+                // STORM TITAN ATTACK - Lightning strikes
+                const lightningCount = enraged ? 5 : 3;
+                for (let i = 0; i < lightningCount; i++) {
+                  const targetX = player.x + (i - 2) * 60;
+                  state.enemyProjectiles.push({
+                    x: targetX,
+                    y: boss.y + 80 + float,
+                    velocityX: 0,
+                    velocityY: 8,
+                    width: 20,
+                    height: 400,
+                    life: 40,
+                    type: 'lightning'
+                  });
+                }
+                soundManager.createOscillator('sawtooth', 100, 0.4, 0.2);
+                
+              } else if (currentBossType === 'pharaohKing') {
+                // PHARAOH KING ATTACKS
+                if (boss.subAttackIndex === 0) {
+                  // Curse projectiles
+                  for (let i = 0; i < (enraged ? 6 : 4); i++) {
+                    const spread = (i - 2) * 0.35;
+                    state.enemyProjectiles.push({
+                      x: boss.x + 50,
+                      y: boss.y + 40 + float,
+                      velocityX: aimX * 4.5 + spread,
+                      velocityY: aimY * 4.5 + spread,
+                      width: 18,
+                      height: 18,
+                      life: 120,
+                      type: 'curse'
+                    });
+                  }
+                } else {
+                  // Scarab swarm
+                  for (let i = 0; i < (enraged ? 9 : 6); i++) {
+                    state.enemyProjectiles.push({
+                      x: 380 + i * 50,
+                      y: 480,
+                      velocityX: (Math.random() - 0.5) * 2,
+                      velocityY: -3 - Math.random() * 2,
+                      width: 14,
+                      height: 14,
+                      life: 150,
+                      type: 'scarab'
+                    });
+                  }
+                }
+                soundManager.createOscillator('sine', 250, 0.2, 0.4);
+                
+              } else if (currentBossType === 'crystalQueen') {
+                // CRYSTAL QUEEN ATTACK - Crystal shards
+                const shardCount = enraged ? 8 : 6;
+                for (let i = 0; i < shardCount; i++) {
+                  let vx, vy;
+                  if (i < 2) {
+                    vx = aimX * 5.5 + (i - 0.5) * 0.3;
+                    vy = aimY * 5.5 + (i - 0.5) * 0.3;
+                  } else {
+                    const angle = ((i - 2) / (shardCount - 2)) * Math.PI * 2;
+                    vx = Math.cos(angle) * 4.5;
+                    vy = Math.sin(angle) * 4.5;
+                  }
+                  state.enemyProjectiles.push({
+                    x: boss.x + 50,
+                    y: boss.y + 50 + float,
+                    velocityX: vx,
+                    velocityY: vy,
+                    width: 15,
+                    height: 15,
+                    life: 150,
+                    type: 'crystal',
+                    bounces: 2
+                  });
+                }
+                soundManager.createOscillator('sine', 600, 0.15, 0.3);
+                
+              } else if (currentBossType === 'omegaPrime') {
+                // OMEGA PRIME ATTACKS
+                if (boss.subAttackIndex === 0) {
+                  // Plasma beam
+                  state.enemyProjectiles.push({
+                    x: boss.x + 50,
+                    y: boss.y + 50 + float,
+                    velocityX: dirToPlayer * 7,
+                    velocityY: 0,
+                    width: 80,
+                    height: 20,
+                    life: 80,
+                    type: 'plasmaBeam'
+                  });
+                } else if (boss.subAttackIndex === 1) {
+                  // Homing missiles
+                  for (let i = 0; i < (enraged ? 7 : 4); i++) {
+                    const angle = (i / 4) * Math.PI - Math.PI / 2;
+                    state.enemyProjectiles.push({
+                      x: boss.x + 50,
+                      y: boss.y + 30 + float,
+                      velocityX: Math.cos(angle) * 2,
+                      velocityY: -3,
+                      width: 14,
+                      height: 14,
+                      life: 200,
+                      type: 'homingMissile',
+                      turnSpeed: enraged ? 0.09 : 0.06
+                    });
+                  }
+                } else {
+                  // Shockwaves
+                  state.enemyProjectiles.push({
+                    x: boss.x + 30,
+                    y: 480,
+                    velocityX: -8,
+                    velocityY: 0,
+                    width: 40,
+                    height: 50,
+                    life: 120,
+                    type: 'shockwave'
+                  });
+                  state.enemyProjectiles.push({
+                    x: boss.x + 70,
+                    y: 480,
+                    velocityX: 8,
+                    velocityY: 0,
+                    width: 40,
+                    height: 50,
+                    life: 120,
+                    type: 'shockwave'
+                  });
+                }
+                soundManager.createOscillator('square', 300, 0.2, 0.25);
+                
+              } else if (currentBossType === 'arcanist') {
+                // ARCANIST ATTACKS
+                if (boss.subAttackIndex === 0) {
+                  // Arcane missiles
+                  for (let i = 0; i < (enraged ? 8 : 5); i++) {
+                    const angle = (i / 5) * Math.PI * 2;
+                    state.enemyProjectiles.push({
+                      x: boss.x + 50,
+                      y: boss.y + 50 + float,
+                      velocityX: Math.cos(angle) * 3,
+                      velocityY: Math.sin(angle) * 3,
+                      width: 16,
+                      height: 16,
+                      life: 180,
+                      type: 'arcaneMissile',
+                      turnSpeed: 0.05
+                    });
+                  }
+                } else if (boss.subAttackIndex === 1) {
+                  // Teleport + rune trap
+                  const oldX = boss.x;
+                  boss.x = player.x + (Math.random() > 0.5 ? 140 : -140);
+                  boss.x = Math.max(350, Math.min(boss.x, 750));
+                  for (let i = 0; i < (enraged ? 4 : 2); i++) {
+                    state.hazards.push({
+                      x: player.x - 40 + i * 60,
+                      y: 470,
+                      width: 60,
+                      height: 30,
+                      life: 200,
+                      damage: 20,
+                      type: 'arcaneRune'
+                    });
+                  }
+                } else {
+                  // Phantom illusions
+                  for (let i = 0; i < (enraged ? 4 : 3); i++) {
+                    state.enemyProjectiles.push({
+                      x: boss.x + 50 + (i - 1.5) * 70,
+                      y: boss.y + 40 + float,
+                      velocityX: 0,
+                      velocityY: 0,
+                      width: 35,
+                      height: 50,
+                      life: 240,
+                      type: 'phantomIllusion'
+                    });
+                  }
+                }
+                soundManager.createOscillator('triangle', 400, 0.2, 0.35);
+              }
+              
+              // Cycle to next boss type after attack
+              if (superEnraged && boss.attackPattern === 2) {
+                boss.masterAttackCycle++;
+              } else if (boss.attackPattern === 1) {
+                boss.masterAttackCycle++;
+              }
               
             } else if (boss.type === 'arcanist') {
               // The Arcanist - teleporting mage boss with summons and illusions
