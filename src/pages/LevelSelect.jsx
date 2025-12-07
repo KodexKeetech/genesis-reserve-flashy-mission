@@ -64,10 +64,6 @@ export default function LevelSelect() {
               Home
             </Button>
           </Link>
-          <div className="flex items-center gap-2 text-slate-400">
-            <Trophy className="w-5 h-5 text-yellow-400" />
-            <span>Highest Level: <span className="text-yellow-400 font-bold">{highestLevel}</span></span>
-          </div>
         </div>
 
         {/* Title */}
