@@ -227,7 +227,7 @@ export default function Game() {
     const newTotal = existing.magicScraps + scrapsToAdd;
     const newCrystals = existing.arcaneCrystals + crystalsToAdd;
     const newLifetime = (existing.totalScrapsEarned || 0) + scrapsToAdd;
-    const newHighestLevel = Math.max(existing.highestLevel, currentLevel);
+    const newHighestLevel = Math.max(existing.highestLevel, currentLevel + 1);
     localStorage.setItem('jeff_player_data', JSON.stringify({
       magicScraps: newTotal,
       arcaneCrystals: newCrystals,
