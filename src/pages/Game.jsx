@@ -431,6 +431,14 @@ export default function Game() {
   const handleLevelComplete = useCallback(() => {
     const currentLevel = levelRef.current;
 
+    // Track completed levels
+    const localData = localStorage.getItem('jeff_player_data');
+    const existing = localData ? JSON.parse(localData) : {};
+    const completedLevels = existing.completedLevels || [];
+    if (!completedLevels.includes(currentLevel)) {
+      completedLevels.push(currentLevel);
+    }
+
     // Check if player just completed level 30 - show endgame intro
     if (currentLevel === 30) {
       setGameState('endGameIntro');
@@ -441,6 +449,8 @@ export default function Game() {
         setSessionScraps(0);
         setSessionCrystals(0);
       }
+      // Save completed levels
+      localStorage.setItem('jeff_player_data', JSON.stringify({ ...existing, completedLevels }));
       return;
     }
 
@@ -459,13 +469,14 @@ export default function Game() {
     saveGunPreference(currentGun);
     setStartingGun(currentGun);
 
-    // Auto-save progress
+    // Auto-save progress with completed levels
     const saveData = {
       level: currentLevel + 1,
       score,
       savedAt: new Date().toISOString()
     };
     localStorage.setItem('jeff_save_game', JSON.stringify(saveData));
+    localStorage.setItem('jeff_player_data', JSON.stringify({ ...existing, completedLevels }));
   }, [saveScraps, currentGun, saveGunPreference, score]);
 
   const handleScoreChange = useCallback((newScore) => {
