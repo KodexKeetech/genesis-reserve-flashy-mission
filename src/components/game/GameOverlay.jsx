@@ -197,6 +197,16 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
           </motion.p>
 
           <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.6, type: 'spring' }}
+            className="text-center my-4"
+          >
+            <p className="text-base text-purple-300 mb-2">Here is your magical egg</p>
+            <div className="text-6xl">🥚</div>
+          </motion.div>
+
+          <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.6 }}
