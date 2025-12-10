@@ -676,6 +676,17 @@ export default function Game() {
         </div>
       )}
 
+      {/* Home button outside game container */}
+      <Link to={createPageUrl('Home')} className="absolute top-2 left-2 z-50">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-slate-400 hover:text-white hover:bg-slate-800/50 backdrop-blur-sm w-12 h-12"
+        >
+          <ArrowLeft className="w-8 h-8" />
+        </Button>
+      </Link>
+
       {/* Game Container */}
       <div className="relative" style={{ 
         aspectRatio: '800/600', 
@@ -683,16 +694,6 @@ export default function Game() {
         width: isMobile ? 'auto' : '100%',
         maxWidth: isMobile ? '100vw' : '800px'
       }}>
-        {/* Home button inside game container */}
-        <Link to={createPageUrl('Home')}>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-2 left-2 z-40 text-slate-400 hover:text-white hover:bg-slate-800/50 backdrop-blur-sm w-12 h-12"
-          >
-            <ArrowLeft className="w-8 h-8" />
-          </Button>
-        </Link>
 
         {/* Settings button inside game container */}
         <Button
