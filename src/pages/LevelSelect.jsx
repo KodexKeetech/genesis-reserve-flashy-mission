@@ -18,20 +18,13 @@ export default function LevelSelect() {
     loadProgress();
   }, []);
 
-  const loadProgress = async () => {
-    try {
-      const user = await base44.auth.me();
-      setHighestLevel(user.highestLevel || 1);
-      setCompletedLevels(user.completedLevels || []);
-      setUnlockedSecrets(user.unlockedSecrets || []);
-    } catch (e) {
-      const localData = localStorage.getItem('jeff_player_data');
-      if (localData) {
-        const data = JSON.parse(localData);
-        setHighestLevel(data.highestLevel || 1);
-        setCompletedLevels(data.completedLevels || []);
-        setUnlockedSecrets(data.unlockedSecrets || []);
-      }
+  const loadProgress = () => {
+    const localData = localStorage.getItem('jeff_player_data');
+    if (localData) {
+      const data = JSON.parse(localData);
+      setHighestLevel(data.highestLevel || 1);
+      setCompletedLevels(data.completedLevels || []);
+      setUnlockedSecrets(data.unlockedSecrets || []);
     }
     setLoading(false);
   };

@@ -171,211 +171,71 @@ export default function Game() {
 
   // Load player upgrades and scraps on mount
   useEffect(() => {
-    const loadPlayerData = async () => {
-      try {
-        const isAuth = await base44.auth.isAuthenticated();
-        if (!isAuth) {
-          // Not logged in - load from localStorage
-          const localData = localStorage.getItem('jeff_player_data');
-          const localUpgrades = localStorage.getItem('jeff_upgrades');
-          const localAbilities = localStorage.getItem('jeff_unlocked_abilities');
-          const localAbilityUpgrades = localStorage.getItem('jeff_ability_upgrades');
+    const loadPlayerData = () => {
+      const localData = localStorage.getItem('jeff_player_data');
+      const localUpgrades = localStorage.getItem('jeff_upgrades');
+      const localAbilities = localStorage.getItem('jeff_unlocked_abilities');
+      const localAbilityUpgrades = localStorage.getItem('jeff_ability_upgrades');
 
-          if (localData) {
-            const data = JSON.parse(localData);
-            setMagicScraps(data.magicScraps || 0);
-            setArcaneCrystals(data.arcaneCrystals || 0);
-          }
-          if (localUpgrades) {
-            setPlayerUpgrades(JSON.parse(localUpgrades));
-          }
-          if (localAbilities) {
-            const abilities = JSON.parse(localAbilities);
-            setUnlockedAbilities({
-              aoeBlast: false, reflectShield: false, hover: false,
-              timeSlow: false, chainLightning: false, shadowClone: false,
-              magneticPull: false, teleport: false,
-              ...abilities
-            });
-          }
-          if (localAbilityUpgrades) {
-            setAbilityUpgrades(JSON.parse(localAbilityUpgrades));
-          }
-          return;
+      if (localData) {
+        const data = JSON.parse(localData);
+        setMagicScraps(data.magicScraps || 0);
+        setArcaneCrystals(data.arcaneCrystals || 0);
+        setLives(data.lives !== undefined ? data.lives : 10);
+        if (data.lastGun !== undefined) {
+          setStartingGun(data.lastGun);
+          setCurrentGun(data.lastGun);
         }
-        
-        const user = await base44.auth.me();
-        if (user.upgrades) {
-          setPlayerUpgrades(user.upgrades);
-        }
-        if (user.magicScraps) {
-          setMagicScraps(user.magicScraps);
-        }
-        if (user.unlockedAbilities) {
-          setUnlockedAbilities({
-            aoeBlast: false, reflectShield: false, hover: false, 
-            timeSlow: false, chainLightning: false, shadowClone: false, 
-            magneticPull: false, teleport: false,
-            ...user.unlockedAbilities
-          });
-        }
-        if (user.abilityUpgrades) {
-          setAbilityUpgrades({
-            aoeBlastPower: 0, aoeBlastRadius: 0, reflectDuration: 0, hoverDuration: 0,
-            timeSlowDuration: 0, chainLightningDamage: 0, chainLightningChains: 0,
-            shadowCloneDuration: 0, magneticPullRadius: 0, teleportDistance: 0, teleportCooldown: 0,
-            ...user.abilityUpgrades
-          });
-        }
-        if (user.arcaneCrystals) {
-          setArcaneCrystals(user.arcaneCrystals);
-        }
-        if (user.lastGun !== undefined) {
-          setStartingGun(user.lastGun);
-          setCurrentGun(user.lastGun);
-        }
-        // Also sync to localStorage
-        localStorage.setItem('jeff_player_data', JSON.stringify({
-          magicScraps: user.magicScraps || 0,
-          arcaneCrystals: user.arcaneCrystals || 0,
-          highestLevel: user.highestLevel || 1
-        }));
-      } catch (e) {
-        // Error - load from localStorage
-        const localData = localStorage.getItem('jeff_player_data');
-        const localUpgrades = localStorage.getItem('jeff_upgrades');
-        const localAbilities = localStorage.getItem('jeff_unlocked_abilities');
-        const localAbilityUpgrades = localStorage.getItem('jeff_ability_upgrades');
+      }
+      if (localUpgrades) {
+        setPlayerUpgrades(JSON.parse(localUpgrades));
+      }
+      if (localAbilities) {
+        const abilities = JSON.parse(localAbilities);
+        setUnlockedAbilities({
+          aoeBlast: false, reflectShield: false, hover: false,
+          timeSlow: false, chainLightning: false, shadowClone: false,
+          magneticPull: false, teleport: false,
+          ...abilities
+        });
+      }
+      if (localAbilityUpgrades) {
+        setAbilityUpgrades(JSON.parse(localAbilityUpgrades));
+      }
+    };
+    loadPlayerData();
+  }, []);
 
-        if (localData) {
-          const data = JSON.parse(localData);
-          setMagicScraps(data.magicScraps || 0);
-          setArcaneCrystals(data.arcaneCrystals || 0);
-          setLives(data.lives !== undefined ? data.lives : 10);
-        }
-        if (localUpgrades) {
-          setPlayerUpgrades(JSON.parse(localUpgrades));
-        }
-        if (localAbilities) {
-          const abilities = JSON.parse(localAbilities);
-          setUnlockedAbilities({
-            aoeBlast: false, reflectShield: false, hover: false,
-            timeSlow: false, chainLightning: false, shadowClone: false,
-            magneticPull: false, teleport: false,
-            ...abilities
-          });
-        }
-        if (localAbilityUpgrades) {
-          setAbilityUpgrades(JSON.parse(localAbilityUpgrades));
-        }
-        }
-        };
-        loadPlayerData();
-        }, []);
-
-        // Load lives from user data
-        useEffect(() => {
-        const loadLives = async () => {
-        try {
-        const isAuth = await base44.auth.isAuthenticated();
-        if (isAuth) {
-          const user = await base44.auth.me();
-          setLives(user.lives !== undefined ? user.lives : 10);
-        } else {
-          const localData = localStorage.getItem('jeff_player_data');
-          if (localData) {
-            const data = JSON.parse(localData);
-            setLives(data.lives !== undefined ? data.lives : 10);
-          }
-        }
-        } catch (e) {
-        const localData = localStorage.getItem('jeff_player_data');
-        if (localData) {
-          const data = JSON.parse(localData);
-          setLives(data.lives !== undefined ? data.lives : 10);
-        }
-        }
-        };
-        loadLives();
-        }, []);
+        // Lives are now loaded in the main loadPlayerData useEffect above
 
         // Save lives
-        const saveLives = useCallback(async (newLives) => {
-        setLives(newLives);
-        try {
-        const isAuth = await base44.auth.isAuthenticated();
-        if (isAuth) {
-        await base44.auth.updateMe({ lives: newLives });
-        }
-        const localData = localStorage.getItem('jeff_player_data');
-        const existing = localData ? JSON.parse(localData) : {};
-        localStorage.setItem('jeff_player_data', JSON.stringify({ ...existing, lives: newLives }));
-        } catch (e) {
-        const localData = localStorage.getItem('jeff_player_data');
-        const existing = localData ? JSON.parse(localData) : {};
-        localStorage.setItem('jeff_player_data', JSON.stringify({ ...existing, lives: newLives }));
-        }
+        const saveLives = useCallback((newLives) => {
+          setLives(newLives);
+          const localData = localStorage.getItem('jeff_player_data');
+          const existing = localData ? JSON.parse(localData) : {};
+          localStorage.setItem('jeff_player_data', JSON.stringify({ ...existing, lives: newLives }));
         }, []);
 
   // Save scraps when level completes or game over
   const levelRef = useRef(level);
   levelRef.current = level;
 
-  const saveScraps = useCallback(async (scrapsToAdd, crystalsToAdd = 0) => {
+  const saveScraps = useCallback((scrapsToAdd, crystalsToAdd = 0) => {
     const currentLevel = levelRef.current;
-    try {
-      const isAuth = await base44.auth.isAuthenticated();
-      if (!isAuth) {
-        // Not logged in - save to localStorage
-        const localData = localStorage.getItem('jeff_player_data');
-        const existing = localData ? JSON.parse(localData) : { magicScraps: 0, arcaneCrystals: 0, highestLevel: 1 };
-        const newTotal = existing.magicScraps + scrapsToAdd;
-        const newCrystals = existing.arcaneCrystals + crystalsToAdd;
-        const newHighestLevel = Math.max(existing.highestLevel, currentLevel);
-        localStorage.setItem('jeff_player_data', JSON.stringify({
-          magicScraps: newTotal,
-          arcaneCrystals: newCrystals,
-          highestLevel: newHighestLevel
-        }));
-        setMagicScraps(newTotal);
-        setArcaneCrystals(newCrystals);
-        return;
-      }
-      
-      const user = await base44.auth.me();
-      const newTotal = (user.magicScraps || 0) + scrapsToAdd;
-      const newLifetime = (user.totalScrapsEarned || 0) + scrapsToAdd;
-      const newCrystals = (user.arcaneCrystals || 0) + crystalsToAdd;
-      const newHighestLevel = Math.max(user.highestLevel || 1, currentLevel);
-      await base44.auth.updateMe({ 
-        magicScraps: newTotal,
-        totalScrapsEarned: newLifetime,
-        arcaneCrystals: newCrystals,
-        highestLevel: newHighestLevel
-      });
-      setMagicScraps(newTotal);
-      setArcaneCrystals(newCrystals);
-      // Also save to localStorage as backup
-      localStorage.setItem('jeff_player_data', JSON.stringify({
-        magicScraps: newTotal,
-        arcaneCrystals: newCrystals,
-        highestLevel: newHighestLevel
-      }));
-    } catch (e) {
-      // Error - save to localStorage instead
-      const localData = localStorage.getItem('jeff_player_data');
-      const existing = localData ? JSON.parse(localData) : { magicScraps: 0, arcaneCrystals: 0, highestLevel: 1 };
-      const newTotal = existing.magicScraps + scrapsToAdd;
-      const newCrystals = existing.arcaneCrystals + crystalsToAdd;
-      const newHighestLevel = Math.max(existing.highestLevel, currentLevel);
-      localStorage.setItem('jeff_player_data', JSON.stringify({
-        magicScraps: newTotal,
-        arcaneCrystals: newCrystals,
-        highestLevel: newHighestLevel
-      }));
-      setMagicScraps(newTotal);
-      setArcaneCrystals(newCrystals);
-    }
+    const localData = localStorage.getItem('jeff_player_data');
+    const existing = localData ? JSON.parse(localData) : { magicScraps: 0, arcaneCrystals: 0, highestLevel: 1, totalScrapsEarned: 0 };
+    const newTotal = existing.magicScraps + scrapsToAdd;
+    const newCrystals = existing.arcaneCrystals + crystalsToAdd;
+    const newLifetime = (existing.totalScrapsEarned || 0) + scrapsToAdd;
+    const newHighestLevel = Math.max(existing.highestLevel, currentLevel);
+    localStorage.setItem('jeff_player_data', JSON.stringify({
+      magicScraps: newTotal,
+      arcaneCrystals: newCrystals,
+      highestLevel: newHighestLevel,
+      totalScrapsEarned: newLifetime
+    }));
+    setMagicScraps(newTotal);
+    setArcaneCrystals(newCrystals);
   }, []);
 
   const handleCrystalsEarned = useCallback((crystals) => {
@@ -495,15 +355,10 @@ export default function Game() {
   
 
   // Save gun preference
-  const saveGunPreference = useCallback(async (gun) => {
-    try {
-      const isAuth = await base44.auth.isAuthenticated();
-      if (isAuth) {
-        await base44.auth.updateMe({ lastGun: gun });
-      }
-    } catch (e) {
-      // Error or not logged in - ignore
-    }
+  const saveGunPreference = useCallback((gun) => {
+    const localData = localStorage.getItem('jeff_player_data');
+    const existing = localData ? JSON.parse(localData) : {};
+    localStorage.setItem('jeff_player_data', JSON.stringify({ ...existing, lastGun: gun }));
   }, []);
 
   const handleCheckpointActivated = useCallback((checkpoint) => {

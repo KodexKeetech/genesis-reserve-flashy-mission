@@ -17,21 +17,13 @@ export default function Home() {
     const saved = localStorage.getItem('jeff_save_game');
     setHasSavedGame(!!saved);
 
-    const loadUserData = async () => {
-      try {
-        const user = await base44.auth.me();
-        setMagicScraps(user.magicScraps || 0);
-        setArcaneCrystals(user.arcaneCrystals || 0);
-        setHighestLevel(user.highestLevel || 1);
-      } catch (e) {
-        // Not logged in - load from localStorage as fallback
-        const localData = localStorage.getItem('jeff_player_data');
-        if (localData) {
-          const data = JSON.parse(localData);
-          setMagicScraps(data.magicScraps || 0);
-          setArcaneCrystals(data.arcaneCrystals || 0);
-          setHighestLevel(data.highestLevel || 1);
-        }
+    const loadUserData = () => {
+      const localData = localStorage.getItem('jeff_player_data');
+      if (localData) {
+        const data = JSON.parse(localData);
+        setMagicScraps(data.magicScraps || 0);
+        setArcaneCrystals(data.arcaneCrystals || 0);
+        setHighestLevel(data.highestLevel || 1);
       }
     };
     loadUserData();
