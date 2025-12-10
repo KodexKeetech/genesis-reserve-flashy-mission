@@ -69,33 +69,14 @@ export default function UpgradeShop() {
     loadUser();
   }, []);
 
-  const loadUser = async () => {
-    try {
-      const userData = await base44.auth.me();
-      // Initialize upgrades if not present
-      if (!userData.upgrades) {
-        userData.upgrades = {
-          maxHealth: 0,
-          spellPower: 0,
-          dashEfficiency: 0,
-          magicRegen: 0,
-          scrapMagnet: 0
-        };
-      }
-      if (!userData.magicScraps) {
-        userData.magicScraps = 0;
-      }
-      setUser(userData);
-    } catch (e) {
-      // Not logged in - load from localStorage
-      const localData = localStorage.getItem('jeff_player_data');
-      const localUpgrades = localStorage.getItem('jeff_upgrades');
-      const data = localData ? JSON.parse(localData) : { magicScraps: 0 };
-      const upgrades = localUpgrades ? JSON.parse(localUpgrades) : {
-        maxHealth: 0, spellPower: 0, dashEfficiency: 0, magicRegen: 0, scrapMagnet: 0
-      };
-      setUser({ magicScraps: data.magicScraps || 0, upgrades });
-    }
+  const loadUser = () => {
+    const localData = localStorage.getItem('jeff_player_data');
+    const localUpgrades = localStorage.getItem('jeff_upgrades');
+    const data = localData ? JSON.parse(localData) : { magicScraps: 0 };
+    const upgrades = localUpgrades ? JSON.parse(localUpgrades) : {
+      maxHealth: 0, spellPower: 0, dashEfficiency: 0, magicRegen: 0, scrapMagnet: 0
+    };
+    setUser({ magicScraps: data.magicScraps || 0, upgrades });
     setLoading(false);
   };
 
@@ -103,7 +84,7 @@ export default function UpgradeShop() {
     return Math.floor(upgrade.baseCost * Math.pow(upgrade.costMultiplier, currentLevel));
   };
 
-  const purchaseUpgrade = async (upgrade) => {
+  const purchaseUpgrade = (upgrade) => {
     const currentLevel = user.upgrades?.[upgrade.id] || 0;
     if (currentLevel >= upgrade.maxLevel) return;
 
@@ -114,17 +95,7 @@ export default function UpgradeShop() {
     
     const newUpgrades = { ...user.upgrades, [upgrade.id]: currentLevel + 1 };
     const newScraps = user.magicScraps - cost;
-
-    try {
-      await base44.auth.updateMe({
-        upgrades: newUpgrades,
-        magicScraps: newScraps
-      });
-    } catch (e) {
-      // Not logged in - save to localStorage
-    }
     
-    // Always save to localStorage as backup
     localStorage.setItem('jeff_upgrades', JSON.stringify(newUpgrades));
     const localData = localStorage.getItem('jeff_player_data');
     const data = localData ? JSON.parse(localData) : {};

@@ -17,33 +17,18 @@ export default function AbilityShop() {
     loadUser();
   }, []);
 
-  const loadUser = async () => {
-    try {
-      const userData = await base44.auth.me();
-      if (!userData.unlockedAbilities) {
-        userData.unlockedAbilities = { aoeBlast: false, reflectShield: false, hover: false, timeSlow: false, chainLightning: false, shadowClone: false, magneticPull: false, teleport: false };
-      }
-      if (!userData.abilityUpgrades) {
-        userData.abilityUpgrades = { aoeBlastPower: 0, aoeBlastRadius: 0, reflectDuration: 0, hoverDuration: 0, timeSlowDuration: 0, chainLightningDamage: 0, chainLightningChains: 0, shadowCloneDuration: 0, magneticPullRadius: 0, teleportDistance: 0, teleportCooldown: 0 };
-      }
-      if (!userData.arcaneCrystals) {
-        userData.arcaneCrystals = 0;
-      }
-      setUser(userData);
-    } catch (e) {
-      // Not logged in - load from localStorage
-      const localData = localStorage.getItem('jeff_player_data');
-      const localAbilities = localStorage.getItem('jeff_unlocked_abilities');
-      const localAbilityUpgrades = localStorage.getItem('jeff_ability_upgrades');
-      const data = localData ? JSON.parse(localData) : { arcaneCrystals: 0 };
-      const abilities = localAbilities ? JSON.parse(localAbilities) : { aoeBlast: false, reflectShield: false, hover: false, timeSlow: false, chainLightning: false, shadowClone: false, magneticPull: false, teleport: false };
-      const abilityUpgrades = localAbilityUpgrades ? JSON.parse(localAbilityUpgrades) : { aoeBlastPower: 0, aoeBlastRadius: 0, reflectDuration: 0, hoverDuration: 0, timeSlowDuration: 0, chainLightningDamage: 0, chainLightningChains: 0, shadowCloneDuration: 0, magneticPullRadius: 0, teleportDistance: 0, teleportCooldown: 0 };
-      setUser({ arcaneCrystals: data.arcaneCrystals || 0, unlockedAbilities: abilities, abilityUpgrades });
-    }
+  const loadUser = () => {
+    const localData = localStorage.getItem('jeff_player_data');
+    const localAbilities = localStorage.getItem('jeff_unlocked_abilities');
+    const localAbilityUpgrades = localStorage.getItem('jeff_ability_upgrades');
+    const data = localData ? JSON.parse(localData) : { arcaneCrystals: 0 };
+    const abilities = localAbilities ? JSON.parse(localAbilities) : { aoeBlast: false, reflectShield: false, hover: false, timeSlow: false, chainLightning: false, shadowClone: false, magneticPull: false, teleport: false };
+    const abilityUpgrades = localAbilityUpgrades ? JSON.parse(localAbilityUpgrades) : { aoeBlastPower: 0, aoeBlastRadius: 0, reflectDuration: 0, hoverDuration: 0, timeSlowDuration: 0, chainLightningDamage: 0, chainLightningChains: 0, shadowCloneDuration: 0, magneticPullRadius: 0, teleportDistance: 0, teleportCooldown: 0 };
+    setUser({ arcaneCrystals: data.arcaneCrystals || 0, unlockedAbilities: abilities, abilityUpgrades });
     setLoading(false);
   };
 
-  const unlockAbility = async (abilityId) => {
+  const unlockAbility = (abilityId) => {
     const ability = SPECIAL_ABILITIES[abilityId];
     if (user.arcaneCrystals < ability.unlockCost) return;
 
@@ -51,17 +36,7 @@ export default function AbilityShop() {
     
     const newUnlocked = { ...user.unlockedAbilities, [abilityId]: true };
     const newCrystals = user.arcaneCrystals - ability.unlockCost;
-
-    try {
-      await base44.auth.updateMe({
-        unlockedAbilities: newUnlocked,
-        arcaneCrystals: newCrystals
-      });
-    } catch (e) {
-      // Not logged in
-    }
     
-    // Always save to localStorage as backup
     localStorage.setItem('jeff_unlocked_abilities', JSON.stringify(newUnlocked));
     const localData = localStorage.getItem('jeff_player_data');
     const data = localData ? JSON.parse(localData) : {};
@@ -71,7 +46,7 @@ export default function AbilityShop() {
     setPurchasing(null);
   };
 
-  const purchaseUpgrade = async (upgradeId) => {
+  const purchaseUpgrade = (upgradeId) => {
     const upgrade = ABILITY_UPGRADES[upgradeId];
     const currentLevel = user.abilityUpgrades?.[upgradeId] || 0;
     if (currentLevel >= upgrade.maxLevel) return;
@@ -83,17 +58,7 @@ export default function AbilityShop() {
     
     const newUpgrades = { ...user.abilityUpgrades, [upgradeId]: currentLevel + 1 };
     const newCrystals = user.arcaneCrystals - cost;
-
-    try {
-      await base44.auth.updateMe({
-        abilityUpgrades: newUpgrades,
-        arcaneCrystals: newCrystals
-      });
-    } catch (e) {
-      // Not logged in
-    }
     
-    // Always save to localStorage as backup
     localStorage.setItem('jeff_ability_upgrades', JSON.stringify(newUpgrades));
     const localData = localStorage.getItem('jeff_player_data');
     const data = localData ? JSON.parse(localData) : {};
