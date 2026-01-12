@@ -138,77 +138,71 @@ export default function Home() {
         />
       </div>
 
-      {/* Main Content - Title, text, stats, and buttons at top */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 w-full flex flex-col items-center justify-start pt-4"
-      >
-        <p className="text-xl md:text-2xl font-bold text-cyan-400 mb-1">Hash's Quest</p>
-        <p className="text-slate-500 mb-4 md:mb-6 text-sm md:text-base">Collect Data Coins & Defeat the Hackers</p>
+      {/* Layout - Left sidebar with all info, image floats on right */}
+      <div className="relative z-10 w-full h-full flex items-center justify-between px-8 gap-12">
+        {/* Left Sidebar */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="flex flex-col gap-4 w-56"
+        >
+          <div>
+            <p className="text-xl md:text-2xl font-bold text-cyan-400">Hash's Quest</p>
+            <p className="text-slate-500 text-sm md:text-base">Collect Data Coins & Defeat the Hackers</p>
+          </div>
 
-        {/* Stats Row */}
-        <div className="flex justify-center gap-3 mb-4">
-          <div className="bg-slate-900/80 backdrop-blur-sm rounded-lg px-3 py-2 border border-purple-500/30 flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-purple-400" />
-            <span className="text-purple-300 font-bold text-sm">{magicScraps}</span>
+          {/* Stats */}
+          <div className="flex flex-col gap-2">
+            <div className="bg-slate-900/80 backdrop-blur-sm rounded-lg px-3 py-2 border border-purple-500/30 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-purple-400" />
+              <span className="text-purple-300 font-bold text-sm">{magicScraps}</span>
+            </div>
+            <div className="bg-slate-900/80 backdrop-blur-sm rounded-lg px-3 py-2 border border-indigo-500/30 flex items-center gap-2">
+              <Gem className="w-4 h-4 text-indigo-400" />
+              <span className="text-indigo-300 font-bold text-sm">{arcaneCrystals}</span>
+            </div>
+            <div className="bg-slate-900/80 backdrop-blur-sm rounded-lg px-3 py-2 border border-blue-500/30 flex items-center gap-2">
+              <Zap className="w-4 h-4 text-blue-400" />
+              <span className="text-blue-300 font-bold text-sm">Lv {highestLevel}</span>
+            </div>
           </div>
-          <div className="bg-slate-900/80 backdrop-blur-sm rounded-lg px-3 py-2 border border-indigo-500/30 flex items-center gap-2">
-            <Gem className="w-4 h-4 text-indigo-400" />
-            <span className="text-indigo-300 font-bold text-sm">{arcaneCrystals}</span>
-          </div>
-          <div className="bg-slate-900/80 backdrop-blur-sm rounded-lg px-3 py-2 border border-blue-500/30 flex items-center gap-2">
-            <Zap className="w-4 h-4 text-blue-400" />
-            <span className="text-blue-300 font-bold text-sm">Lv {highestLevel}</span>
-          </div>
-        </div>
 
-        {/* Buttons */}
-        <div className="flex flex-col gap-2 w-48 mb-4">
-          <Link to={createPageUrl('Game')}>
-            <Button
-              size="sm"
-              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold px-4 py-2 text-sm rounded-lg shadow-lg shadow-purple-500/30"
-            >
-              <Play className="w-4 h-4 mr-2" />
-              Play Game
-            </Button>
-          </Link>
-          
-          {hasSavedGame && (
-            <Link to={createPageUrl('Game') + '?continue=true'}>
-              <Button
-                size="sm"
-                variant="outline"
-                className="w-full border-cyan-500 text-cyan-400 hover:bg-cyan-500/20 font-bold px-4 py-2 text-xs rounded-lg"
-              >
-                <FolderOpen className="w-3 h-3 mr-2" />
-                Continue
+          {/* Main Buttons */}
+          <div className="flex flex-col gap-2">
+            <Link to={createPageUrl('Game')}>
+              <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold rounded-lg shadow-lg shadow-purple-500/30">
+                <Play className="w-4 h-4 mr-2" />
+                Play Game
               </Button>
             </Link>
-          )}
-          
-          <Link to={createPageUrl('LevelSelect')}>
-            <Button
-              size="sm"
-              variant="outline"
-              className="w-full border-purple-500 text-purple-400 hover:bg-purple-500/20 font-bold px-4 py-2 text-xs rounded-lg"
-            >
-              <Map className="w-3 h-3 mr-2" />
-              Level Select
-            </Button>
-          </Link>
+            
+            {hasSavedGame && (
+              <Link to={createPageUrl('Game') + '?continue=true'}>
+                <Button variant="outline" className="w-full border-cyan-500 text-cyan-400 hover:bg-cyan-500/20 font-bold rounded-lg">
+                  <FolderOpen className="w-3 h-3 mr-2" />
+                  Continue
+                </Button>
+              </Link>
+            )}
+            
+            <Link to={createPageUrl('LevelSelect')}>
+              <Button variant="outline" className="w-full border-purple-500 text-purple-400 hover:bg-purple-500/20 font-bold rounded-lg">
+                <Map className="w-3 h-3 mr-2" />
+                Level Select
+              </Button>
+            </Link>
+          </div>
 
           {/* Shop Buttons */}
-          <div className="flex flex-col gap-2 mt-2 pt-2 border-t border-slate-700">
+          <div className="flex flex-col gap-2 pt-2 border-t border-slate-700">
             <Link to={createPageUrl('UpgradeShop')}>
-              <Button size="sm" className="w-full bg-gradient-to-r from-purple-600/80 to-blue-600/80 hover:from-purple-500 hover:to-blue-500 text-xs">
+              <Button size="sm" className="w-full bg-gradient-to-r from-purple-600/80 to-blue-600/80 hover:from-purple-500 hover:to-blue-500">
                 <ShoppingBag className="w-3 h-3 mr-1" />
                 Upgrades
               </Button>
             </Link>
             <Link to={createPageUrl('AbilityShop')}>
-              <Button size="sm" className="w-full bg-gradient-to-r from-indigo-600/80 to-purple-600/80 hover:from-indigo-500 hover:to-purple-500 text-xs">
+              <Button size="sm" className="w-full bg-gradient-to-r from-indigo-600/80 to-purple-600/80 hover:from-indigo-500 hover:to-purple-500">
                 <Zap className="w-3 h-3 mr-1" />
                 Abilities
               </Button>
@@ -217,13 +211,16 @@ export default function Home() {
 
           {/* Cloud sync indicator */}
           {cloudSynced && (
-            <div className="mt-2 pt-2 border-t border-slate-700 flex items-center gap-1 text-green-400 text-xs justify-center">
+            <div className="flex items-center gap-1 text-green-400 text-xs">
               <Cloud className="w-3 h-3" />
               <span>Cloud Save</span>
             </div>
           )}
-        </div>
-      </motion.div>
+        </motion.div>
+
+        {/* Right side - image floats here */}
+        <div className="flex-1" />
+      </div>
 
       {/* Controls hint - bottom center */}
       <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 text-slate-500 text-xs md:text-sm space-y-1 text-center z-10">
