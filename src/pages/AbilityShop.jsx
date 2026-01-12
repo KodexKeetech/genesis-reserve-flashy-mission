@@ -4,9 +4,10 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ArrowLeft, Sparkles, Lock, Check, Gem, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Sparkles, Lock, Check, Gem, ChevronRight, Cloud } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { SPECIAL_ABILITIES, ABILITY_UPGRADES } from '@/components/game/AbilitySystem';
+import cloudSaveManager from '@/components/game/CloudSaveManager';
 
 export default function AbilityShop() {
   const [user, setUser] = useState(null);
@@ -17,18 +18,28 @@ export default function AbilityShop() {
     loadUser();
   }, []);
 
-  const loadUser = () => {
-    const localData = localStorage.getItem('jeff_player_data');
-    const localAbilities = localStorage.getItem('jeff_unlocked_abilities');
-    const localAbilityUpgrades = localStorage.getItem('jeff_ability_upgrades');
-    const data = localData ? JSON.parse(localData) : { arcaneCrystals: 0 };
-    const abilities = localAbilities ? JSON.parse(localAbilities) : { aoeBlast: false, reflectShield: false, hover: false, timeSlow: false, chainLightning: false, shadowClone: false, magneticPull: false, teleport: false };
-    const abilityUpgrades = localAbilityUpgrades ? JSON.parse(localAbilityUpgrades) : { aoeBlastPower: 0, aoeBlastRadius: 0, reflectDuration: 0, hoverDuration: 0, timeSlowDuration: 0, chainLightningDamage: 0, chainLightningChains: 0, shadowCloneDuration: 0, magneticPullRadius: 0, teleportDistance: 0, teleportCooldown: 0 };
-    setUser({ arcaneCrystals: data.arcaneCrystals || 0, unlockedAbilities: abilities, abilityUpgrades });
+  const loadUser = async () => {
+    const cloudProgress = await cloudSaveManager.loadProgress();
+    if (cloudProgress) {
+      setUser({ 
+        arcaneCrystals: cloudProgress.arcaneCrystals || 0, 
+        unlockedAbilities: cloudProgress.unlockedAbilities || { aoeBlast: false, reflectShield: false, hover: false, timeSlow: false, chainLightning: false, shadowClone: false, magneticPull: false, teleport: false },
+        abilityUpgrades: cloudProgress.abilityUpgrades || { aoeBlastPower: 0, aoeBlastRadius: 0, reflectDuration: 0, hoverDuration: 0, timeSlowDuration: 0, chainLightningDamage: 0, chainLightningChains: 0, shadowCloneDuration: 0, magneticPullRadius: 0, teleportDistance: 0, teleportCooldown: 0 }
+      });
+    } else {
+      // Fallback to localStorage
+      const localData = localStorage.getItem('jeff_player_data');
+      const localAbilities = localStorage.getItem('jeff_unlocked_abilities');
+      const localAbilityUpgrades = localStorage.getItem('jeff_ability_upgrades');
+      const data = localData ? JSON.parse(localData) : { arcaneCrystals: 0 };
+      const abilities = localAbilities ? JSON.parse(localAbilities) : { aoeBlast: false, reflectShield: false, hover: false, timeSlow: false, chainLightning: false, shadowClone: false, magneticPull: false, teleport: false };
+      const abilityUpgrades = localAbilityUpgrades ? JSON.parse(localAbilityUpgrades) : { aoeBlastPower: 0, aoeBlastRadius: 0, reflectDuration: 0, hoverDuration: 0, timeSlowDuration: 0, chainLightningDamage: 0, chainLightningChains: 0, shadowCloneDuration: 0, magneticPullRadius: 0, teleportDistance: 0, teleportCooldown: 0 };
+      setUser({ arcaneCrystals: data.arcaneCrystals || 0, unlockedAbilities: abilities, abilityUpgrades });
+    }
     setLoading(false);
   };
 
-  const unlockAbility = (abilityId) => {
+  const unlockAbility = async (abilityId) => {
     const ability = SPECIAL_ABILITIES[abilityId];
     if (user.arcaneCrystals < ability.unlockCost) return;
 
@@ -37,6 +48,13 @@ export default function AbilityShop() {
     const newUnlocked = { ...user.unlockedAbilities, [abilityId]: true };
     const newCrystals = user.arcaneCrystals - ability.unlockCost;
     
+    // Save to cloud
+    await cloudSaveManager.saveProgress({
+      unlockedAbilities: newUnlocked,
+      arcaneCrystals: newCrystals
+    });
+
+    // Also save to localStorage as backup
     localStorage.setItem('jeff_unlocked_abilities', JSON.stringify(newUnlocked));
     const localData = localStorage.getItem('jeff_player_data');
     const data = localData ? JSON.parse(localData) : {};
@@ -46,7 +64,7 @@ export default function AbilityShop() {
     setPurchasing(null);
   };
 
-  const purchaseUpgrade = (upgradeId) => {
+  const purchaseUpgrade = async (upgradeId) => {
     const upgrade = ABILITY_UPGRADES[upgradeId];
     const currentLevel = user.abilityUpgrades?.[upgradeId] || 0;
     if (currentLevel >= upgrade.maxLevel) return;
@@ -59,6 +77,13 @@ export default function AbilityShop() {
     const newUpgrades = { ...user.abilityUpgrades, [upgradeId]: currentLevel + 1 };
     const newCrystals = user.arcaneCrystals - cost;
     
+    // Save to cloud
+    await cloudSaveManager.saveProgress({
+      abilityUpgrades: newUpgrades,
+      arcaneCrystals: newCrystals
+    });
+
+    // Also save to localStorage as backup
     localStorage.setItem('jeff_ability_upgrades', JSON.stringify(newUpgrades));
     const localData = localStorage.getItem('jeff_player_data');
     const data = localData ? JSON.parse(localData) : {};

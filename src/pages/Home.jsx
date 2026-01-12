@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
-import { Play, ShoppingBag, Zap, Sparkles, Gem, FolderOpen, Map } from 'lucide-react';
+import { Play, ShoppingBag, Zap, Sparkles, Gem, FolderOpen, Map, Cloud } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
+import cloudSaveManager from '@/components/game/CloudSaveManager';
 
 export default function Home() {
   const [hasSavedGame, setHasSavedGame] = useState(false);
@@ -12,18 +13,30 @@ export default function Home() {
   const [arcaneCrystals, setArcaneCrystals] = useState(0);
   const [highestLevel, setHighestLevel] = useState(1);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [cloudSynced, setCloudSynced] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem('jeff_save_game');
-    setHasSavedGame(!!saved);
-
-    const loadUserData = () => {
-      const localData = localStorage.getItem('jeff_player_data');
-      if (localData) {
-        const data = JSON.parse(localData);
-        setMagicScraps(data.magicScraps || 0);
-        setArcaneCrystals(data.arcaneCrystals || 0);
-        setHighestLevel(data.highestLevel || 1);
+    const loadUserData = async () => {
+      // Try to load from cloud first
+      const cloudProgress = await cloudSaveManager.loadProgress();
+      
+      if (cloudProgress) {
+        setMagicScraps(cloudProgress.magicScraps || 0);
+        setArcaneCrystals(cloudProgress.arcaneCrystals || 0);
+        setHighestLevel(cloudProgress.highestLevel || 1);
+        setHasSavedGame(cloudProgress.currentLevel > 1);
+        setCloudSynced(true);
+      } else {
+        // Fallback to localStorage
+        const localData = localStorage.getItem('jeff_player_data');
+        if (localData) {
+          const data = JSON.parse(localData);
+          setMagicScraps(data.magicScraps || 0);
+          setArcaneCrystals(data.arcaneCrystals || 0);
+          setHighestLevel(data.highestLevel || 1);
+        }
+        const saved = localStorage.getItem('jeff_save_game');
+        setHasSavedGame(!!saved);
       }
     };
     loadUserData();
@@ -231,6 +244,14 @@ export default function Home() {
           <p>← → Move | SPACE Jump | CLICK Cast</p>
           <p>SHIFT Dash | Q Switch Spell</p>
         </div>
+
+        {/* Cloud sync indicator */}
+        {cloudSynced && (
+          <div className="mt-4 flex items-center gap-2 text-green-400 text-xs">
+            <Cloud className="w-4 h-4" />
+            <span>Cloud Save Active</span>
+          </div>
+        )}
       </motion.div>
     </div>
   );

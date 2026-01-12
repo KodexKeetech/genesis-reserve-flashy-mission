@@ -4,8 +4,9 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ArrowLeft, Sparkles, Heart, Flame, Wind, Zap, Magnet, Lock, Check } from 'lucide-react';
+import { ArrowLeft, Sparkles, Heart, Flame, Wind, Zap, Magnet, Lock, Check, Cloud } from 'lucide-react';
 import { motion } from 'framer-motion';
+import cloudSaveManager from '@/components/game/CloudSaveManager';
 
 const UPGRADES = [
   {
@@ -69,14 +70,25 @@ export default function UpgradeShop() {
     loadUser();
   }, []);
 
-  const loadUser = () => {
-    const localData = localStorage.getItem('jeff_player_data');
-    const localUpgrades = localStorage.getItem('jeff_upgrades');
-    const data = localData ? JSON.parse(localData) : { magicScraps: 0 };
-    const upgrades = localUpgrades ? JSON.parse(localUpgrades) : {
-      maxHealth: 0, spellPower: 0, dashEfficiency: 0, magicRegen: 0, scrapMagnet: 0
-    };
-    setUser({ magicScraps: data.magicScraps || 0, upgrades });
+  const loadUser = async () => {
+    const cloudProgress = await cloudSaveManager.loadProgress();
+    if (cloudProgress) {
+      setUser({ 
+        magicScraps: cloudProgress.magicScraps || 0, 
+        upgrades: cloudProgress.playerUpgrades || {
+          maxHealth: 0, spellPower: 0, dashEfficiency: 0, magicRegen: 0, scrapMagnet: 0
+        }
+      });
+    } else {
+      // Fallback to localStorage
+      const localData = localStorage.getItem('jeff_player_data');
+      const localUpgrades = localStorage.getItem('jeff_upgrades');
+      const data = localData ? JSON.parse(localData) : { magicScraps: 0 };
+      const upgrades = localUpgrades ? JSON.parse(localUpgrades) : {
+        maxHealth: 0, spellPower: 0, dashEfficiency: 0, magicRegen: 0, scrapMagnet: 0
+      };
+      setUser({ magicScraps: data.magicScraps || 0, upgrades });
+    }
     setLoading(false);
   };
 
@@ -84,7 +96,7 @@ export default function UpgradeShop() {
     return Math.floor(upgrade.baseCost * Math.pow(upgrade.costMultiplier, currentLevel));
   };
 
-  const purchaseUpgrade = (upgrade) => {
+  const purchaseUpgrade = async (upgrade) => {
     const currentLevel = user.upgrades?.[upgrade.id] || 0;
     if (currentLevel >= upgrade.maxLevel) return;
 
@@ -96,6 +108,13 @@ export default function UpgradeShop() {
     const newUpgrades = { ...user.upgrades, [upgrade.id]: currentLevel + 1 };
     const newScraps = user.magicScraps - cost;
     
+    // Save to cloud
+    await cloudSaveManager.saveProgress({
+      playerUpgrades: newUpgrades,
+      magicScraps: newScraps
+    });
+
+    // Also save to localStorage as backup
     localStorage.setItem('jeff_upgrades', JSON.stringify(newUpgrades));
     const localData = localStorage.getItem('jeff_player_data');
     const data = localData ? JSON.parse(localData) : {};

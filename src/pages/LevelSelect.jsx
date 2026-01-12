@@ -4,9 +4,10 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Lock, Star, Trophy, Sparkles, Gem, Map } from 'lucide-react';
+import { ArrowLeft, Lock, Star, Trophy, Sparkles, Gem, Map, Cloud } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { BIOMES, HIDDEN_LEVELS, getAvailableHiddenLevels } from '@/components/game/BiomeConfig';
+import cloudSaveManager from '@/components/game/CloudSaveManager';
 
 export default function LevelSelect() {
   const [highestLevel, setHighestLevel] = useState(1);
@@ -18,13 +19,21 @@ export default function LevelSelect() {
     loadProgress();
   }, []);
 
-  const loadProgress = () => {
-    const localData = localStorage.getItem('jeff_player_data');
-    if (localData) {
-      const data = JSON.parse(localData);
-      setHighestLevel(data.highestLevel || 1);
-      setCompletedLevels(data.completedLevels || []);
-      setUnlockedSecrets(data.unlockedSecrets || []);
+  const loadProgress = async () => {
+    const cloudProgress = await cloudSaveManager.loadProgress();
+    if (cloudProgress) {
+      setHighestLevel(cloudProgress.highestLevel || 1);
+      setCompletedLevels(cloudProgress.completedLevels || []);
+      setUnlockedSecrets(cloudProgress.unlockedSecrets || []);
+    } else {
+      // Fallback to localStorage
+      const localData = localStorage.getItem('jeff_player_data');
+      if (localData) {
+        const data = JSON.parse(localData);
+        setHighestLevel(data.highestLevel || 1);
+        setCompletedLevels(data.completedLevels || []);
+        setUnlockedSecrets(data.unlockedSecrets || []);
+      }
     }
     setLoading(false);
   };

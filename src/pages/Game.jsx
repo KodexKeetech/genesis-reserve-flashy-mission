@@ -11,8 +11,9 @@ import useGamepad from '@/components/game/useGamepad';
 import ComicAdOverlay from '@/components/game/ComicAdOverlay';
 
 import soundManager from '@/components/game/SoundManager';
+import cloudSaveManager from '@/components/game/CloudSaveManager';
 
-import { Sparkles, ShoppingBag, Gem, Zap, Settings, Gamepad2, ArrowLeft } from 'lucide-react';
+import { Sparkles, ShoppingBag, Gem, Zap, Settings, Gamepad2, ArrowLeft, Cloud } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function Game() {
@@ -171,36 +172,63 @@ export default function Game() {
 
   // Load player upgrades and scraps on mount
   useEffect(() => {
-    const loadPlayerData = () => {
-      const localData = localStorage.getItem('jeff_player_data');
-      const localUpgrades = localStorage.getItem('jeff_upgrades');
-      const localAbilities = localStorage.getItem('jeff_unlocked_abilities');
-      const localAbilityUpgrades = localStorage.getItem('jeff_ability_upgrades');
-
-      if (localData) {
-        const data = JSON.parse(localData);
-        setMagicScraps(data.magicScraps || 0);
-        setArcaneCrystals(data.arcaneCrystals || 0);
-        setLives(data.lives !== undefined ? data.lives : 10);
-        if (data.lastGun !== undefined) {
-          setStartingGun(data.lastGun);
-          setCurrentGun(data.lastGun);
+    const loadPlayerData = async () => {
+      const cloudProgress = await cloudSaveManager.loadProgress();
+      
+      if (cloudProgress) {
+        // Load from cloud
+        setMagicScraps(cloudProgress.magicScraps || 0);
+        setArcaneCrystals(cloudProgress.arcaneCrystals || 0);
+        setLives(cloudProgress.lives !== undefined ? cloudProgress.lives : 10);
+        if (cloudProgress.lastGun !== undefined) {
+          setStartingGun(cloudProgress.lastGun);
+          setCurrentGun(cloudProgress.lastGun);
         }
-      }
-      if (localUpgrades) {
-        setPlayerUpgrades(JSON.parse(localUpgrades));
-      }
-      if (localAbilities) {
-        const abilities = JSON.parse(localAbilities);
-        setUnlockedAbilities({
+        setPlayerUpgrades(cloudProgress.playerUpgrades || {
+          maxHealth: 0, spellPower: 0, dashEfficiency: 0, magicRegen: 0, scrapMagnet: 0
+        });
+        setUnlockedAbilities(cloudProgress.unlockedAbilities || {
           aoeBlast: false, reflectShield: false, hover: false,
           timeSlow: false, chainLightning: false, shadowClone: false,
-          magneticPull: false, teleport: false,
-          ...abilities
+          magneticPull: false, teleport: false
         });
-      }
-      if (localAbilityUpgrades) {
-        setAbilityUpgrades(JSON.parse(localAbilityUpgrades));
+        setAbilityUpgrades(cloudProgress.abilityUpgrades || {
+          aoeBlastPower: 0, aoeBlastRadius: 0, reflectDuration: 0, hoverDuration: 0,
+          timeSlowDuration: 0, chainLightningDamage: 0, chainLightningChains: 0,
+          shadowCloneDuration: 0, teleportDistance: 0, teleportCooldown: 0
+        });
+      } else {
+        // Fallback to localStorage
+        const localData = localStorage.getItem('jeff_player_data');
+        const localUpgrades = localStorage.getItem('jeff_upgrades');
+        const localAbilities = localStorage.getItem('jeff_unlocked_abilities');
+        const localAbilityUpgrades = localStorage.getItem('jeff_ability_upgrades');
+
+        if (localData) {
+          const data = JSON.parse(localData);
+          setMagicScraps(data.magicScraps || 0);
+          setArcaneCrystals(data.arcaneCrystals || 0);
+          setLives(data.lives !== undefined ? data.lives : 10);
+          if (data.lastGun !== undefined) {
+            setStartingGun(data.lastGun);
+            setCurrentGun(data.lastGun);
+          }
+        }
+        if (localUpgrades) {
+          setPlayerUpgrades(JSON.parse(localUpgrades));
+        }
+        if (localAbilities) {
+          const abilities = JSON.parse(localAbilities);
+          setUnlockedAbilities({
+            aoeBlast: false, reflectShield: false, hover: false,
+            timeSlow: false, chainLightning: false, shadowClone: false,
+            magneticPull: false, teleport: false,
+            ...abilities
+          });
+        }
+        if (localAbilityUpgrades) {
+          setAbilityUpgrades(JSON.parse(localAbilityUpgrades));
+        }
       }
     };
     loadPlayerData();
@@ -220,7 +248,7 @@ export default function Game() {
   const levelRef = useRef(level);
   levelRef.current = level;
 
-  const saveScraps = useCallback((scrapsToAdd, crystalsToAdd = 0) => {
+  const saveScraps = useCallback(async (scrapsToAdd, crystalsToAdd = 0) => {
     const currentLevel = levelRef.current;
     const localData = localStorage.getItem('jeff_player_data');
     const existing = localData ? JSON.parse(localData) : { magicScraps: 0, arcaneCrystals: 0, highestLevel: 1, totalScrapsEarned: 0 };
@@ -228,6 +256,16 @@ export default function Game() {
     const newCrystals = existing.arcaneCrystals + crystalsToAdd;
     const newLifetime = (existing.totalScrapsEarned || 0) + scrapsToAdd;
     const newHighestLevel = Math.max(existing.highestLevel, currentLevel + 1);
+    
+    // Save to cloud
+    await cloudSaveManager.saveProgress({
+      magicScraps: newTotal,
+      arcaneCrystals: newCrystals,
+      highestLevel: newHighestLevel,
+      totalScrapsEarned: newLifetime
+    });
+
+    // Also save to localStorage as backup
     localStorage.setItem('jeff_player_data', JSON.stringify({
       magicScraps: newTotal,
       arcaneCrystals: newCrystals,
