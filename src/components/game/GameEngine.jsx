@@ -2147,244 +2147,198 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       ctx.fill();
       ctx.shadowBlur = 0;
 
-      // HASH - The Orange Fox Character
+      // HASH - Purple Shape-Shifting Cat Character
       
-      // Tail (behind body) - big fluffy orange tail
+      // Back leg
       ctx.save();
-      const tailX = facingRight ? centerX - 20 : centerX + 20;
-      ctx.translate(tailX, y + 35 - bodyBob);
-      ctx.rotate(ensureFinite((tailWag * Math.PI) / 180 * (facingRight ? -1 : 1), 0));
-      // Main tail
-      const tailGrad = ctx.createLinearGradient(0, -10, facingRight ? -25 : 25, 15);
-      tailGrad.addColorStop(0, '#F97316');
-      tailGrad.addColorStop(0.7, '#EA580C');
-      tailGrad.addColorStop(1, '#FEF3C7');
-      ctx.fillStyle = tailGrad;
-      ctx.beginPath();
-      ctx.moveTo(0, -5);
-      ctx.quadraticCurveTo(facingRight ? -20 : 20, -15, facingRight ? -30 : 30, 5);
-      ctx.quadraticCurveTo(facingRight ? -25 : 25, 20, 0, 10);
-      ctx.closePath();
-      ctx.fill();
-      // Tail tip (cream/white)
-      ctx.fillStyle = '#FEF3C7';
-      ctx.beginPath();
-      ctx.ellipse(facingRight ? -25 : 25, 5, 8, 12, facingRight ? -0.3 : 0.3, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-
-      // Back leg (orange)
-      ctx.save();
-      const translateX1 = ensureFinite(centerX - 6 * dir, 0);
+      const translateX1 = ensureFinite(centerX - 8, 0);
       const translateY1 = ensureFinite(y + 42 - bodyBob + breathe, 0);
       ctx.translate(translateX1, translateY1);
       ctx.rotate(ensureFinite((-legSwing * Math.PI) / 180, 0));
-      ctx.fillStyle = '#EA580C';
+      ctx.fillStyle = '#6B21A8';
       ctx.beginPath();
-      ctx.roundRect(-5, 0, 10, 16, 3);
+      ctx.roundRect(-6, 0, 12, 18, 4);
       ctx.fill();
-      // Dark blue shoe
-      ctx.fillStyle = '#1E3A5F';
+      // Purple gradient on leg
+      ctx.fillStyle = '#7C3AED';
+      ctx.fillRect(-4, 2, 4, 12);
+      // Rounded foot
+      ctx.fillStyle = '#581C87';
       ctx.beginPath();
-      ctx.roundRect(-6, 14, 12, 8, [0, 0, 3, 3]);
+      ctx.ellipse(0, 20, 7, 5, 0, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = '#2A4A6F';
-      ctx.fillRect(-5, 14, 3, 3);
       ctx.restore();
 
-      // Front leg (orange)
+      // Front leg
       ctx.save();
-      const translateX2 = ensureFinite(centerX + 6 * dir, 0);
+      const translateX2 = ensureFinite(centerX + 8, 0);
       const translateY2 = ensureFinite(y + 42 - bodyBob + breathe, 0);
       ctx.translate(translateX2, translateY2);
       ctx.rotate(ensureFinite((legSwing * Math.PI) / 180, 0));
-      ctx.fillStyle = '#F97316';
+      ctx.fillStyle = '#7C3AED';
       ctx.beginPath();
-      ctx.roundRect(-5, 0, 10, 16, 3);
+      ctx.roundRect(-6, 0, 12, 18, 4);
       ctx.fill();
-      // Dark blue shoe
-      ctx.fillStyle = '#1E3A5F';
+      // Purple gradient on leg
+      ctx.fillStyle = '#8B5CF6';
+      ctx.fillRect(-3, 2, 4, 12);
+      // Rounded foot
+      ctx.fillStyle = '#6B21A8';
       ctx.beginPath();
-      ctx.roundRect(-6, 14, 12, 8, [0, 0, 3, 3]);
+      ctx.ellipse(0, 20, 7, 5, 0, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = '#2A4A6F';
-      ctx.fillRect(-4, 14, 3, 3);
       ctx.restore();
 
-      // Body (orange fox body)
-      const bodyGrad = ctx.createLinearGradient(
-        centerX - 12, y + 20, 
-        centerX + 12, y + 45
+      // Body - rounded purple shape
+      const bodyGrad = ctx.createRadialGradient(
+        centerX - 5, y + 25, 0, 
+        centerX, y + 35, 20
       );
-      bodyGrad.addColorStop(0, '#FB923C');
-      bodyGrad.addColorStop(0.5, '#F97316');
-      bodyGrad.addColorStop(1, '#EA580C');
+      bodyGrad.addColorStop(0, '#9333EA');
+      bodyGrad.addColorStop(0.5, '#7C3AED');
+      bodyGrad.addColorStop(1, '#6B21A8');
       ctx.fillStyle = bodyGrad;
       ctx.beginPath();
-      ctx.ellipse(centerX, y + 32 - bodyBob + breathe, 14, 18, 0, 0, Math.PI * 2);
+      ctx.ellipse(centerX, y + 32 - bodyBob + breathe, 16, 20, 0, 0, Math.PI * 2);
       ctx.fill();
       
-      // Belly (cream colored)
-      ctx.fillStyle = '#FEF3C7';
-      ctx.beginPath();
-      ctx.ellipse(centerX, y + 35 - bodyBob + breathe, 9, 12, 0, 0, Math.PI * 2);
-      ctx.fill();
+      // M symbol on chest (purple gradient)
+      ctx.fillStyle = '#A855F7';
+      ctx.font = 'bold 14px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('M', centerX, y + 35 - bodyBob + breathe);
 
       // Back arm
       ctx.save();
-      const translateX3 = ensureFinite(centerX - 12, 0);
-      const translateY3 = ensureFinite(y + 25 - bodyBob + breathe, 0);
+      const translateX3 = ensureFinite(centerX - 14, 0);
+      const translateY3 = ensureFinite(y + 26 - bodyBob + breathe, 0);
       ctx.translate(translateX3, translateY3);
       ctx.rotate(ensureFinite((-armSwing * Math.PI) / 180, 0));
-      ctx.fillStyle = '#EA580C';
+      ctx.fillStyle = '#6B21A8';
       ctx.beginPath();
-      ctx.roundRect(-4, 0, 8, 14, 3);
+      ctx.roundRect(-5, 0, 10, 16, 3);
       ctx.fill();
-      // Paw
-      ctx.fillStyle = '#F97316';
+      // Hand/paw
+      ctx.fillStyle = '#7C3AED';
       ctx.beginPath();
-      ctx.ellipse(0, 16, 5, 4, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 18, 6, 5, 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
 
       // Front arm (with magic glow if casting)
       ctx.save();
-      const translateX4 = ensureFinite(centerX + 12, 0);
-      const translateY4 = ensureFinite(y + 25 - bodyBob + breathe, 0);
+      const translateX4 = ensureFinite(centerX + 14, 0);
+      const translateY4 = ensureFinite(y + 26 - bodyBob + breathe, 0);
       ctx.translate(translateX4, translateY4);
       const armAngle = player.isCasting ? -45 + castingPose : armSwing;
       ctx.rotate(ensureFinite((armAngle * Math.PI) / 180, 0));
-      ctx.fillStyle = '#F97316';
+      ctx.fillStyle = '#7C3AED';
       ctx.beginPath();
-      ctx.roundRect(-4, 0, 8, 14, 3);
+      ctx.roundRect(-5, 0, 10, 16, 3);
       ctx.fill();
-      // Paw with magic glow
+      // Hand with magic
       if (player.isCasting) {
         const spellColor = player.selectedProjectile === 1 ? '#22D3EE' : 
                           player.selectedProjectile === 2 ? '#FBBF24' : '#A855F7';
         ctx.shadowColor = spellColor;
         ctx.shadowBlur = 25 + Math.sin(time * 0.5) * 12;
-        const orbSize = ensureFinite(8 + Math.sin(time * 0.5) * 3, 8);
-        const orbGrad = ctx.createRadialGradient(0, 20, 0, 0, 20, orbSize);
+        const orbSize = ensureFinite(9 + Math.sin(time * 0.5) * 3, 9);
+        const orbGrad = ctx.createRadialGradient(0, 22, 0, 0, 22, orbSize);
         orbGrad.addColorStop(0, '#FFFFFF');
         orbGrad.addColorStop(0.3, spellColor);
         orbGrad.addColorStop(1, spellColor + '80');
         ctx.fillStyle = orbGrad;
         ctx.beginPath();
-        ctx.arc(0, 20, orbSize, 0, Math.PI * 2);
+        ctx.arc(0, 22, orbSize, 0, Math.PI * 2);
         ctx.fill();
       }
-      ctx.fillStyle = '#FB923C';
+      ctx.fillStyle = '#8B5CF6';
       ctx.beginPath();
-      ctx.ellipse(0, 16, 5, 4, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 18, 6, 5, 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.shadowBlur = 0;
       ctx.restore();
 
-      // Head (orange fox head)
+      // Head - rounded purple with helmet/mask look
       const headGrad = ctx.createRadialGradient(
-        centerX - 3, y + 5, 0, 
-        centerX, y + 10, 18
+        centerX - 3, y + 2, 0, 
+        centerX, y + 8, 16
       );
-      headGrad.addColorStop(0, '#FB923C');
-      headGrad.addColorStop(0.7, '#F97316');
-      headGrad.addColorStop(1, '#EA580C');
+      headGrad.addColorStop(0, '#A78BFA');
+      headGrad.addColorStop(0.5, '#8B5CF6');
+      headGrad.addColorStop(1, '#7C3AED');
       ctx.fillStyle = headGrad;
       ctx.beginPath();
-      ctx.ellipse(centerX, y + 8 - bodyBob + breathe, 16, 14, 0, 0, Math.PI * 2);
+      ctx.ellipse(centerX, y + 8 - bodyBob + breathe, 15, 16, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // Fox ears (big pointy ears)
+      // Cat ears (pointed triangular ears)
       // Left ear
-      ctx.fillStyle = '#F97316';
+      ctx.fillStyle = '#7C3AED';
       ctx.beginPath();
-      ctx.moveTo(centerX - 12, y - 2 - bodyBob + breathe);
-      ctx.lineTo(centerX - 18, y - 22 - bodyBob + breathe);
-      ctx.lineTo(centerX - 5, y - 5 - bodyBob + breathe);
+      ctx.moveTo(centerX - 10, y - 3 - bodyBob + breathe);
+      ctx.lineTo(centerX - 16, y - 18 - bodyBob + breathe);
+      ctx.lineTo(centerX - 6, y - 6 - bodyBob + breathe);
       ctx.closePath();
       ctx.fill();
       // Left ear inner
-      ctx.fillStyle = '#FBBF24';
+      ctx.fillStyle = '#A78BFA';
       ctx.beginPath();
-      ctx.moveTo(centerX - 11, y - 3 - bodyBob + breathe);
-      ctx.lineTo(centerX - 15, y - 16 - bodyBob + breathe);
-      ctx.lineTo(centerX - 7, y - 5 - bodyBob + breathe);
+      ctx.moveTo(centerX - 10, y - 4 - bodyBob + breathe);
+      ctx.lineTo(centerX - 14, y - 14 - bodyBob + breathe);
+      ctx.lineTo(centerX - 8, y - 6 - bodyBob + breathe);
       ctx.closePath();
       ctx.fill();
       
       // Right ear
-      ctx.fillStyle = '#F97316';
+      ctx.fillStyle = '#7C3AED';
       ctx.beginPath();
-      ctx.moveTo(centerX + 12, y - 2 - bodyBob + breathe);
-      ctx.lineTo(centerX + 18, y - 22 - bodyBob + breathe);
-      ctx.lineTo(centerX + 5, y - 5 - bodyBob + breathe);
+      ctx.moveTo(centerX + 10, y - 3 - bodyBob + breathe);
+      ctx.lineTo(centerX + 16, y - 18 - bodyBob + breathe);
+      ctx.lineTo(centerX + 6, y - 6 - bodyBob + breathe);
       ctx.closePath();
       ctx.fill();
       // Right ear inner
-      ctx.fillStyle = '#FBBF24';
+      ctx.fillStyle = '#A78BFA';
       ctx.beginPath();
-      ctx.moveTo(centerX + 11, y - 3 - bodyBob + breathe);
-      ctx.lineTo(centerX + 15, y - 16 - bodyBob + breathe);
-      ctx.lineTo(centerX + 7, y - 5 - bodyBob + breathe);
+      ctx.moveTo(centerX + 10, y - 4 - bodyBob + breathe);
+      ctx.lineTo(centerX + 14, y - 14 - bodyBob + breathe);
+      ctx.lineTo(centerX + 8, y - 6 - bodyBob + breathe);
       ctx.closePath();
       ctx.fill();
 
-      // Face - white/cream muzzle area
-      ctx.fillStyle = '#FEF3C7';
+      // Visor/face mask (dark with cyan glow)
+      ctx.fillStyle = '#0F172A';
       ctx.beginPath();
-      ctx.ellipse(centerX, y + 12 - bodyBob + breathe, 10, 8, 0, 0, Math.PI * 2);
+      ctx.ellipse(centerX, y + 8 - bodyBob + breathe, 13, 11, 0, 0, Math.PI * 2);
       ctx.fill();
-
-      // Headband (black athletic headband like in the image)
-      ctx.fillStyle = '#1F2937';
-      ctx.fillRect(centerX - 14, y - 2 - bodyBob + breathe, 28, 4);
-
-      // Eyes (big friendly eyes)
-      const eyeOffsetX = facingRight ? 1 : -1;
-      // Eye whites
-      ctx.fillStyle = '#FFFFFF';
+      
+      // Visor border
+      ctx.strokeStyle = '#6B21A8';
+      ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.ellipse(centerX - 6 + eyeOffsetX, y + 5 - bodyBob + breathe, 5, 6, 0, 0, Math.PI * 2);
-      ctx.ellipse(centerX + 6 + eyeOffsetX, y + 5 - bodyBob + breathe, 5, 6, 0, 0, Math.PI * 2);
-      ctx.fill();
-      // Pupils
-      ctx.fillStyle = '#1F2937';
-      ctx.beginPath();
-      ctx.ellipse(centerX - 5 + eyeOffsetX * 2, y + 6 - bodyBob + breathe, 2.5, 3, 0, 0, Math.PI * 2);
-      ctx.ellipse(centerX + 7 + eyeOffsetX * 2, y + 6 - bodyBob + breathe, 2.5, 3, 0, 0, Math.PI * 2);
-      ctx.fill();
-      // Eye shine
-      ctx.fillStyle = '#FFFFFF';
-      ctx.beginPath();
-      ctx.arc(centerX - 6 + eyeOffsetX, y + 4 - bodyBob + breathe, 1.5, 0, Math.PI * 2);
-      ctx.arc(centerX + 6 + eyeOffsetX, y + 4 - bodyBob + breathe, 1.5, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Nose (black fox nose)
-      ctx.fillStyle = '#1F2937';
-      ctx.beginPath();
-      ctx.ellipse(centerX, y + 12 - bodyBob + breathe, 3, 2, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Happy mouth
-      ctx.strokeStyle = '#1F2937';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.arc(centerX, y + 14 - bodyBob + breathe, 4, 0.2, Math.PI - 0.2);
+      ctx.ellipse(centerX, y + 8 - bodyBob + breathe, 13, 11, 0, 0, Math.PI * 2);
       ctx.stroke();
 
-      // Speed lines when running
-      if (isMoving && Math.abs(player.velocityX) > 3) {
-        ctx.strokeStyle = `rgba(251, 191, 36, ${0.3 + Math.sin(time * 0.3) * 0.2})`;
-        ctx.lineWidth = 2;
-        for (let i = 0; i < 3; i++) {
-          const lineY = y + 20 + i * 15 - bodyBob;
-          ctx.beginPath();
-          ctx.moveTo(centerX - 25 * dir, lineY);
-          ctx.lineTo(centerX - 40 * dir, lineY);
-          ctx.stroke();
-        }
-      }
+      // Glowing cyan visor eyes
+      const visorGlow = 0.8 + Math.sin(time * 0.15) * 0.2;
+      ctx.fillStyle = `rgba(34, 211, 238, ${visorGlow})`;
+      ctx.shadowColor = '#22D3EE';
+      ctx.shadowBlur = 15;
+      ctx.beginPath();
+      ctx.roundRect(centerX - 9, y + 5 - bodyBob + breathe, 7, 9, 2);
+      ctx.roundRect(centerX + 2, y + 5 - bodyBob + breathe, 7, 9, 2);
+      ctx.fill();
+      
+      // Inner visor glow
+      ctx.fillStyle = '#A5F3FC';
+      ctx.beginPath();
+      ctx.roundRect(centerX - 8, y + 6 - bodyBob + breathe, 5, 7, 1);
+      ctx.roundRect(centerX + 3, y + 6 - bodyBob + breathe, 5, 7, 1);
+      ctx.fill();
+      
+      ctx.shadowBlur = 0;
 
       ctx.restore();
     };
