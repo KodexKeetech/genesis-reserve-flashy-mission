@@ -120,27 +120,7 @@ export default function Home() {
         }
       `}</style>
 
-      {/* Support Banner & Socials - Top Left */}
-      <div className="fixed top-3 left-3 z-20 flex flex-col gap-2">
-        <a 
-          href="https://globalcomix.com/a/portal-to-nodehaven" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="bg-gradient-to-r from-purple-600/90 to-blue-600/90 backdrop-blur-sm hover:from-purple-500 hover:to-blue-500 text-white text-xs md:text-sm px-4 py-2.5 rounded-lg border border-purple-400/50 hover:border-purple-300 transition-all flex items-center gap-2 shadow-lg shadow-purple-500/20"
-        >
-          <span>📖</span>
-          <span className="font-semibold">Read Hash's Story to Support the Game!</span>
-        </a>
-        <a 
-          href="https://linktr.ee/HashTheSpaceCat" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="bg-black/60 backdrop-blur-sm hover:bg-black/80 text-white text-xs px-3 py-2 rounded-lg border border-cyan-500/50 hover:border-cyan-400 transition-all flex items-center gap-2"
-        >
-          <span>🔗</span>
-          <span>Socials</span>
-        </a>
-      </div>
+
 
       {/* Cover Art - Behind everything */}
       <div className="fixed inset-0 z-[1] flex items-center justify-center pointer-events-none">
@@ -187,13 +167,13 @@ export default function Home() {
         </div>
         
         {/* Main Buttons */}
-        <div className="flex flex-col gap-3 mb-6">
+        <div className="flex flex-col gap-2 mb-4">
           <Link to={createPageUrl('Game')}>
             <Button
-              size="lg"
-              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold px-8 py-6 text-lg md:text-xl rounded-xl shadow-lg shadow-purple-500/30"
+              size="sm"
+              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold px-4 py-2 text-sm md:text-base rounded-lg shadow-lg shadow-purple-500/30"
             >
-              <Play className="w-5 h-5 md:w-6 md:h-6 mr-2" />
+              <Play className="w-4 h-4 md:w-5 md:h-5 mr-2" />
               Play Game
             </Button>
           </Link>
@@ -201,11 +181,11 @@ export default function Home() {
           {hasSavedGame && (
             <Link to={createPageUrl('Game') + '?continue=true'}>
               <Button
-                size="lg"
+                size="sm"
                 variant="outline"
-                className="w-full border-cyan-500 text-cyan-400 hover:bg-cyan-500/20 font-bold px-8 py-4 text-base md:text-lg rounded-xl"
+                className="w-full border-cyan-500 text-cyan-400 hover:bg-cyan-500/20 font-bold px-4 py-2 text-xs md:text-sm rounded-lg"
               >
-                <FolderOpen className="w-4 h-4 md:w-5 md:h-5 mr-2" />
+                <FolderOpen className="w-3 h-3 md:w-4 md:h-4 mr-2" />
                 Continue (Level {JSON.parse(localStorage.getItem('hash_save_game') || '{}').level || 1})
               </Button>
             </Link>
@@ -213,27 +193,27 @@ export default function Home() {
           
           <Link to={createPageUrl('LevelSelect')}>
             <Button
-              size="lg"
+              size="sm"
               variant="outline"
-              className="w-full border-purple-500 text-purple-400 hover:bg-purple-500/20 font-bold px-8 py-4 text-base md:text-lg rounded-xl"
+              className="w-full border-purple-500 text-purple-400 hover:bg-purple-500/20 font-bold px-4 py-2 text-xs md:text-sm rounded-lg"
             >
-              <Map className="w-4 h-4 md:w-5 md:h-5 mr-2" />
+              <Map className="w-3 h-3 md:w-4 md:h-4 mr-2" />
               Level Select
             </Button>
           </Link>
         </div>
 
         {/* Shop Buttons */}
-        <div className="flex gap-3 justify-center">
+        <div className="flex gap-2 justify-center">
           <Link to={createPageUrl('UpgradeShop')}>
-            <Button className="bg-gradient-to-r from-purple-600/80 to-blue-600/80 hover:from-purple-500 hover:to-blue-500 text-sm md:text-base">
-              <ShoppingBag className="w-4 h-4 mr-2" />
+            <Button size="sm" className="bg-gradient-to-r from-purple-600/80 to-blue-600/80 hover:from-purple-500 hover:to-blue-500 text-xs">
+              <ShoppingBag className="w-3 h-3 mr-1" />
               Upgrades
             </Button>
           </Link>
           <Link to={createPageUrl('AbilityShop')}>
-            <Button className="bg-gradient-to-r from-indigo-600/80 to-purple-600/80 hover:from-indigo-500 hover:to-purple-500 text-sm md:text-base">
-              <Zap className="w-4 h-4 mr-2" />
+            <Button size="sm" className="bg-gradient-to-r from-indigo-600/80 to-purple-600/80 hover:from-indigo-500 hover:to-purple-500 text-xs">
+              <Zap className="w-3 h-3 mr-1" />
               Abilities
             </Button>
           </Link>
