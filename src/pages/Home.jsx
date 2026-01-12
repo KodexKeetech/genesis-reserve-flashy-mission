@@ -28,14 +28,14 @@ export default function Home() {
         setCloudSynced(true);
       } else {
         // Fallback to localStorage
-        const localData = localStorage.getItem('jeff_player_data');
+        const localData = localStorage.getItem('hash_player_data');
         if (localData) {
           const data = JSON.parse(localData);
           setMagicScraps(data.magicScraps || 0);
           setArcaneCrystals(data.arcaneCrystals || 0);
           setHighestLevel(data.highestLevel || 1);
         }
-        const saved = localStorage.getItem('jeff_save_game');
+        const saved = localStorage.getItem('hash_save_game');
         setHasSavedGame(!!saved);
       }
     };
@@ -206,7 +206,7 @@ export default function Home() {
                 className="w-full border-cyan-500 text-cyan-400 hover:bg-cyan-500/20 font-bold px-8 py-4 text-base md:text-lg rounded-xl"
               >
                 <FolderOpen className="w-4 h-4 md:w-5 md:h-5 mr-2" />
-                Continue (Level {JSON.parse(localStorage.getItem('jeff_save_game') || '{}').level || 1})
+                Continue (Level {JSON.parse(localStorage.getItem('hash_save_game') || '{}').level || 1})
               </Button>
             </Link>
           )}

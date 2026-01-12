@@ -97,12 +97,12 @@ class CloudSaveManager {
   // Migrate localStorage data to cloud (one-time migration)
   async migrateFromLocalStorage() {
     try {
-      const localData = localStorage.getItem('jeff_player_data');
-      const localUpgrades = localStorage.getItem('jeff_upgrades');
-      const localAbilities = localStorage.getItem('jeff_unlocked_abilities');
-      const localAbilityUpgrades = localStorage.getItem('jeff_ability_upgrades');
-      const localDifficulty = localStorage.getItem('jeff_difficulty');
-      const localSettings = localStorage.getItem('jeff_settings');
+      const localData = localStorage.getItem('hash_player_data');
+      const localUpgrades = localStorage.getItem('hash_upgrades');
+      const localAbilities = localStorage.getItem('hash_unlocked_abilities');
+      const localAbilityUpgrades = localStorage.getItem('hash_ability_upgrades');
+      const localDifficulty = localStorage.getItem('hash_difficulty');
+      const localSettings = localStorage.getItem('hash_settings');
 
       if (!localData && !localUpgrades) {
         return null; // No local data to migrate

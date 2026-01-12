@@ -81,8 +81,8 @@ export default function UpgradeShop() {
       });
     } else {
       // Fallback to localStorage
-      const localData = localStorage.getItem('jeff_player_data');
-      const localUpgrades = localStorage.getItem('jeff_upgrades');
+      const localData = localStorage.getItem('hash_player_data');
+      const localUpgrades = localStorage.getItem('hash_upgrades');
       const data = localData ? JSON.parse(localData) : { magicScraps: 0 };
       const upgrades = localUpgrades ? JSON.parse(localUpgrades) : {
         maxHealth: 0, spellPower: 0, dashEfficiency: 0, magicRegen: 0, scrapMagnet: 0
@@ -115,10 +115,10 @@ export default function UpgradeShop() {
     });
 
     // Also save to localStorage as backup
-    localStorage.setItem('jeff_upgrades', JSON.stringify(newUpgrades));
-    const localData = localStorage.getItem('jeff_player_data');
+    localStorage.setItem('hash_upgrades', JSON.stringify(newUpgrades));
+    const localData = localStorage.getItem('hash_player_data');
     const data = localData ? JSON.parse(localData) : {};
-    localStorage.setItem('jeff_player_data', JSON.stringify({ ...data, magicScraps: newScraps }));
+    localStorage.setItem('hash_player_data', JSON.stringify({ ...data, magicScraps: newScraps }));
 
     setUser({ ...user, upgrades: newUpgrades, magicScraps: newScraps });
     setPurchasing(null);

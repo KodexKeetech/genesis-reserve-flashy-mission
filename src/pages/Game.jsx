@@ -71,12 +71,12 @@ export default function Game() {
   const [currentGun, setCurrentGun] = useState(0);
   
   const [difficulty, setDifficulty] = useState(() => {
-    const saved = localStorage.getItem('jeff_difficulty');
+    const saved = localStorage.getItem('hash_difficulty');
     return saved || 'medium';
   });
   
   const [gameSettings, setGameSettings] = useState(() => {
-    const saved = localStorage.getItem('jeff_settings');
+    const saved = localStorage.getItem('hash_settings');
     const defaults = {
       sound: true,
       graphics: 'high',
@@ -199,10 +199,10 @@ export default function Game() {
         });
       } else {
         // Fallback to localStorage
-        const localData = localStorage.getItem('jeff_player_data');
-        const localUpgrades = localStorage.getItem('jeff_upgrades');
-        const localAbilities = localStorage.getItem('jeff_unlocked_abilities');
-        const localAbilityUpgrades = localStorage.getItem('jeff_ability_upgrades');
+        const localData = localStorage.getItem('hash_player_data');
+        const localUpgrades = localStorage.getItem('hash_upgrades');
+        const localAbilities = localStorage.getItem('hash_unlocked_abilities');
+        const localAbilityUpgrades = localStorage.getItem('hash_ability_upgrades');
 
         if (localData) {
           const data = JSON.parse(localData);
@@ -239,9 +239,9 @@ export default function Game() {
         // Save lives
         const saveLives = useCallback((newLives) => {
           setLives(newLives);
-          const localData = localStorage.getItem('jeff_player_data');
+          const localData = localStorage.getItem('hash_player_data');
           const existing = localData ? JSON.parse(localData) : {};
-          localStorage.setItem('jeff_player_data', JSON.stringify({ ...existing, lives: newLives }));
+          localStorage.setItem('hash_player_data', JSON.stringify({ ...existing, lives: newLives }));
         }, []);
 
   // Save scraps when level completes or game over
@@ -250,7 +250,7 @@ export default function Game() {
 
   const saveScraps = useCallback(async (scrapsToAdd, crystalsToAdd = 0) => {
     const currentLevel = levelRef.current;
-    const localData = localStorage.getItem('jeff_player_data');
+    const localData = localStorage.getItem('hash_player_data');
     const existing = localData ? JSON.parse(localData) : { magicScraps: 0, arcaneCrystals: 0, highestLevel: 1, totalScrapsEarned: 0 };
     const newTotal = existing.magicScraps + scrapsToAdd;
     const newCrystals = existing.arcaneCrystals + crystalsToAdd;
@@ -266,7 +266,7 @@ export default function Game() {
     });
 
     // Also save to localStorage as backup
-    localStorage.setItem('jeff_player_data', JSON.stringify({
+    localStorage.setItem('hash_player_data', JSON.stringify({
       magicScraps: newTotal,
       arcaneCrystals: newCrystals,
       highestLevel: newHighestLevel,
@@ -288,7 +288,7 @@ export default function Game() {
 
   // Save settings when changed
   useEffect(() => {
-    localStorage.setItem('jeff_settings', JSON.stringify(gameSettings));
+    localStorage.setItem('hash_settings', JSON.stringify(gameSettings));
     soundManager.setMuted(!gameSettings.sound);
   }, [gameSettings]);
 
@@ -297,7 +297,7 @@ export default function Game() {
     soundManager.init();
     soundManager.setMuted(!gameSettings.sound);
     if (shouldContinue) {
-      const saved = localStorage.getItem('jeff_save_game');
+      const saved = localStorage.getItem('hash_save_game');
       if (saved) {
         const saveData = JSON.parse(saved);
         setLevel(saveData.level || 1);
@@ -394,9 +394,9 @@ export default function Game() {
 
   // Save gun preference
   const saveGunPreference = useCallback((gun) => {
-    const localData = localStorage.getItem('jeff_player_data');
+    const localData = localStorage.getItem('hash_player_data');
     const existing = localData ? JSON.parse(localData) : {};
-    localStorage.setItem('jeff_player_data', JSON.stringify({ ...existing, lastGun: gun }));
+    localStorage.setItem('hash_player_data', JSON.stringify({ ...existing, lastGun: gun }));
   }, []);
 
   const handleCheckpointActivated = useCallback((checkpoint) => {
@@ -470,7 +470,7 @@ export default function Game() {
     const currentLevel = levelRef.current;
 
     // Track completed levels
-    const localData = localStorage.getItem('jeff_player_data');
+    const localData = localStorage.getItem('hash_player_data');
     const existing = localData ? JSON.parse(localData) : {};
     const completedLevels = existing.completedLevels || [];
     if (!completedLevels.includes(currentLevel)) {
@@ -488,7 +488,7 @@ export default function Game() {
         setSessionCrystals(0);
       }
       // Save completed levels
-      localStorage.setItem('jeff_player_data', JSON.stringify({ ...existing, completedLevels }));
+      localStorage.setItem('hash_player_data', JSON.stringify({ ...existing, completedLevels }));
       return;
     }
 
@@ -513,8 +513,8 @@ export default function Game() {
       score,
       savedAt: new Date().toISOString()
     };
-    localStorage.setItem('jeff_save_game', JSON.stringify(saveData));
-    localStorage.setItem('jeff_player_data', JSON.stringify({ ...existing, completedLevels }));
+    localStorage.setItem('hash_save_game', JSON.stringify(saveData));
+    localStorage.setItem('hash_player_data', JSON.stringify({ ...existing, completedLevels }));
   }, [saveScraps, currentGun, saveGunPreference, score]);
 
   const handleScoreChange = useCallback((newScore) => {
@@ -621,7 +621,7 @@ export default function Game() {
               difficulty={difficulty}
               onDifficultyChange={(d) => {
                 setDifficulty(d);
-                localStorage.setItem('jeff_difficulty', d);
+                localStorage.setItem('hash_difficulty', d);
               }}
             />
           </div>

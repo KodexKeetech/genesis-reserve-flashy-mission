@@ -28,9 +28,9 @@ export default function AbilityShop() {
       });
     } else {
       // Fallback to localStorage
-      const localData = localStorage.getItem('jeff_player_data');
-      const localAbilities = localStorage.getItem('jeff_unlocked_abilities');
-      const localAbilityUpgrades = localStorage.getItem('jeff_ability_upgrades');
+      const localData = localStorage.getItem('hash_player_data');
+      const localAbilities = localStorage.getItem('hash_unlocked_abilities');
+      const localAbilityUpgrades = localStorage.getItem('hash_ability_upgrades');
       const data = localData ? JSON.parse(localData) : { arcaneCrystals: 0 };
       const abilities = localAbilities ? JSON.parse(localAbilities) : { aoeBlast: false, reflectShield: false, hover: false, timeSlow: false, chainLightning: false, shadowClone: false, magneticPull: false, teleport: false };
       const abilityUpgrades = localAbilityUpgrades ? JSON.parse(localAbilityUpgrades) : { aoeBlastPower: 0, aoeBlastRadius: 0, reflectDuration: 0, hoverDuration: 0, timeSlowDuration: 0, chainLightningDamage: 0, chainLightningChains: 0, shadowCloneDuration: 0, magneticPullRadius: 0, teleportDistance: 0, teleportCooldown: 0 };
@@ -55,10 +55,10 @@ export default function AbilityShop() {
     });
 
     // Also save to localStorage as backup
-    localStorage.setItem('jeff_unlocked_abilities', JSON.stringify(newUnlocked));
-    const localData = localStorage.getItem('jeff_player_data');
+    localStorage.setItem('hash_unlocked_abilities', JSON.stringify(newUnlocked));
+    const localData = localStorage.getItem('hash_player_data');
     const data = localData ? JSON.parse(localData) : {};
-    localStorage.setItem('jeff_player_data', JSON.stringify({ ...data, arcaneCrystals: newCrystals }));
+    localStorage.setItem('hash_player_data', JSON.stringify({ ...data, arcaneCrystals: newCrystals }));
 
     setUser({ ...user, unlockedAbilities: newUnlocked, arcaneCrystals: newCrystals });
     setPurchasing(null);
@@ -84,10 +84,10 @@ export default function AbilityShop() {
     });
 
     // Also save to localStorage as backup
-    localStorage.setItem('jeff_ability_upgrades', JSON.stringify(newUpgrades));
-    const localData = localStorage.getItem('jeff_player_data');
+    localStorage.setItem('hash_ability_upgrades', JSON.stringify(newUpgrades));
+    const localData = localStorage.getItem('hash_player_data');
     const data = localData ? JSON.parse(localData) : {};
-    localStorage.setItem('jeff_player_data', JSON.stringify({ ...data, arcaneCrystals: newCrystals }));
+    localStorage.setItem('hash_player_data', JSON.stringify({ ...data, arcaneCrystals: newCrystals }));
 
     setUser({ ...user, abilityUpgrades: newUpgrades, arcaneCrystals: newCrystals });
     setPurchasing(null);
