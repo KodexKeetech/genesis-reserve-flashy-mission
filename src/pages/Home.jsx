@@ -138,11 +138,11 @@ export default function Home() {
         />
       </div>
 
-      {/* Main Content - Title and stats at top */}
+      {/* Main Content - Title, text, stats, and buttons at top */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 w-full flex flex-col items-center justify-center"
+        className="relative z-10 w-full flex flex-col items-center justify-start pt-4"
       >
         <p className="text-xl md:text-2xl font-bold text-cyan-400 mb-1">Hash's Quest</p>
         <p className="text-slate-500 mb-4 md:mb-6 text-sm md:text-base">Collect Data Coins & Defeat the Hackers</p>
@@ -162,19 +162,9 @@ export default function Home() {
             <span className="text-blue-300 font-bold text-sm">Lv {highestLevel}</span>
           </div>
         </div>
-      </motion.div>
 
-      {/* Layout Container - Image in center, buttons on right */}
-      <div className="relative z-10 w-full h-full flex items-center justify-between px-4 md:px-12 gap-8">
-        {/* Left spacer for image */}
-        <div className="flex-1" />
-
-        {/* Right sidebar with buttons */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="flex flex-col gap-2 w-48"
-        >
+        {/* Buttons */}
+        <div className="flex flex-col gap-2 w-48 mb-4">
           <Link to={createPageUrl('Game')}>
             <Button
               size="sm"
@@ -232,8 +222,8 @@ export default function Home() {
               <span>Cloud Save</span>
             </div>
           )}
-        </motion.div>
-      </div>
+        </div>
+      </motion.div>
 
       {/* Controls hint - bottom center */}
       <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 text-slate-500 text-xs md:text-sm space-y-1 text-center z-10">
