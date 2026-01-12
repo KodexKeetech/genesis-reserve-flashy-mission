@@ -325,6 +325,67 @@ function drawDrone(ctx, enemy, ex, time, isFrozen) {
   ctx.fill();
 }
 
+// Hacker enemy - hooded figure with glowing code
+function drawHacker(ctx, enemy, ex, time, isFrozen) {
+  const hover = isFrozen ? 0 : Math.sin(time * 0.1) * 3;
+  const codeFlicker = Math.sin(time * 0.3) > 0 ? 1 : 0.7;
+  
+  // Dark hood/cloak
+  ctx.fillStyle = isFrozen ? '#67E8F9' : '#1F2937';
+  ctx.shadowColor = isFrozen ? '#67E8F9' : '#10B981';
+  ctx.shadowBlur = 15;
+  
+  // Body cloak
+  ctx.beginPath();
+  ctx.moveTo(ex + 20, enemy.y + 5 + hover);
+  ctx.bezierCurveTo(ex + 40, enemy.y + 15 + hover, ex + 38, enemy.y + 40, ex + 35, enemy.y + 45);
+  ctx.lineTo(ex + 5, enemy.y + 45);
+  ctx.bezierCurveTo(ex + 2, enemy.y + 40, ex, enemy.y + 15 + hover, ex + 20, enemy.y + 5 + hover);
+  ctx.fill();
+  
+  // Hood
+  ctx.fillStyle = isFrozen ? '#A5F3FC' : '#111827';
+  ctx.beginPath();
+  ctx.arc(ex + 20, enemy.y + 12 + hover, 14, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Face void (dark)
+  ctx.fillStyle = '#000000';
+  ctx.beginPath();
+  ctx.ellipse(ex + 20, enemy.y + 14 + hover, 10, 11, 0, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Glowing green eyes (like terminal)
+  ctx.fillStyle = isFrozen ? '#fff' : `rgba(16, 185, 129, ${codeFlicker})`;
+  ctx.shadowColor = '#10B981';
+  ctx.shadowBlur = 12;
+  ctx.beginPath();
+  ctx.arc(ex + 15, enemy.y + 12 + hover, 3, 0, Math.PI * 2);
+  ctx.arc(ex + 25, enemy.y + 12 + hover, 3, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Matrix-style code particles floating around
+  ctx.fillStyle = isFrozen ? '#A5F3FC' : `rgba(16, 185, 129, ${0.5 + Math.sin(time * 0.2) * 0.3})`;
+  ctx.font = '8px monospace';
+  const codeChars = ['0', '1', '<', '>', '/', '{', '}'];
+  for (let i = 0; i < 4; i++) {
+    const codeX = ex + 5 + i * 10 + Math.sin(time * 0.15 + i) * 5;
+    const codeY = enemy.y + 25 + Math.cos(time * 0.12 + i * 0.5) * 8 + hover;
+    const charIndex = Math.floor((time * 0.1 + i) % codeChars.length);
+    ctx.fillText(codeChars[charIndex], codeX, codeY);
+  }
+  
+  // Laptop/device glow in hands
+  ctx.fillStyle = isFrozen ? '#67E8F9' : '#1F2937';
+  ctx.fillRect(ex + 10, enemy.y + 32 + hover, 20, 12);
+  // Screen glow
+  ctx.fillStyle = isFrozen ? '#A5F3FC' : `rgba(16, 185, 129, ${codeFlicker * 0.8})`;
+  ctx.shadowBlur = 8;
+  ctx.fillRect(ex + 12, enemy.y + 33 + hover, 16, 8);
+  
+  ctx.shadowBlur = 0;
+}
+
 function drawFlyer(ctx, enemy, ex, time, isFrozen) {
   const colors = getFlyerColor(enemy.type, isFrozen);
   const hover = isFrozen ? 0 : Math.sin(time * 0.3) * 5;
