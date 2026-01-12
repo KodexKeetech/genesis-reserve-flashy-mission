@@ -144,9 +144,6 @@ export default function Home() {
         animate={{ opacity: 1, y: 0 }}
         className="relative z-10 w-full flex flex-col items-center justify-center"
       >
-        <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-cyan-400 to-purple-400 mb-2">
-          PORTAL TO NODEHAVEN
-        </h1>
         <p className="text-xl md:text-2xl font-bold text-cyan-400 mb-1">Hash's Quest</p>
         <p className="text-slate-500 mb-4 md:mb-6 text-sm md:text-base">Collect Data Coins & Defeat the Hackers</p>
 
