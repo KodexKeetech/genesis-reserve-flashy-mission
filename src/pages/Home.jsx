@@ -127,9 +127,9 @@ export default function Home() {
         <motion.img 
           src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/696532152ae03346493429c1/01a524e3d_logo.png"
           alt="Portal to Nodehaven"
-          className="w-[80vw] h-[80vh] md:w-[70vw] md:h-[85vh] object-contain opacity-30 drop-shadow-2xl"
+          className="w-[80vw] h-[80vh] md:w-[70vw] md:h-[85vh] object-contain opacity-100 drop-shadow-2xl"
           initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 0.3, scale: 1, y: [0, -15, 0] }}
+          animate={{ opacity: 1, scale: 1, y: [0, -15, 0] }}
           transition={{ 
             opacity: { duration: 1 },
             scale: { duration: 1 },
