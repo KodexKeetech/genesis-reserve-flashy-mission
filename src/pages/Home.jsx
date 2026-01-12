@@ -138,20 +138,20 @@ export default function Home() {
         />
       </div>
 
-      {/* Main Content */}
+      {/* Main Content - Title and stats at top */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 text-center"
+        className="relative z-10 w-full flex flex-col items-center justify-center"
       >
         <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-cyan-400 to-purple-400 mb-2">
           PORTAL TO NODEHAVEN
         </h1>
         <p className="text-xl md:text-2xl font-bold text-cyan-400 mb-1">Hash's Quest</p>
-        <p className="text-slate-500 mb-6 md:mb-8 text-sm md:text-base">Collect Data Coins & Defeat the Hackers</p>
+        <p className="text-slate-500 mb-4 md:mb-6 text-sm md:text-base">Collect Data Coins & Defeat the Hackers</p>
 
         {/* Stats Row */}
-        <div className="flex justify-center gap-3 mb-6 md:mb-8">
+        <div className="flex justify-center gap-3 mb-4">
           <div className="bg-slate-900/80 backdrop-blur-sm rounded-lg px-3 py-2 border border-purple-500/30 flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-purple-400" />
             <span className="text-purple-300 font-bold text-sm">{magicScraps}</span>
@@ -165,15 +165,25 @@ export default function Home() {
             <span className="text-blue-300 font-bold text-sm">Lv {highestLevel}</span>
           </div>
         </div>
-        
-        {/* Main Buttons */}
-        <div className="flex flex-col gap-2 mb-4">
+      </motion.div>
+
+      {/* Layout Container - Image in center, buttons on right */}
+      <div className="relative z-10 w-full h-full flex items-center justify-between px-4 md:px-12 gap-8">
+        {/* Left spacer for image */}
+        <div className="flex-1" />
+
+        {/* Right sidebar with buttons */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="flex flex-col gap-2 w-48"
+        >
           <Link to={createPageUrl('Game')}>
             <Button
               size="sm"
-              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold px-4 py-2 text-sm md:text-base rounded-lg shadow-lg shadow-purple-500/30"
+              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold px-4 py-2 text-sm rounded-lg shadow-lg shadow-purple-500/30"
             >
-              <Play className="w-4 h-4 md:w-5 md:h-5 mr-2" />
+              <Play className="w-4 h-4 mr-2" />
               Play Game
             </Button>
           </Link>
@@ -183,10 +193,10 @@ export default function Home() {
               <Button
                 size="sm"
                 variant="outline"
-                className="w-full border-cyan-500 text-cyan-400 hover:bg-cyan-500/20 font-bold px-4 py-2 text-xs md:text-sm rounded-lg"
+                className="w-full border-cyan-500 text-cyan-400 hover:bg-cyan-500/20 font-bold px-4 py-2 text-xs rounded-lg"
               >
-                <FolderOpen className="w-3 h-3 md:w-4 md:h-4 mr-2" />
-                Continue (Level {JSON.parse(localStorage.getItem('hash_save_game') || '{}').level || 1})
+                <FolderOpen className="w-3 h-3 mr-2" />
+                Continue
               </Button>
             </Link>
           )}
@@ -195,44 +205,44 @@ export default function Home() {
             <Button
               size="sm"
               variant="outline"
-              className="w-full border-purple-500 text-purple-400 hover:bg-purple-500/20 font-bold px-4 py-2 text-xs md:text-sm rounded-lg"
+              className="w-full border-purple-500 text-purple-400 hover:bg-purple-500/20 font-bold px-4 py-2 text-xs rounded-lg"
             >
-              <Map className="w-3 h-3 md:w-4 md:h-4 mr-2" />
+              <Map className="w-3 h-3 mr-2" />
               Level Select
             </Button>
           </Link>
-        </div>
 
-        {/* Shop Buttons */}
-        <div className="flex gap-2 justify-center">
-          <Link to={createPageUrl('UpgradeShop')}>
-            <Button size="sm" className="bg-gradient-to-r from-purple-600/80 to-blue-600/80 hover:from-purple-500 hover:to-blue-500 text-xs">
-              <ShoppingBag className="w-3 h-3 mr-1" />
-              Upgrades
-            </Button>
-          </Link>
-          <Link to={createPageUrl('AbilityShop')}>
-            <Button size="sm" className="bg-gradient-to-r from-indigo-600/80 to-purple-600/80 hover:from-indigo-500 hover:to-purple-500 text-xs">
-              <Zap className="w-3 h-3 mr-1" />
-              Abilities
-            </Button>
-          </Link>
-        </div>
-
-        {/* Controls hint */}
-        <div className="mt-8 text-slate-500 text-xs md:text-sm space-y-1">
-          <p>← → Move | SPACE Jump | CLICK Cast</p>
-          <p>SHIFT Dash | Q Switch Spell</p>
-        </div>
-
-        {/* Cloud sync indicator */}
-        {cloudSynced && (
-          <div className="mt-4 flex items-center gap-2 text-green-400 text-xs">
-            <Cloud className="w-4 h-4" />
-            <span>Cloud Save Active</span>
+          {/* Shop Buttons */}
+          <div className="flex flex-col gap-2 mt-2 pt-2 border-t border-slate-700">
+            <Link to={createPageUrl('UpgradeShop')}>
+              <Button size="sm" className="w-full bg-gradient-to-r from-purple-600/80 to-blue-600/80 hover:from-purple-500 hover:to-blue-500 text-xs">
+                <ShoppingBag className="w-3 h-3 mr-1" />
+                Upgrades
+              </Button>
+            </Link>
+            <Link to={createPageUrl('AbilityShop')}>
+              <Button size="sm" className="w-full bg-gradient-to-r from-indigo-600/80 to-purple-600/80 hover:from-indigo-500 hover:to-purple-500 text-xs">
+                <Zap className="w-3 h-3 mr-1" />
+                Abilities
+              </Button>
+            </Link>
           </div>
-        )}
-      </motion.div>
+
+          {/* Cloud sync indicator */}
+          {cloudSynced && (
+            <div className="mt-2 pt-2 border-t border-slate-700 flex items-center gap-1 text-green-400 text-xs justify-center">
+              <Cloud className="w-3 h-3" />
+              <span>Cloud Save</span>
+            </div>
+          )}
+        </motion.div>
+      </div>
+
+      {/* Controls hint - bottom center */}
+      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 text-slate-500 text-xs md:text-sm space-y-1 text-center z-10">
+        <p>← → Move | SPACE Jump | CLICK Cast</p>
+        <p>SHIFT Dash | Q Switch Spell</p>
+      </div>
     </div>
   );
 }
