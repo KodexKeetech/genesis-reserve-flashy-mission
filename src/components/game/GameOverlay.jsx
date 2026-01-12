@@ -202,8 +202,12 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
             transition={{ delay: 0.6, type: 'spring' }}
             className="text-center my-4"
           >
-            <p className="text-base text-purple-300 mb-2">Here is your magical egg</p>
-            <div className="text-6xl">🥚</div>
+            <p className="text-base text-purple-300 mb-2">Your gateway awaits</p>
+            <img 
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/696532152ae03346493429c1/01a524e3d_logo.png"
+              alt="Portal to Nodehaven"
+              className="w-48 h-auto mx-auto drop-shadow-2xl"
+            />
           </motion.div>
 
           <motion.div
@@ -217,9 +221,9 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
               Read Jeff's comic adventure!
             </p>
             <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692c28c6355507b7b2161062/4bcf6076a_1117_00000_00000.jpg"
-              alt="Jeff the Robot Wizard"
-              className="w-32 mx-auto rounded-lg mb-2"
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/696532152ae03346493429c1/01a524e3d_logo.png"
+              alt="Portal to Nodehaven"
+              className="w-40 mx-auto rounded-lg mb-2"
             />
             <Button
               onClick={() => window.open('https://globalcomix.com/c/jefftherobotwizard', '_blank')}
@@ -361,8 +365,8 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
           {/* Jeff character preview */}
           <div className="mb-6 relative">
             <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692c28c6355507b7b2161062/7af5ab7fc_GeneratedImageSeptember302025-6_44PM.png"
-              alt="Jeff the Robot Wizard"
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/696532152ae03346493429c1/1049a74f0_HASHY.png"
+              alt="Hash the Space Cat"
               className="w-40 h-40 mx-auto object-contain drop-shadow-2xl"
             />
             <motion.div
@@ -380,9 +384,9 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
           </div>
           
           <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-slate-400 mb-2">
-            JEFF
+            HASH
           </h1>
-          <p className="text-2xl font-bold text-slate-400 mb-1">The Robot Wizard</p>
+          <p className="text-2xl font-bold text-slate-400 mb-1">The Space Cat</p>
           <p className="text-slate-500 mb-8">A Magical Platformer Adventure</p>
           
           <div className="flex flex-col gap-3">
@@ -410,9 +414,9 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
           
           <div className="mt-8 text-slate-500 text-sm space-y-1">
             <p>← → or A/D to move | SPACE to jump</p>
-            <p>CLICK to cast magic | Q to switch spell</p>
-            <p>SHIFT to dash through enemies</p>
-            <p className="text-cyan-400 mt-2">Collect power-ups for buffs!</p>
+              <p>CLICK to cast magic | Q to switch spell</p>
+              <p>SHIFT to dash | SPACE to jump</p>
+              <p className="text-cyan-400 mt-2">Collect magic coins for power!</p>
           </div>
         </motion.div>
       </motion.div>
@@ -432,7 +436,7 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
           className="text-center"
         >
           <h2 className="text-5xl font-black text-red-300 mb-4">GAME OVER</h2>
-          <p className="text-red-200 text-xl mb-2">Jeff has fallen...</p>
+          <p className="text-red-200 text-xl mb-2">Hash has fallen...</p>
           <p className="text-red-300 text-2xl font-bold mb-8">Score: {score.toLocaleString()}</p>
           
           <div className="flex flex-col gap-3">
@@ -506,22 +510,22 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
         {/* Comic Links - Top Left */}
         <div className="absolute top-3 left-3 z-20 flex flex-col gap-2">
           <a 
-            href="https://globalcomix.com/a/jeff-the-robot-wizard" 
+            href="https://globalcomix.com/a/portal-to-nodehaven" 
             target="_blank" 
             rel="noopener noreferrer"
             className="bg-black/60 backdrop-blur-sm hover:bg-black/80 text-white text-xs px-3 py-2 rounded-lg border border-purple-500/50 hover:border-purple-400 transition-all flex items-center gap-2"
           >
             <span>📖</span>
-            <span>Read Jeff's Comic</span>
+            <span>Read Hash's Story</span>
           </a>
           <a 
-            href="https://linktr.ee/JeffTheRobotWizard" 
+            href="https://linktr.ee/HashTheSpaceCat" 
             target="_blank" 
             rel="noopener noreferrer"
             className="bg-black/60 backdrop-blur-sm hover:bg-black/80 text-white text-xs px-3 py-2 rounded-lg border border-cyan-500/50 hover:border-cyan-400 transition-all flex items-center gap-2"
           >
             <span>🔗</span>
-            <span>Jeff's Socials</span>
+            <span>Hash's Socials</span>
           </a>
         </div>
 
