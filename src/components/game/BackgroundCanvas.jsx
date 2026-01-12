@@ -29,6 +29,7 @@ import { drawFrozenTempleBackground } from './levels/FrozenTempleBackground';
 import { drawHeartOfDarknessBackground } from './levels/HeartOfDarknessBackground';
 import { drawGauntletBackground } from './levels/GauntletBackground';
 import { drawForbiddenLibraryBackground } from './levels/ForbiddenLibraryBackground';
+import { drawTutorialBackground } from './levels/TutorialBackground';
 import { createAmbientParticle, drawAmbientParticle } from './ParticleEffects';
 
 export default function BackgroundCanvas({ currentLevel, hiddenLevelId, gameSettings, cameraXRef, timeRef }) {
@@ -71,7 +72,7 @@ export default function BackgroundCanvas({ currentLevel, hiddenLevelId, gameSett
         } else if (currentLevel > 30) {
           drawMysticalBackground(ctx, cameraX, 800, 600, time);
         } else if (currentLevel === 0) {
-          drawLevel1Background(ctx, cameraX, 800, 600, time, true);
+          drawTutorialBackground(ctx, cameraX, 800, 600, time);
         } else if (currentLevel === 1) {
           drawLevel1Background(ctx, cameraX, 800, 600, time, false);
         } else if (currentLevel === 2) {
