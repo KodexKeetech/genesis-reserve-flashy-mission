@@ -151,11 +151,11 @@ export default function Home() {
         animate={{ opacity: 1, y: 0 }}
         className="relative z-10 text-center"
       >
-        <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-slate-400 mb-2">
-          JEFF
+        <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-cyan-400 to-purple-400 mb-2">
+          PORTAL TO NODEHAVEN
         </h1>
-        <p className="text-xl md:text-2xl font-bold text-slate-400 mb-1">The Robot Wizard</p>
-        <p className="text-slate-500 mb-6 md:mb-8 text-sm md:text-base">A Magical Platformer Adventure</p>
+        <p className="text-xl md:text-2xl font-bold text-cyan-400 mb-1">Hash's Quest</p>
+        <p className="text-slate-500 mb-6 md:mb-8 text-sm md:text-base">Collect Data Coins & Defeat the Hackers</p>
 
         {/* Stats Row */}
         <div className="flex justify-center gap-3 mb-6 md:mb-8">

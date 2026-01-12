@@ -2135,19 +2135,201 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       ctx.scale(ensureFinite(scaleX, 1), ensureFinite(scaleY, 1));
       ctx.translate(-transX, -transY);
 
-      // Orange aura glow for Hash (subtle ambient effect)
-      const auraAlpha = 0.1 + Math.sin(time * 0.05) * 0.05;
-      ctx.shadowColor = '#F97316';
-      ctx.shadowBlur = 25 + Math.sin(time * 0.1) * 8;
-      ctx.fillStyle = `rgba(249, 115, 22, ${auraAlpha})`;
-      ctx.beginPath();
-      const auraX = ensureFinite(centerX, 400);
-      const auraY = ensureFinite(y + 32 - bodyBob, 332);
-      ctx.ellipse(auraX, auraY, 28, 35, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.shadowBlur = 0;
+      // Check if Hash should transform into Flashy (speed boost active)
+      const isFlashy = player.powerUps.SPEED > 0;
 
-      // HASH - Purple Shape-Shifting Cat Character
+      if (isFlashy) {
+        // FLASHY - Orange Speed Fox Character
+        
+        // Tail (behind body) - big fluffy orange tail
+        ctx.save();
+        const tailX = facingRight ? centerX - 20 : centerX + 20;
+        ctx.translate(tailX, y + 35 - bodyBob);
+        ctx.rotate(ensureFinite((tailWag * Math.PI) / 180 * (facingRight ? -1 : 1), 0));
+        const tailGrad = ctx.createLinearGradient(0, -10, facingRight ? -25 : 25, 15);
+        tailGrad.addColorStop(0, '#F97316');
+        tailGrad.addColorStop(0.7, '#EA580C');
+        tailGrad.addColorStop(1, '#FEF3C7');
+        ctx.fillStyle = tailGrad;
+        ctx.beginPath();
+        ctx.moveTo(0, -5);
+        ctx.quadraticCurveTo(facingRight ? -20 : 20, -15, facingRight ? -30 : 30, 5);
+        ctx.quadraticCurveTo(facingRight ? -25 : 25, 20, 0, 10);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#FEF3C7';
+        ctx.beginPath();
+        ctx.ellipse(facingRight ? -25 : 25, 5, 8, 12, facingRight ? -0.3 : 0.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        // Back leg
+        ctx.save();
+        ctx.translate(ensureFinite(centerX - 6 * dir, 0), ensureFinite(y + 42 - bodyBob + breathe, 0));
+        ctx.rotate(ensureFinite((-legSwing * Math.PI) / 180, 0));
+        ctx.fillStyle = '#EA580C';
+        ctx.beginPath();
+        ctx.roundRect(-5, 0, 10, 16, 3);
+        ctx.fill();
+        ctx.fillStyle = '#1E3A5F';
+        ctx.beginPath();
+        ctx.roundRect(-6, 14, 12, 8, [0, 0, 3, 3]);
+        ctx.fill();
+        ctx.restore();
+
+        // Front leg
+        ctx.save();
+        ctx.translate(ensureFinite(centerX + 6 * dir, 0), ensureFinite(y + 42 - bodyBob + breathe, 0));
+        ctx.rotate(ensureFinite((legSwing * Math.PI) / 180, 0));
+        ctx.fillStyle = '#F97316';
+        ctx.beginPath();
+        ctx.roundRect(-5, 0, 10, 16, 3);
+        ctx.fill();
+        ctx.fillStyle = '#1E3A5F';
+        ctx.beginPath();
+        ctx.roundRect(-6, 14, 12, 8, [0, 0, 3, 3]);
+        ctx.fill();
+        ctx.restore();
+
+        // Body
+        const bodyGrad = ctx.createLinearGradient(centerX - 12, y + 20, centerX + 12, y + 45);
+        bodyGrad.addColorStop(0, '#FB923C');
+        bodyGrad.addColorStop(0.5, '#F97316');
+        bodyGrad.addColorStop(1, '#EA580C');
+        ctx.fillStyle = bodyGrad;
+        ctx.beginPath();
+        ctx.ellipse(centerX, y + 32 - bodyBob + breathe, 14, 18, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#FEF3C7';
+        ctx.beginPath();
+        ctx.ellipse(centerX, y + 35 - bodyBob + breathe, 9, 12, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Arms
+        ctx.save();
+        ctx.translate(ensureFinite(centerX - 12, 0), ensureFinite(y + 25 - bodyBob + breathe, 0));
+        ctx.rotate(ensureFinite((-armSwing * Math.PI) / 180, 0));
+        ctx.fillStyle = '#EA580C';
+        ctx.beginPath();
+        ctx.roundRect(-4, 0, 8, 14, 3);
+        ctx.fill();
+        ctx.fillStyle = '#F97316';
+        ctx.beginPath();
+        ctx.ellipse(0, 16, 5, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        ctx.save();
+        ctx.translate(ensureFinite(centerX + 12, 0), ensureFinite(y + 25 - bodyBob + breathe, 0));
+        const armAngle = player.isCasting ? -45 + castingPose : armSwing;
+        ctx.rotate(ensureFinite((armAngle * Math.PI) / 180, 0));
+        ctx.fillStyle = '#F97316';
+        ctx.beginPath();
+        ctx.roundRect(-4, 0, 8, 14, 3);
+        ctx.fill();
+        if (player.isCasting) {
+          const spellColor = player.selectedProjectile === 1 ? '#22D3EE' : player.selectedProjectile === 2 ? '#FBBF24' : '#A855F7';
+          ctx.shadowColor = spellColor;
+          ctx.shadowBlur = 25 + Math.sin(time * 0.5) * 12;
+          const orbGrad = ctx.createRadialGradient(0, 20, 0, 0, 20, 9);
+          orbGrad.addColorStop(0, '#FFFFFF');
+          orbGrad.addColorStop(0.3, spellColor);
+          orbGrad.addColorStop(1, spellColor + '80');
+          ctx.fillStyle = orbGrad;
+          ctx.beginPath();
+          ctx.arc(0, 20, 9, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.fillStyle = '#FB923C';
+        ctx.beginPath();
+        ctx.ellipse(0, 16, 5, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.restore();
+
+        // Head
+        const headGrad = ctx.createRadialGradient(centerX - 3, y + 5, 0, centerX, y + 10, 18);
+        headGrad.addColorStop(0, '#FB923C');
+        headGrad.addColorStop(0.7, '#F97316');
+        headGrad.addColorStop(1, '#EA580C');
+        ctx.fillStyle = headGrad;
+        ctx.beginPath();
+        ctx.ellipse(centerX, y + 8 - bodyBob + breathe, 16, 14, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Fox ears
+        ctx.fillStyle = '#F97316';
+        ctx.beginPath();
+        ctx.moveTo(centerX - 12, y - 2 - bodyBob + breathe);
+        ctx.lineTo(centerX - 18, y - 22 - bodyBob + breathe);
+        ctx.lineTo(centerX - 5, y - 5 - bodyBob + breathe);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#FBBF24';
+        ctx.beginPath();
+        ctx.moveTo(centerX - 11, y - 3 - bodyBob + breathe);
+        ctx.lineTo(centerX - 15, y - 16 - bodyBob + breathe);
+        ctx.lineTo(centerX - 7, y - 5 - bodyBob + breathe);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#F97316';
+        ctx.beginPath();
+        ctx.moveTo(centerX + 12, y - 2 - bodyBob + breathe);
+        ctx.lineTo(centerX + 18, y - 22 - bodyBob + breathe);
+        ctx.lineTo(centerX + 5, y - 5 - bodyBob + breathe);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#FBBF24';
+        ctx.beginPath();
+        ctx.moveTo(centerX + 11, y - 3 - bodyBob + breathe);
+        ctx.lineTo(centerX + 15, y - 16 - bodyBob + breathe);
+        ctx.lineTo(centerX + 7, y - 5 - bodyBob + breathe);
+        ctx.closePath();
+        ctx.fill();
+
+        // Face
+        ctx.fillStyle = '#FEF3C7';
+        ctx.beginPath();
+        ctx.ellipse(centerX, y + 12 - bodyBob + breathe, 10, 8, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Headband
+        ctx.fillStyle = '#1F2937';
+        ctx.fillRect(centerX - 14, y - 2 - bodyBob + breathe, 28, 4);
+
+        // Eyes
+        const eyeOffsetX = facingRight ? 1 : -1;
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        ctx.ellipse(centerX - 6 + eyeOffsetX, y + 5 - bodyBob + breathe, 5, 6, 0, 0, Math.PI * 2);
+        ctx.ellipse(centerX + 6 + eyeOffsetX, y + 5 - bodyBob + breathe, 5, 6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#1F2937';
+        ctx.beginPath();
+        ctx.ellipse(centerX - 5 + eyeOffsetX * 2, y + 6 - bodyBob + breathe, 2.5, 3, 0, 0, Math.PI * 2);
+        ctx.ellipse(centerX + 7 + eyeOffsetX * 2, y + 6 - bodyBob + breathe, 2.5, 3, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        ctx.arc(centerX - 6 + eyeOffsetX, y + 4 - bodyBob + breathe, 1.5, 0, Math.PI * 2);
+        ctx.arc(centerX + 6 + eyeOffsetX, y + 4 - bodyBob + breathe, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Nose
+        ctx.fillStyle = '#1F2937';
+        ctx.beginPath();
+        ctx.ellipse(centerX, y + 12 - bodyBob + breathe, 3, 2, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Mouth
+        ctx.strokeStyle = '#1F2937';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(centerX, y + 14 - bodyBob + breathe, 4, 0.2, Math.PI - 0.2);
+        ctx.stroke();
+
+      } else {
+        // HASH - Purple Shape-Shifting Cat Character
       
       // Back leg
       ctx.save();
@@ -2339,6 +2521,7 @@ export default function GameEngine({ onScoreChange, onHealthChange, onLevelCompl
       ctx.fill();
       
       ctx.shadowBlur = 0;
+      }
 
       ctx.restore();
     };

@@ -526,7 +526,7 @@ export default function Game() {
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 900;
 
   return (
-    <div className="h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex flex-col items-center justify-center p-1 md:p-4 overflow-hidden">
+    <div className="h-screen bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 flex flex-col items-center justify-center p-1 md:p-4 overflow-hidden">
       {/* Ambient background effects */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl" />
@@ -536,8 +536,8 @@ export default function Game() {
       {/* Title - hide on mobile */}
       {!isMobile && (
         <div className="flex items-center justify-center gap-4 mb-2 md:mb-6">
-          <h1 className="text-xl sm:text-2xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400 tracking-tight">
-            JEFF: The Robot Wizard
+          <h1 className="text-xl sm:text-2xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-cyan-400 to-purple-400 tracking-tight">
+            Portal to Nodehaven
           </h1>
         </div>
       )}
