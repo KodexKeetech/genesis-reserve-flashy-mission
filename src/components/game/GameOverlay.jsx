@@ -15,7 +15,7 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
   
   // Get hidden level info if this is a secret level
   const hiddenLevel = hiddenLevelId && HIDDEN_LEVELS[hiddenLevelId];
-  const levelDisplayText = hiddenLevel ? hiddenLevel.name : `LEVEL ${level}`;
+  const levelDisplayText = hiddenLevel ? hiddenLevel.name : 'LEVEL';
 
   useEffect(() => {
     const saved = localStorage.getItem('jeff_save_game');
