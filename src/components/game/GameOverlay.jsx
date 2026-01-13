@@ -210,29 +210,7 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
             />
           </motion.div>
 
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="bg-slate-900/50 border border-purple-500 rounded-lg p-3"
-          >
-            <h2 className="text-base font-bold text-purple-300 mb-2">📖 Discover the Lore</h2>
-            <p className="text-xs text-slate-400 mb-2">
-              Read Jeff's comic adventure!
-            </p>
-            <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/696532152ae03346493429c1/01a524e3d_logo.png"
-              alt="Portal to Nodehaven"
-              className="w-40 mx-auto rounded-lg mb-2"
-            />
-            <Button
-              onClick={() => window.open('https://globalcomix.com/c/jefftherobotwizard', '_blank')}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-sm py-2"
-            >
-              <ExternalLink className="w-4 h-4 mr-1" />
-              Read the Comic
-            </Button>
-          </motion.div>
+
 
           <motion.div
             initial={{ y: 20, opacity: 0 }}
@@ -507,27 +485,7 @@ export default function GameOverlay({ type, score, level, onRestart, onNextLevel
           ))}
         </div>
         
-        {/* Comic Links - Top Left */}
-        <div className="absolute top-3 left-3 z-20 flex flex-col gap-2">
-          <a 
-            href="https://globalcomix.com/a/portal-to-nodehaven" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="bg-black/60 backdrop-blur-sm hover:bg-black/80 text-white text-xs px-3 py-2 rounded-lg border border-purple-500/50 hover:border-purple-400 transition-all flex items-center gap-2"
-          >
-            <span>📖</span>
-            <span>Read Hash's Story</span>
-          </a>
-          <a 
-            href="https://linktr.ee/HashTheSpaceCat" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="bg-black/60 backdrop-blur-sm hover:bg-black/80 text-white text-xs px-3 py-2 rounded-lg border border-cyan-500/50 hover:border-cyan-400 transition-all flex items-center gap-2"
-          >
-            <span>🔗</span>
-            <span>Hash's Socials</span>
-          </a>
-        </div>
+
 
         {/* Content */}
         <div className="relative z-10 h-full flex flex-col items-center justify-end pb-8">
