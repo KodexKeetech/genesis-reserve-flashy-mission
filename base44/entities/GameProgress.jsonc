@@ -1,0 +1,124 @@
+{
+  "name": "GameProgress",
+  "type": "object",
+  "properties": {
+    "magicScraps": {
+      "type": "number",
+      "default": 0,
+      "description": "Magic scraps currency"
+    },
+    "arcaneCrystals": {
+      "type": "number",
+      "default": 0,
+      "description": "Arcane crystals currency"
+    },
+    "highestLevel": {
+      "type": "number",
+      "default": 1,
+      "description": "Highest level reached"
+    },
+    "currentLevel": {
+      "type": "number",
+      "default": 1,
+      "description": "Current level in progress"
+    },
+    "currentScore": {
+      "type": "number",
+      "default": 0,
+      "description": "Current score"
+    },
+    "lives": {
+      "type": "number",
+      "default": 10,
+      "description": "Number of lives"
+    },
+    "totalScrapsEarned": {
+      "type": "number",
+      "default": 0,
+      "description": "Total scraps earned lifetime"
+    },
+    "completedLevels": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "default": [],
+      "description": "Array of completed level numbers"
+    },
+    "unlockedSecrets": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Array of unlocked secret level IDs"
+    },
+    "lastGun": {
+      "type": "number",
+      "default": 0,
+      "description": "Last selected gun type"
+    },
+    "playerUpgrades": {
+      "type": "object",
+      "default": {
+        "maxHealth": 0,
+        "spellPower": 0,
+        "dashEfficiency": 0,
+        "magicRegen": 0,
+        "scrapMagnet": 0
+      },
+      "description": "Player permanent upgrades"
+    },
+    "unlockedAbilities": {
+      "type": "object",
+      "default": {
+        "aoeBlast": false,
+        "reflectShield": false,
+        "hover": false,
+        "timeSlow": false,
+        "chainLightning": false,
+        "shadowClone": false,
+        "magneticPull": false,
+        "teleport": false
+      },
+      "description": "Unlocked special abilities"
+    },
+    "abilityUpgrades": {
+      "type": "object",
+      "default": {
+        "aoeBlastPower": 0,
+        "aoeBlastRadius": 0,
+        "reflectDuration": 0,
+        "hoverDuration": 0,
+        "timeSlowDuration": 0,
+        "chainLightningDamage": 0,
+        "chainLightningChains": 0,
+        "shadowCloneDuration": 0,
+        "teleportDistance": 0,
+        "teleportCooldown": 0
+      },
+      "description": "Ability upgrade levels"
+    },
+    "difficulty": {
+      "type": "string",
+      "enum": [
+        "easy",
+        "medium",
+        "hard"
+      ],
+      "default": "medium",
+      "description": "Selected difficulty"
+    },
+    "gameSettings": {
+      "type": "object",
+      "default": {
+        "sound": true,
+        "graphics": "high",
+        "particles": true,
+        "gameSpeed": 1
+      },
+      "description": "Game settings"
+    }
+  },
+  "required": []
+}

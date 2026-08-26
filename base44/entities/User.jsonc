@@ -1,0 +1,99 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "magicScraps": {
+      "type": "number",
+      "default": 0,
+      "description": "Currency earned from defeating enemies"
+    },
+    "arcaneCrystals": {
+      "type": "number",
+      "default": 0,
+      "description": "Rare currency earned from bosses and challenges"
+    },
+    "upgrades": {
+      "type": "object",
+      "description": "Player's permanent upgrades",
+      "properties": {
+        "maxHealth": {
+          "type": "number",
+          "default": 0
+        },
+        "spellPower": {
+          "type": "number",
+          "default": 0
+        },
+        "dashEfficiency": {
+          "type": "number",
+          "default": 0
+        },
+        "magicRegen": {
+          "type": "number",
+          "default": 0
+        },
+        "scrapMagnet": {
+          "type": "number",
+          "default": 0
+        }
+      }
+    },
+    "unlockedAbilities": {
+      "type": "object",
+      "description": "Unlocked special abilities",
+      "properties": {
+        "aoeBlast": {
+          "type": "boolean",
+          "default": false
+        },
+        "reflectShield": {
+          "type": "boolean",
+          "default": false
+        },
+        "hover": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "abilityUpgrades": {
+      "type": "object",
+      "description": "Upgrades for special abilities",
+      "properties": {
+        "aoeBlastPower": {
+          "type": "number",
+          "default": 0
+        },
+        "aoeBlastRadius": {
+          "type": "number",
+          "default": 0
+        },
+        "reflectDuration": {
+          "type": "number",
+          "default": 0
+        },
+        "hoverDuration": {
+          "type": "number",
+          "default": 0
+        }
+      }
+    },
+    "totalScrapsEarned": {
+      "type": "number",
+      "default": 0
+    },
+    "highestLevel": {
+      "type": "number",
+      "default": 1
+    },
+    "bossesDefeated": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "upgrades",
+    "unlockedAbilities",
+    "abilityUpgrades"
+  ]
+}
